@@ -1,0 +1,24 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# User data files (contain live client/invoice data — not versioned)
+Clients.csv
+Macros.csv
+EasyDentalLab-backup.json
+
+# Direct Claiming output folder
+Send to Direct Claiming/
+
+# Claude Code internal files
+.claude/
+
+# AI team operational files
+Team/
+Team Inbox/
+Owner's Inbox/
+larry_watch.sh
+
+# Logs
+*.log

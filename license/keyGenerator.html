@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyDentalLab — License Key Generator</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f172a; color: #e2e8f0; min-height: 100vh; padding: 32px 16px;
+  }
+  .shell { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+  h1 { font-size: 22px; font-weight: 700; color: #f8fafc; }
+  .subtitle { font-size: 13px; color: #94a3b8; margin-top: 4px; }
+  .card {
+    background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 24px;
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .card h2 { font-size: 15px; font-weight: 600; color: #cbd5e1; border-bottom: 1px solid #334155; padding-bottom: 12px; }
+  label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; background: #0f172a; border: 1px solid #334155;
+    border-radius: 8px; color: #f1f5f9; font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: #3b82f6; }
+  textarea { resize: vertical; font-family: "Menlo", "Consolas", monospace; font-size: 12px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  button {
+    padding: 10px 20px; border-radius: 8px; border: none; font-size: 13px;
+    font-weight: 600; cursor: pointer; transition: opacity .15s;
+  }
+  button:hover { opacity: .85; }
+  .btn-primary { background: #3b82f6; color: #fff; }
+  .btn-secondary { background: #334155; color: #e2e8f0; }
+  .btn-danger  { background: #ef4444; color: #fff; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .output-box {
+    background: #0f172a; border: 1px solid #334155; border-radius: 8px;
+    padding: 14px; font-family: "Menlo", "Consolas", monospace;
+    font-size: 12px; color: #34d399; word-break: break-all; line-height: 1.6;
+  }
+  .output-box.danger { color: #f87171; }
+  .output-box.info   { color: #60a5fa; }
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600; margin-bottom: 6px;
+  }
+  .tag-ok      { background: #064e3b; color: #34d399; }
+  .tag-warn    { background: #78350f; color: #fbbf24; }
+  .tag-err     { background: #7f1d1d; color: #f87171; }
+  .tag-info    { background: #1e3a5f; color: #60a5fa; }
+  .divider     { border: none; border-top: 1px solid #334155; }
+  .notice {
+    background: #1c2a1c; border: 1px solid #166534; border-radius: 8px;
+    padding: 12px 16px; font-size: 12px; color: #86efac; line-height: 1.6;
+  }
+  .notice strong { color: #4ade80; }
+  .copy-btn {
+    font-size: 11px; padding: 4px 10px; background: #1e293b;
+    border: 1px solid #475569; border-radius: 6px; color: #94a3b8;
+    cursor: pointer; float: right; margin-left: 8px;
+  }
+  .copy-btn:hover { color: #f1f5f9; border-color: #64748b; }
+  #status { font-size: 12px; color: #94a3b8; min-height: 18px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div>
+    <h1>License Key Generator</h1>
+    <p class="subtitle">Developer tool — do not distribute. Generate Ed25519 key pairs and sign license keys.</p>
+  </div>
+
+  <!-- ── STEP 1: Key Pair ─────────────────────────────────────────── -->
+  <div class="card">
+    <h2>Step 1 — Key Pair</h2>
+
+    <div class="notice">
+      <strong>First time?</strong> Click "Generate New Key Pair" below. Copy the
+      <strong>Public Key</strong> into <code>licenseValidator.js → PUBLIC_KEY_B64</code>,
+      then save the <strong>Private Key JWK</strong> somewhere secure (password manager or encrypted file).
+      Next time, paste your saved private key into the field below — do <em>not</em> generate a new pair,
+      or all old license keys will stop working.
+    </div>
+
+    <div>
+      <label>Private Key JWK (paste your saved key here, or generate below)</label>
+      <textarea id="privKeyIn" rows="5" placeholder='{"kty":"OKP","crv":"Ed25519","x":"...","d":"..."}'></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary"   onclick="generateKeyPair()">Generate New Key Pair</button>
+      <button class="btn-secondary" onclick="loadPrivateKey()">Load Private Key</button>
+      <button class="btn-danger"    onclick="clearKeys()">Clear</button>
+    </div>
+
+    <div id="keyStatus"></div>
+
+    <div id="pubKeySection" style="display:none">
+      <hr class="divider" style="margin:4px 0">
+      <label>
+        Public Key (base64) — hardcode this in <code>licenseValidator.js → PUBLIC_KEY_B64</code>
+        <button class="copy-btn" onclick="copyText('pubKeyOut')">Copy</button>
+      </label>
+      <div class="output-box info" id="pubKeyOut"></div>
+
+      <label style="margin-top:12px">
+        Private Key JWK — save this securely, never share or ship with the app
+        <button class="copy-btn" onclick="copyText('privKeyOut')">Copy</button>
+      </label>
+      <div class="output-box danger" id="privKeyOut"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: Generate License Key ─────────────────────────────── -->
+  <div class="card">
+    <h2>Step 2 — Generate License Key</h2>
+
+    <div class="row">
+      <div>
+        <label>User Email</label>
+        <input id="email" type="email" placeholder="customer@example.com">
+      </div>
+      <div>
+        <label>App Name</label>
+        <input id="appName" type="text" value="EasyDentalLab">
+      </div>
+    </div>
+
+    <div class="row3">
+      <div>
+        <label>License Type</label>
+        <select id="licType">
+          <option value="trial">Trial</option>
+          <option value="full" selected>Full</option>
+        </select>
+      </div>
+      <div>
+        <label>Issue Date</label>
+        <input id="issued" type="date">
+      </div>
+      <div>
+        <label>Expiry Date (leave blank = never expires)</label>
+        <input id="expires" type="date">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="generateLicense()">Generate License Key</button>
+    </div>
+
+    <div id="licenseOutput" style="display:none">
+      <label>
+        License Key — send this to the user
+        <button class="copy-btn" onclick="copyText('licenseKey')">Copy</button>
+      </label>
+      <div class="output-box" id="licenseKey" style="word-break:break-all;line-height:2"></div>
+      <div id="licenseInfo" style="margin-top:10px; font-size:12px; color:#94a3b8;"></div>
+    </div>
+  </div>
+
+  <!-- ── STEP 3: Verify a Key ──────────────────────────────────────── -->
+  <div class="card">
+    <h2>Step 3 — Verify an Existing Key (optional)</h2>
+    <div>
+      <label>Paste a license key to verify its signature and contents</label>
+      <textarea id="verifyIn" rows="3" placeholder="PAYLOAD_B64URL.SIGNATURE_B64URL"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="verifyKey()">Verify Key</button>
+    </div>
+    <div id="verifyOutput"></div>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let _privateKey = null;
+let _publicKey  = null;
+
+// Set today as default issue date
+document.getElementById("issued").value = new Date().toISOString().slice(0, 10);
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function b64url(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)))
+    .replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+function b64std(bytes) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+}
+function status(msg, color) {
+  const el = document.getElementById("status");
+  el.textContent = msg;
+  el.style.color = color || "#94a3b8";
+}
+function copyText(id) {
+  const text = document.getElementById(id).textContent.trim();
+  navigator.clipboard.writeText(text).then(() => status("Copied to clipboard.", "#4ade80"));
+}
+
+// ─── Key pair generation ──────────────────────────────────────────────────────
+async function generateKeyPair() {
+  try {
+    const kp = await crypto.subtle.generateKey({ name: "Ed25519" }, true, ["sign", "verify"]);
+    _privateKey = kp.privateKey;
+    _publicKey  = kp.publicKey;
+
+    const privJwk = await crypto.subtle.exportKey("jwk", _privateKey);
+    const pubRaw  = await crypto.subtle.exportKey("raw",  _publicKey);
+
+    document.getElementById("pubKeyOut").textContent  = b64std(pubRaw);
+    document.getElementById("privKeyOut").textContent = JSON.stringify(privJwk, null, 2);
+    document.getElementById("privKeyIn").value        = JSON.stringify(privJwk);
+    document.getElementById("pubKeySection").style.display = "";
+    document.getElementById("keyStatus").innerHTML =
+      '<span class="tag tag-ok">KEY PAIR READY</span>';
+    status("New key pair generated. Copy the Public Key into licenseValidator.js now.", "#4ade80");
+  } catch (e) {
+    document.getElementById("keyStatus").innerHTML =
+      '<span class="tag tag-err">ERROR</span> ' + e.message;
+    status("Key generation failed: " + e.message, "#f87171");
+  }
+}
+
+async function loadPrivateKey() {
+  const raw = document.getElementById("privKeyIn").value.trim();
+  if (!raw) { status("Paste a Private Key JWK first.", "#f87171"); return; }
+  try {
+    const jwk = JSON.parse(raw);
+    _privateKey = await crypto.subtle.importKey("jwk", jwk, { name: "Ed25519" }, true, ["sign"]);
+
+    // Derive public key from JWK (remove "d" field)
+    const pubJwk = { ...jwk };
+    delete pubJwk.d;
+    pubJwk.key_ops = ["verify"];
+    _publicKey = await crypto.subtle.importKey("jwk", pubJwk, { name: "Ed25519" }, true, ["verify"]);
+
+    const pubRaw = await crypto.subtle.exportKey("raw", _publicKey);
+    document.getElementById("pubKeyOut").textContent  = b64std(pubRaw);
+    document.getElementById("privKeyOut").textContent = raw;
+    document.getElementById("pubKeySection").style.display = "";
+    document.getElementById("keyStatus").innerHTML =
+      '<span class="tag tag-ok">PRIVATE KEY LOADED</span>';
+    status("Private key loaded successfully.", "#4ade80");
+  } catch (e) {
+    document.getElementById("keyStatus").innerHTML =
+      '<span class="tag tag-err">ERROR</span>';
+    status("Could not load private key: " + e.message, "#f87171");
+  }
+}
+
+function clearKeys() {
+  _privateKey = _publicKey = null;
+  document.getElementById("privKeyIn").value = "";
+  document.getElementById("pubKeySection").style.display = "none";
+  document.getElementById("keyStatus").innerHTML = "";
+  status("Keys cleared.", "#94a3b8");
+}
+
+// ─── License generation ───────────────────────────────────────────────────────
+async function generateLicense() {
+  if (!_privateKey) {
+    status("Load or generate a key pair in Step 1 first.", "#f87171"); return;
+  }
+
+  const email   = document.getElementById("email").value.trim();
+  const appName = document.getElementById("appName").value.trim();
+  const type    = document.getElementById("licType").value;
+  const issued  = document.getElementById("issued").value;
+  const expires = document.getElementById("expires").value || null;
+
+  if (!email) { status("Email is required.", "#f87171"); return; }
+  if (!appName) { status("App name is required.", "#f87171"); return; }
+  if (!issued) { status("Issue date is required.", "#f87171"); return; }
+  if (expires && expires <= issued) {
+    status("Expiry date must be after issue date.", "#f87171"); return;
+  }
+
+  try {
+    const payload = { email, app: appName, type, issued, expires };
+    const payloadJson  = JSON.stringify(payload);
+    const payloadB64   = b64url(new TextEncoder().encode(payloadJson));
+    const msgBytes     = new TextEncoder().encode(payloadB64);
+    const sigBytes     = await crypto.subtle.sign({ name: "Ed25519" }, _privateKey, msgBytes);
+    const sigB64       = b64url(sigBytes);
+    const licenseKey   = payloadB64 + "." + sigB64;
+
+    document.getElementById("licenseKey").textContent = licenseKey;
+    document.getElementById("licenseOutput").style.display = "";
+
+    const info = [
+      "Type: " + type.toUpperCase(),
+      "Email: " + email,
+      "App: " + appName,
+      "Issued: " + issued,
+      expires ? "Expires: " + expires : "Expires: Never",
+    ].join("  ·  ");
+    document.getElementById("licenseInfo").textContent = info;
+
+    status("License key generated.", "#4ade80");
+  } catch (e) {
+    status("License generation failed: " + e.message, "#f87171");
+  }
+}
+
+// ─── Verification ─────────────────────────────────────────────────────────────
+async function verifyKey() {
+  const key = document.getElementById("verifyIn").value.trim();
+  if (!key) { status("Paste a license key to verify.", "#f87171"); return; }
+  if (!_publicKey) { status("Load a key pair in Step 1 to enable verification.", "#f87171"); return; }
+
+  const out = document.getElementById("verifyOutput");
+
+  try {
+    const parts = key.split(".");
+    if (parts.length !== 2) {
+      out.innerHTML = '<span class="tag tag-err">INVALID FORMAT</span><div class="output-box danger">Expected PAYLOAD.SIGNATURE</div>';
+      return;
+    }
+
+    const [payloadB64, sigB64] = parts;
+    const msgBytes = new TextEncoder().encode(payloadB64);
+    const sigBytes = Uint8Array.from(
+      atob(sigB64.replace(/-/g,"+").replace(/_/g,"/")), c => c.charCodeAt(0)
+    );
+
+    const valid = await crypto.subtle.verify({ name: "Ed25519" }, _publicKey, sigBytes, msgBytes);
+
+    const payloadJson = atob(payloadB64.replace(/-/g,"+").replace(/_/g,"/"));
+    const payload     = JSON.parse(payloadJson);
+
+    let expired = false;
+    if (payload.expires) {
+      const exp = new Date(payload.expires);
+      exp.setHours(23,59,59,999);
+      expired = Date.now() > exp.getTime();
+    }
+
+    if (!valid) {
+      out.innerHTML = '<span class="tag tag-err">INVALID SIGNATURE</span>' +
+        '<div class="output-box danger">Signature does not match — key may have been tampered with.</div>';
+    } else if (expired) {
+      out.innerHTML = '<span class="tag tag-warn">EXPIRED</span>' +
+        '<div class="output-box" style="color:#fbbf24">' +
+        JSON.stringify(payload, null, 2) + "</div>";
+    } else {
+      out.innerHTML = '<span class="tag tag-ok">VALID</span>' +
+        '<div class="output-box">' + JSON.stringify(payload, null, 2) + "</div>";
+    }
+    status("Verification complete.", "#94a3b8");
+  } catch (e) {
+    out.innerHTML = '<span class="tag tag-err">ERROR</span>' +
+      '<div class="output-box danger">' + e.message + "</div>";
+  }
+}
+</script>
+</body>
+</html>
