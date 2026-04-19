@@ -222,6 +222,7 @@ window.UI_T = {
   .badge-blue { background: #dbeafe; color: #1d4ed8; }
   .badge-green { background: #d1fae5; color: #065f46; }
   .badge-yellow { background: #fef3c7; color: #92400e; }
+  .badge-orange { background: #ffedd5; color: #9a3412; }
   .badge-red { background: #fee2e2; color: #991b1b; }
   .badge-purple { background: #ede9fe; color: #5b21b6; }
   .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; transition: all 0.15s; }
@@ -313,7 +314,7 @@ const INITIAL_DATA = {
   },
   clients: [], tariffs: [], categories: [],
   macros: [], medicalAids: [],
-  estimates: [], invoices: [],
+  estimates: [], invoices: [], payments: [],
   nextEstimateNo: 200001, nextInvoiceNo: 300001,
 };
 
@@ -900,6 +901,7 @@ const loadData = () => {
       if (!merged.macros || merged.macros.length === 0) { merged.macros = embeddedMacros; }
       if (!merged.categories || merged.categories.length === 0) { merged.categories = tariffResult.categories; }
       if (!merged.medicalAids || merged.medicalAids.length === 0) { merged.medicalAids = embeddedMedicalAids; }
+      if (!merged.payments) merged.payments = [];
       return merged;
     }
     // First run: load embedded CSV data (apply 8xxx migration)
@@ -1592,21 +1594,50 @@ const printDocument = (doc, data, type) => {
 // AGE ANALYSIS & STATEMENTS
 // ============================================================
 
-const getClientAging = (clientId, invoices) => {
+// ── Payment helpers ───────────────────────────────────────────────────────────
+const getInvoiceAmountPaid = (invoiceId, payments) =>
+  (payments||[]).reduce((sum, p) =>
+    sum + ((p.allocations||[]).find(a => a.invoiceId === invoiceId)?.allocated || 0), 0);
+
+const getInvoiceBalance = (inv, payments) => {
+  const paid = getInvoiceAmountPaid(inv.id, payments);
+  // Legacy: invoice was marked paid before payment system existed — treat as fully settled
+  if (paid === 0 && inv.status === "paid") return 0;
+  return Math.max(0, (inv.total != null ? inv.total : (inv.items||[]).reduce((s,i) => s + (parseFloat(i.qty)||0)*(parseFloat(i.price)||0), 0)) - paid);
+};
+
+const getInvoiceDisplayStatus = (inv, payments) => {
+  if (inv.claimed) return "claimed";
+  const paid = getInvoiceAmountPaid(inv.id, payments);
+  if (paid === 0 && inv.status === "paid") return "paid"; // legacy
+  const total = inv.total != null ? inv.total : (inv.items||[]).reduce((s,i) => s + (parseFloat(i.qty)||0)*(parseFloat(i.price)||0), 0);
+  if (total > 0 && paid >= total) return "paid";
+  if (paid > 0) return "partial";
+  return "unpaid";
+};
+
+const getClientCredit = (clientId, payments) =>
+  (payments||[]).filter(p => p.clientId === clientId)
+    .reduce((sum, p) => sum + (p.unallocated || 0), 0);
+
+const getClientAging = (clientId, invoices, payments) => {
   const now = new Date();
   now.setHours(0,0,0,0);
-  const unpaid = invoices.filter(i => i.clientId === clientId && i.status === "unpaid" && !i.claimed);
+  const outstanding = invoices.filter(i =>
+    i.clientId === clientId && !i.claimed &&
+    getInvoiceDisplayStatus(i, payments) !== "paid"
+  );
   let current = 0, thirtyDays = 0, sixtyPlus = 0;
-  const items = unpaid.map(inv => {
+  const items = outstanding.map(inv => {
     const invDate = new Date(inv.date + "T00:00:00");
     const days = Math.floor((now - invDate) / 86400000);
-    const amount = inv.total != null ? inv.total : (inv.items||[]).reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+    const balance = getInvoiceBalance(inv, payments);
     let bucket = "current";
-    if (days > 60) { sixtyPlus += amount; bucket = "60+"; }
-    else if (days > 30) { thirtyDays += amount; bucket = "30"; }
-    else { current += amount; bucket = "current"; }
+    if (days > 60) { sixtyPlus += balance; bucket = "60+"; }
+    else if (days > 30) { thirtyDays += balance; bucket = "30"; }
+    else { current += balance; bucket = "current"; }
     const patientFull = [inv.patientSurname, inv.patientName].filter(Boolean).join(", ");
-    return { number: inv.number, date: inv.date, patient: patientFull, amount, days, bucket };
+    return { number: inv.number, date: inv.date, patient: patientFull, amount: balance, days, bucket };
   }).sort((a,b) => a.days - b.days);
   return { current, thirtyDays, sixtyPlus, total: current + thirtyDays + sixtyPlus, items };
 };
@@ -1616,7 +1647,7 @@ const buildStatementHTML = (clientId, data) => {
   if (!client) return "";
   const p = data.profile;
   const L = {...(INITIAL_DATA.profile.layout), ...(p.layout || {})};
-  const aging = getClientAging(clientId, data.invoices);
+  const aging = getClientAging(clientId, data.invoices, data.payments||[]);
   const logoHtml = p.logo ? `<img src="${p.logo}" style="max-height:${L.logoMaxHeight||60}px;max-width:200px;object-fit:contain"/>` : "";
   const headerAlign = L.logoPosition === "left" ? "flex-start" : L.logoPosition === "center" ? "center" : "flex-end";
 
@@ -1732,7 +1763,7 @@ const buildStatementPDFBlob = async (clientId, data) => {
   if (!client) throw new Error("Client not found");
   const p = data.profile;
   const L = {...(INITIAL_DATA.profile.layout), ...(p.layout || {})};
-  const aging = getClientAging(clientId, data.invoices);
+  const aging = getClientAging(clientId, data.invoices, data.payments||[]);
 
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({ unit: "mm", format: "a4" });
@@ -1874,6 +1905,143 @@ const whatsappStatement = async (client, data) => {
     alert("Could not generate statement PDF: " + e.message + "\nOpening for browser printing instead.");
     printStatement(client.id, data);
   }
+};
+
+// ── Receipt functions ─────────────────────────────────────────────────────────
+const buildReceiptHTML = (payment, client, data) => {
+  const p = data.profile;
+  const L = {...(INITIAL_DATA.profile.layout), ...(p.layout || {})};
+  const logoHtml = p.logo ? `<img src="${p.logo}" style="max-height:50px;max-width:150px;object-fit:contain"/>` : "";
+  const total = payment.amount || 0;
+  const unalloc = payment.unallocated || 0;
+  const applied = total - unalloc;
+  const methods = { eft:"EFT", cash:"Cash", cheque:"Cheque", other:"Other" };
+  const allocRows = (payment.allocations||[]).map(a => `
+    <tr>
+      <td style="padding:4px 8px;border:1px solid #ccc">Invoice #${escHtml(String(a.invoiceNumber))}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc">${fmtDate(a.invoiceDate)}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc">${escHtml(a.patient||"")}</td>
+      <td style="padding:4px 8px;border:1px solid #ccc;text-align:right;white-space:nowrap">R&nbsp;&nbsp;${(a.allocated||0).toFixed(2)}</td>
+    </tr>`).join("");
+  return `<!DOCTYPE html><html><head><title>Receipt</title>
+  <style>@page{margin:0}body{font-family:Arial,sans-serif;font-size:11pt;margin:0;padding:20mm 15mm}</style>
+  </head><body>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+    <div>
+      <div style="font-size:${L.businessFontSize||22}px;font-weight:bold">${escHtml(p.businessName||"")}</div>
+      ${p.address?`<div style="font-size:9pt;color:#444;margin-top:2px">${escHtml(p.address)}</div>`:""}
+      ${p.phone?`<div style="font-size:9pt;color:#444">Tel: ${escHtml(p.phone)}</div>`:""}
+      ${p.email?`<div style="font-size:9pt;color:#444">Email: ${escHtml(p.email)}</div>`:""}
+      ${p.vatNumber?`<div style="font-size:9pt;color:#444">VAT Reg: ${escHtml(p.vatNumber)}</div>`:""}
+    </div>
+    ${logoHtml?`<div style="text-align:right">${logoHtml}</div>`:""}
+  </div>
+  <div style="background:#1e3a5f;color:white;padding:8px 12px;font-size:14pt;font-weight:bold;margin-bottom:12px;letter-spacing:0.05em">PAYMENT RECEIPT</div>
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+    <tr><td style="padding:4px 8px;width:150px;font-weight:600">Received from:</td><td style="padding:4px 8px">${escHtml(client.name||"")}${client.practice?" — "+escHtml(client.practice):""}</td></tr>
+    <tr><td style="padding:4px 8px;font-weight:600">Date:</td><td style="padding:4px 8px">${fmtDate(payment.date)}</td></tr>
+    <tr><td style="padding:4px 8px;font-weight:600">Reference:</td><td style="padding:4px 8px">${escHtml(payment.reference||"—")}</td></tr>
+    <tr><td style="padding:4px 8px;font-weight:600">Payment method:</td><td style="padding:4px 8px">${methods[payment.method]||payment.method||"—"}</td></tr>
+  </table>
+  ${(payment.allocations||[]).length>0?`
+  <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:10pt">
+    <thead><tr style="background:#f3f4f6">
+      <th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Invoice</th>
+      <th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Date</th>
+      <th style="padding:5px 8px;border:1px solid #ccc;text-align:left">Patient</th>
+      <th style="padding:5px 8px;border:1px solid #ccc;text-align:right">Amount Applied</th>
+    </tr></thead>
+    <tbody>${allocRows}</tbody>
+  </table>`:""}
+  <table style="width:100%;border-collapse:collapse;margin-bottom:16px;font-size:10pt">
+    <tr><td style="padding:4px 8px;font-weight:600">Amount applied to invoices:</td><td style="padding:4px 8px;text-align:right;white-space:nowrap">R&nbsp;&nbsp;${applied.toFixed(2)}</td></tr>
+    ${unalloc>0?`<tr><td style="padding:4px 8px;font-weight:600;color:#059669">Credit carried forward:</td><td style="padding:4px 8px;text-align:right;white-space:nowrap;color:#059669">R&nbsp;&nbsp;${unalloc.toFixed(2)}</td></tr>`:""}
+    <tr style="border-top:2px solid #000"><td style="padding:5px 8px;font-weight:bold;font-size:12pt">Total received:</td><td style="padding:5px 8px;text-align:right;font-weight:bold;font-size:12pt;white-space:nowrap">R&nbsp;&nbsp;${total.toFixed(2)}</td></tr>
+  </table>
+  <div style="margin-top:16px;font-style:italic;color:#444;font-size:10pt">${escHtml(L.footerMsg1||"Thank you for your payment.")}</div>
+  </body></html>`;
+};
+
+const printReceipt = (payment, client, data) => {
+  const html = buildReceiptHTML(payment, client, data);
+  const w = window.open("", "_blank");
+  if (!w) { alert("Pop-up blocked. Allow pop-ups for this page."); return; }
+  w.document.write(html); w.document.close();
+  w.onload = () => { w.focus(); w.print(); };
+};
+
+const buildReceiptPDFBlob = async (payment, client, data) => {
+  const p = data.profile;
+  const L = {...(INITIAL_DATA.profile.layout), ...(p.layout || {})};
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ unit:"mm", format:"a4" });
+  const ml = 14, mr = 14, pw = 210, cw = pw - ml - mr;
+  let y = 12;
+  if (p.logo) {
+    try {
+      const lh = Math.min((L.logoMaxHeight||60)*0.265, 16);
+      const lw = 50;
+      const lpos = L.logoPosition || "right";
+      const lx = lpos==="left" ? ml : lpos==="center" ? (pw-lw)/2 : pw-mr-lw;
+      pdf.addImage(p.logo, lx, y, lw, lh, "", "FAST");
+    } catch(e) {}
+  }
+  pdf.setFontSize(14); pdf.setFont("helvetica","bold");
+  pdf.text(p.businessName||"", ml, y+4);
+  pdf.setFontSize(8); pdf.setFont("helvetica","normal");
+  let iy = y+9;
+  [p.address, p.phone?"Tel: "+p.phone:"", p.email?"Email: "+p.email:"", p.vatNumber?"VAT: "+p.vatNumber:""].filter(Boolean).forEach(line => { pdf.text(line, ml, iy); iy += 4; });
+  y = Math.max(iy, y+22) + 2;
+  pdf.setFillColor(30,58,95); pdf.rect(ml, y, cw, 8, "F");
+  pdf.setFontSize(11); pdf.setFont("helvetica","bold"); pdf.setTextColor(255,255,255);
+  pdf.text("PAYMENT RECEIPT", ml+3, y+5.5);
+  pdf.setTextColor(0,0,0); y += 12;
+  const methods = { eft:"EFT", cash:"Cash", cheque:"Cheque", other:"Other" };
+  const details = [
+    ["Received from:", (client.name||"")+(client.practice?" — "+client.practice:"")],
+    ["Date:", fmtDate(payment.date)],
+    ["Reference:", payment.reference||"—"],
+    ["Method:", methods[payment.method]||payment.method||"—"],
+  ];
+  pdf.setFontSize(9);
+  details.forEach(([label,value]) => {
+    pdf.setFont("helvetica","bold"); pdf.text(label, ml, y);
+    pdf.setFont("helvetica","normal"); pdf.text(value, ml+40, y); y += 5;
+  });
+  y += 3;
+  if ((payment.allocations||[]).length > 0) {
+    pdf.autoTable({ startY:y, head:[["Invoice","Date","Patient","Amount Applied"]],
+      body:(payment.allocations||[]).map(a=>["#"+a.invoiceNumber, fmtDate(a.invoiceDate), a.patient||"", "R  "+((a.allocated||0).toFixed(2))]),
+      margin:{left:ml,right:mr}, styles:{fontSize:8,cellPadding:2},
+      headStyles:{fillColor:[243,244,246],textColor:[0,0,0],fontStyle:"bold"},
+      columnStyles:{3:{halign:"right"}}, theme:"grid" });
+    y = pdf.lastAutoTable.finalY + 4;
+  }
+  const total = payment.amount||0, unalloc = payment.unallocated||0, applied = total-unalloc;
+  const totals = [["Amount applied:", "R  "+applied.toFixed(2)], ...(unalloc>0?[["Credit carried forward:","R  "+unalloc.toFixed(2)]]:[] ), ["Total received:", "R  "+total.toFixed(2)]];
+  pdf.autoTable({ startY:y, body:totals, margin:{left:ml,right:mr}, styles:{fontSize:9},
+    columnStyles:{0:{fontStyle:"bold",cellWidth:130},1:{halign:"right"}},
+    didParseCell:(d)=>{ if(d.row.index===totals.length-1) d.cell.styles.fontStyle="bold"; },
+    theme:"plain" });
+  y = pdf.lastAutoTable.finalY + 6;
+  pdf.setFontSize(8); pdf.setFont("helvetica","italic"); pdf.setTextColor(100,100,100);
+  pdf.text(L.footerMsg1||"Thank you for your payment.", ml, y);
+  return pdf.output("blob");
+};
+
+const whatsappReceipt = async (payment, client, data) => {
+  const p = data.profile;
+  const fname = "Receipt_"+(client.name||"").replace(/[^a-zA-Z0-9]/g,"_")+"_"+(payment.date||"").replace(/-/g,"")+".pdf";
+  try {
+    const blob = await buildReceiptPDFBlob(payment, client, data);
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fname; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    let phone = (client.whatsapp||client.phone||"").replace(/[^0-9+]/g,"");
+    if (phone.startsWith("0") && !phone.startsWith("00")) phone = "27"+phone.slice(1);
+    else if (phone.startsWith("+")) phone = phone.slice(1);
+    const msg = (p.businessName||"EasyDentalLab")+" — Payment Receipt\n\nPlease see the attached receipt.";
+    setTimeout(() => window.open(phone?"https://wa.me/"+phone+"?text="+encodeURIComponent(msg):"https://wa.me/?text="+encodeURIComponent(msg),"_blank"), 500);
+  } catch(e) { alert("Could not generate receipt PDF: "+e.message); printReceipt(payment, client, data); }
 };
 
 // Build a jsPDF blob for an invoice or estimate — shared by WhatsApp and Claim PDF save
@@ -2190,12 +2358,11 @@ const Dashboard = ({ data }) => {
   const t = useT();
   const stats = useMemo(() => {
     const month = new Date().toISOString().slice(0,7);
-    const unpaid = data.invoices.filter(i => i.status === "unpaid" && !i.claimed);
     return {
       clients: data.clients.filter(c => !c.archived).length,
       estMonth: data.estimates.filter(e => (e.date||"").startsWith(month)).length,
       invMonth: data.invoices.filter(i => (i.date||"").startsWith(month)).length,
-      outstanding: unpaid.reduce((s,i) => s + (i.total != null ? i.total : (i.items||[]).reduce((a,x) => a + (parseFloat(x.qty)||0)*(parseFloat(x.price)||0), 0)), 0),
+      outstanding: data.invoices.filter(i => !i.claimed && getInvoiceDisplayStatus(i, data.payments||[]) !== "paid").reduce((s,i) => s + getInvoiceBalance(i, data.payments||[]), 0),
     };
   }, [data]);
 
@@ -2253,6 +2420,161 @@ const Dashboard = ({ data }) => {
 };
 
 // ============================================================
+// PAYMENT MODAL
+// ============================================================
+
+const PaymentModal = ({ client, data, payment, onSave, onCancel }) => {
+  const isEdit = !!payment;
+  const otherPayments = isEdit ? (data.payments||[]).filter(p => p.id !== payment.id) : (data.payments||[]);
+
+  const outstandingInvoices = useMemo(() => {
+    return [...(data.invoices||[])].filter(inv => inv.clientId === client.id && !inv.claimed)
+      .map(inv => {
+        const paidElsewhere = otherPayments.reduce((s,p) => s + ((p.allocations||[]).find(a=>a.invoiceId===inv.id)?.allocated||0), 0);
+        const legacyPaid = paidElsewhere===0 && inv.status==="paid";
+        const bal = legacyPaid ? 0 : Math.max(0, (inv.total||0) - paidElsewhere);
+        return { ...inv, balance: bal };
+      }).filter(inv => inv.balance > 0)
+      .sort((a,b) => (a.date||"").localeCompare(b.date||""));
+  }, [data.invoices, data.payments, client.id]);
+
+  const credit = getClientCredit(client.id, otherPayments);
+
+  const [form, setForm] = useState({
+    date: payment?.date || today(),
+    amount: payment?.amount ? String(payment.amount) : "",
+    reference: payment?.reference || "",
+    method: payment?.method || "eft",
+    receiptMethod: "print",
+  });
+
+  const [allocations, setAllocations] = useState(() => {
+    return outstandingInvoices.map(inv => {
+      const prevAllocated = isEdit ? ((payment.allocations||[]).find(a=>a.invoiceId===inv.id)?.allocated||0) : 0;
+      return {
+        invoiceId: inv.id, invoiceNumber: inv.number, invoiceDate: inv.date,
+        patient: [inv.patientSurname, inv.patientName].filter(Boolean).join(", "),
+        balance: isEdit ? inv.balance + prevAllocated : inv.balance,
+        allocated: prevAllocated,
+      };
+    });
+  });
+
+  const sf = (k,v) => setForm(p => ({...p,[k]:v}));
+  const totalAmount = parseFloat(form.amount)||0;
+  const totalAllocated = allocations.reduce((s,a) => s+(parseFloat(a.allocated)||0), 0);
+  const unallocated = Math.max(0, Math.round((totalAmount - totalAllocated)*100)/100);
+  const overAllocated = totalAllocated > totalAmount + 0.005;
+
+  const autoAllocate = (amount) => {
+    let rem = parseFloat(amount)||0;
+    setAllocations(prev => prev.map(a => {
+      const apply = Math.min(rem, a.balance);
+      rem = Math.max(0, rem - apply);
+      return { ...a, allocated: apply > 0 ? Math.round(apply*100)/100 : 0 };
+    }));
+  };
+
+  const handleSave = () => {
+    if (!totalAmount || totalAmount <= 0) { alert("Please enter a payment amount."); return; }
+    if (overAllocated) { alert("Total allocated exceeds payment amount."); return; }
+    const activeAllocs = allocations.filter(a => (a.allocated||0) > 0)
+      .map(a => ({ invoiceId:a.invoiceId, invoiceNumber:a.invoiceNumber, invoiceDate:a.invoiceDate, patient:a.patient, allocated:Math.round((a.allocated||0)*100)/100 }));
+    onSave({
+      id: payment?.id || genId(),
+      date: form.date, clientId: client.id,
+      clientName: client.name+(client.practice?" — "+client.practice:""),
+      amount: Math.round(totalAmount*100)/100,
+      reference: form.reference, method: form.method,
+      allocations: activeAllocs,
+      unallocated: Math.round(unallocated*100)/100,
+    }, form.receiptMethod);
+  };
+
+  return (
+    <div>
+      {credit > 0 && (
+        <div style={{background:"#dcfce7",border:"1px solid #86efac",borderRadius:6,padding:"8px 12px",marginBottom:12,fontSize:12,color:"#166534"}}>
+          <strong>Credit available: {fmt(credit)}</strong> — unallocated balance from a previous payment.
+        </div>
+      )}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:10,marginBottom:14}}>
+        <Input label="Date" type="date" value={form.date} onChange={v=>sf("date",v)}/>
+        <Input label="Amount Received (R)" value={form.amount} onChange={v=>{sf("amount",v);autoAllocate(v);}} placeholder="0.00" type="number"/>
+        <Input label="Reference / Note" value={form.reference} onChange={v=>sf("reference",v)} placeholder="e.g. EFT ref 12345"/>
+        <div>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--c-text2)",display:"block",marginBottom:4}}>Method</label>
+          <select className="input-field" value={form.method} onChange={e=>sf("method",e.target.value)} style={{background:"var(--c-surface)"}}>
+            <option value="eft">EFT</option><option value="cash">Cash</option>
+            <option value="cheque">Cheque</option><option value="other">Other</option>
+          </select>
+        </div>
+      </div>
+
+      <div style={{marginBottom:14}}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+          <label style={{fontSize:12,fontWeight:600,color:"var(--c-text2)"}}>Allocate to Invoices (oldest first)</label>
+          <button className="btn btn-secondary btn-sm" onClick={()=>autoAllocate(form.amount)}>Auto-fill</button>
+        </div>
+        {outstandingInvoices.length === 0 ? (
+          <div style={{padding:"12px",textAlign:"center",color:"var(--c-text4)",fontSize:12,border:"1px solid var(--c-border)",borderRadius:6}}>No outstanding invoices — full amount will be saved as credit.</div>
+        ) : (
+          <div style={{border:"1px solid var(--c-border)",borderRadius:6,overflow:"hidden"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead><tr style={{background:"var(--c-surface2)",borderBottom:"1px solid var(--c-border)"}}>
+                <th style={{padding:"6px 10px",textAlign:"left",fontWeight:600}}>Invoice</th>
+                <th style={{padding:"6px 10px",textAlign:"left",fontWeight:600}}>Date</th>
+                <th style={{padding:"6px 10px",textAlign:"left",fontWeight:600}}>Patient</th>
+                <th style={{padding:"6px 10px",textAlign:"right",fontWeight:600}}>Balance Due</th>
+                <th style={{padding:"6px 10px",textAlign:"right",fontWeight:600}}>Allocate (R)</th>
+              </tr></thead>
+              <tbody>
+                {allocations.map((a,i) => (
+                  <tr key={a.invoiceId} style={{borderBottom:i<allocations.length-1?"1px solid var(--c-border2)":"none"}}>
+                    <td style={{padding:"5px 10px",fontWeight:600,color:"#2563eb"}}>#{a.invoiceNumber}</td>
+                    <td style={{padding:"5px 10px",color:"var(--c-text3)"}}>{fmtDate(a.invoiceDate)}</td>
+                    <td style={{padding:"5px 10px"}}>{a.patient||"—"}</td>
+                    <td style={{padding:"5px 10px",textAlign:"right",fontFamily:"monospace"}}>{fmt(a.balance)}</td>
+                    <td style={{padding:"4px 8px",textAlign:"right"}}>
+                      <input type="number" min="0" max={a.balance} step="0.01" value={a.allocated||""}
+                        onChange={e=>setAllocations(prev=>prev.map(x=>x.invoiceId===a.invoiceId?{...x,allocated:parseFloat(e.target.value)||0}:x))}
+                        className="input-field" style={{width:90,textAlign:"right",padding:"3px 6px",fontSize:12}}/>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div style={{display:"flex",gap:16,padding:"8px 12px",background:"var(--c-surface2)",borderRadius:6,marginBottom:14,fontSize:12,alignItems:"center",flexWrap:"wrap"}}>
+        <span>Total received: <strong>{fmt(totalAmount)}</strong></span>
+        <span>Allocated: <strong>{fmt(totalAllocated)}</strong></span>
+        <span style={{color:unallocated>0?"#059669":"var(--c-text2)"}}>Credit: <strong>{fmt(unallocated)}</strong></span>
+        {overAllocated && <span style={{color:"#dc2626",fontWeight:600}}>⚠ Over-allocated by {fmt(totalAllocated-totalAmount)}</span>}
+      </div>
+
+      <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:14,padding:"8px 12px",border:"1px solid var(--c-border)",borderRadius:6}}>
+        <label style={{fontSize:12,fontWeight:600,color:"var(--c-text2)"}}>Issue Receipt:</label>
+        {[["print","Print"],["whatsapp","WhatsApp"],["both","Both"]].map(([v,label]) => (
+          <label key={v} style={{fontSize:12,cursor:"pointer",display:"flex",alignItems:"center",gap:4}}>
+            <input type="radio" name="rcptMethod" value={v} checked={form.receiptMethod===v} onChange={()=>sf("receiptMethod",v)}/> {label}
+          </label>
+        ))}
+      </div>
+
+      <div style={{display:"flex",justifyContent:"flex-end",gap:8,borderTop:"1px solid var(--c-border)",paddingTop:12}}>
+        <button className="btn btn-secondary" onClick={onCancel}>Cancel</button>
+        <button className="btn btn-primary" onClick={handleSave} disabled={!totalAmount||totalAmount<=0||overAllocated}>
+          {isEdit ? "Update Payment" : "Save & Issue Receipt"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
 // CLIENTS
 // ============================================================
 
@@ -2292,6 +2614,9 @@ const Clients = ({ data, setData }) => {
   const [showForm, setShowForm] = useState(false);
   const [showMonthEnd, setShowMonthEnd] = useState(false);
   const [meSelected, setMeSelected] = useState(new Set());
+  const [paymentClient, setPaymentClient] = useState(null);
+  const [editingPayment, setEditingPayment] = useState(null);
+  const [expandedPayments, setExpandedPayments] = useState(new Set());
   const csvRef = useRef(null);
 
   const layout = {...(INITIAL_DATA.profile.layout), ...(data.profile.layout || {})};
@@ -2315,8 +2640,31 @@ const Clients = ({ data, setData }) => {
     }
   };
 
+  const savePayment = (payment, receiptMethod) => {
+    setData(prev => {
+      const payments = prev.payments||[];
+      const isEdit = payments.some(p => p.id === payment.id);
+      const newPayments = isEdit ? payments.map(p => p.id===payment.id ? payment : p) : [...payments, payment];
+      // Update invoice status fields based on new payment state
+      const newInvoices = prev.invoices.map(inv => {
+        const paid = newPayments.reduce((s,p) => s+((p.allocations||[]).find(a=>a.invoiceId===inv.id)?.allocated||0), 0);
+        const total = inv.total||0;
+        if (paid >= total && total > 0) return {...inv, status:"paid", paidDate:inv.paidDate||payment.date};
+        if (paid > 0) return {...inv, status:"unpaid"}; // partial — keep as unpaid, display derived
+        return inv;
+      });
+      return {...prev, payments:newPayments, invoices:newInvoices};
+    });
+    const client = data.clients.find(c => c.id === payment.clientId);
+    if (client) {
+      if (receiptMethod==="print"||receiptMethod==="both") printReceipt(payment, client, data);
+      if (receiptMethod==="whatsapp"||receiptMethod==="both") whatsappReceipt(payment, client, data);
+    }
+    setPaymentClient(null); setEditingPayment(null);
+  };
+
   const openMonthEnd = () => {
-    const withBalance = new Set(data.clients.filter(c => !c.archived && getClientAging(c.id, data.invoices).total > 0).map(c => c.id));
+    const withBalance = new Set(data.clients.filter(c => !c.archived && getClientAging(c.id, data.invoices, data.payments||[]).total > 0).map(c => c.id));
     setMeSelected(withBalance);
     setShowMonthEnd(true);
   };
@@ -2444,7 +2792,10 @@ const Clients = ({ data, setData }) => {
       ) : (
         <div className="card">
           {filtered.map((c,i) => {
-            const aging = getClientAging(c.id, data.invoices);
+            const aging = getClientAging(c.id, data.invoices, data.payments||[]);
+            const credit = getClientCredit(c.id, data.payments||[]);
+            const clientPayments = [...(data.payments||[])].filter(p=>p.clientId===c.id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+            const isExpanded = expandedPayments.has(c.id);
             return (
               <div key={c.id} style={{padding:"10px 20px",borderBottom:i<filtered.length-1?"1px solid #f3f4f6":"none"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
@@ -2453,18 +2804,51 @@ const Clients = ({ data, setData }) => {
                     <p style={{margin:"2px 0 0",fontSize:11,color:"#9ca3af"}}>{[c.email,c.phone].filter(Boolean).join(" | ")}</p>
                   </div>
                   <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                    <button className="btn btn-secondary btn-sm" title="Record a payment received from this dentist" onClick={()=>{setPaymentClient(c);setEditingPayment(null);}} style={{fontSize:11,padding:"3px 8px",background:"#eff6ff",borderColor:"#93c5fd",color:"#1e40af",fontWeight:600}}>+ Payment</button>
                     {aging.total > 0 && showPrint && <button className="btn btn-secondary btn-sm" title={stmtFormat==="pdf"?"Download statement as PDF":"Open statement for browser printing"} onClick={()=>handlePrintStatement(c.id)} style={{fontSize:11,padding:"3px 8px"}}><SvgIcon path={ICO.printer} size={13}/> {t("printStatement")}</button>}
                     {aging.total > 0 && showWA && <button className="btn btn-secondary btn-sm" title="Send statement via WhatsApp — downloads PDF and opens WhatsApp" onClick={()=>whatsappStatement(c, data)} style={{fontSize:11,padding:"3px 8px",background:"#dcfce7",borderColor:"#86efac",color:"#166534"}}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/> Statement</button>}
                     <button className="icon-btn" onClick={()=>{setEditing(c);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
                     <button className="icon-btn" onClick={()=>archive(c.id)}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                   </div>
                 </div>
+                {credit > 0 && (
+                  <div style={{marginTop:4,padding:"3px 10px",background:"#dcfce7",borderRadius:4,border:"1px solid #86efac",fontSize:11,color:"#166534",display:"inline-block"}}>
+                    Credit: <strong>{fmt(credit)}</strong>
+                  </div>
+                )}
                 {aging.total > 0 && (
                   <div style={{marginTop:6,padding:"5px 10px",background:"#fffbeb",borderRadius:6,border:"1px solid #fde68a",display:"flex",gap:16,alignItems:"center",flexWrap:"wrap",fontSize:11}}>
                     <span style={{color:"#065f46"}}>{t("current")}: <strong>{fmt(aging.current)}</strong></span>
                     <span style={{color:aging.thirtyDays>0?"#92400e":"#6b7280"}}>{t("days30")}: <strong>{fmt(aging.thirtyDays)}</strong></span>
                     <span style={{color:aging.sixtyPlus>0?"#dc2626":"#6b7280"}}>{t("days60")}: <strong style={{color:aging.sixtyPlus>0?"#dc2626":"inherit"}}>{fmt(aging.sixtyPlus)}</strong></span>
                     <span style={{marginLeft:"auto",fontWeight:700,color:"#1a5276"}}>{t("total")}: {fmt(aging.total)}</span>
+                  </div>
+                )}
+                {clientPayments.length > 0 && (
+                  <div style={{marginTop:6}}>
+                    <button style={{fontSize:11,color:"#6b7280",background:"none",border:"none",cursor:"pointer",padding:0}} onClick={()=>{const s=new Set(expandedPayments); isExpanded?s.delete(c.id):s.add(c.id); setExpandedPayments(s);}}>
+                      {isExpanded?"▲":"▼"} Payment history ({clientPayments.length})
+                    </button>
+                    {isExpanded && (
+                      <div style={{marginTop:4,border:"1px solid var(--c-border)",borderRadius:6,overflow:"hidden",fontSize:12}}>
+                        {clientPayments.map((pmt,pi) => (
+                          <div key={pmt.id} style={{padding:"6px 12px",borderBottom:pi<clientPayments.length-1?"1px solid var(--c-border2)":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                            <div>
+                              <span style={{fontWeight:600,color:"#059669"}}>{fmt(pmt.amount)}</span>
+                              <span style={{color:"var(--c-text3)",marginLeft:8}}>{fmtDate(pmt.date)}</span>
+                              {pmt.reference && <span style={{color:"var(--c-text4)",marginLeft:8}}>{pmt.reference}</span>}
+                              <span style={{color:"var(--c-text4)",marginLeft:8,textTransform:"uppercase",fontSize:10}}>{pmt.method}</span>
+                              {pmt.unallocated > 0 && <span style={{color:"#059669",marginLeft:8,fontStyle:"italic"}}>Credit: {fmt(pmt.unallocated)}</span>}
+                            </div>
+                            <div style={{display:"flex",gap:4}}>
+                              <button className="icon-btn" title="Edit this payment" onClick={()=>{setPaymentClient(c);setEditingPayment(pmt);}}><SvgIcon path={ICO.edit} size={13} color="#6b7280"/></button>
+                              <button className="icon-btn" title="Re-print receipt" onClick={()=>printReceipt(pmt, c, data)}><SvgIcon path={ICO.printer} size={13} color="#6b7280"/></button>
+                              <button className="icon-btn" title="Send receipt via WhatsApp" onClick={()=>whatsappReceipt(pmt, c, data)}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -2477,17 +2861,21 @@ const Clients = ({ data, setData }) => {
         <ClientForm client={editing} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
       </Modal>
 
+      <Modal open={!!paymentClient} onClose={()=>{setPaymentClient(null);setEditingPayment(null);}} title={(editingPayment?"Edit Payment — ":"Receive Payment — ")+(paymentClient?.name||"")} wide>
+        {paymentClient && <PaymentModal client={paymentClient} data={data} payment={editingPayment} onSave={savePayment} onCancel={()=>{setPaymentClient(null);setEditingPayment(null);}}/>}
+      </Modal>
+
       {/* Month-End batch modal */}
       <Modal open={showMonthEnd} onClose={()=>setShowMonthEnd(false)} title="Month-End — Send Statements" wide>
         <div>
           <p style={{fontSize:13,color:"var(--c-text2)",margin:"0 0 12px"}}>Dentists with outstanding balances. Select which to include, then print or send via WhatsApp.</p>
           <div style={{display:"flex",gap:8,marginBottom:10}}>
-            <button className="btn btn-secondary btn-sm" onClick={()=>setMeSelected(new Set(data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices).total>0).map(c=>c.id)))}>Select All</button>
+            <button className="btn btn-secondary btn-sm" onClick={()=>setMeSelected(new Set(data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices,data.payments||[]).total>0).map(c=>c.id)))}>Select All</button>
             <button className="btn btn-secondary btn-sm" onClick={()=>setMeSelected(new Set())}>Deselect All</button>
           </div>
           <div style={{maxHeight:300,overflowY:"auto",border:"1px solid var(--c-border)",borderRadius:8,marginBottom:16}}>
-            {data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices).total>0).map((c,i,arr)=>{
-              const aging = getClientAging(c.id, data.invoices);
+            {data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices,data.payments||[]).total>0).map((c,i,arr)=>{
+              const aging = getClientAging(c.id, data.invoices, data.payments||[]);
               return (
                 <label key={c.id} style={{display:"flex",alignItems:"center",gap:12,padding:"9px 14px",borderBottom:i<arr.length-1?"1px solid var(--c-border2)":"none",cursor:"pointer",background:"var(--c-surface)"}}>
                   <input type="checkbox" checked={meSelected.has(c.id)} onChange={e=>{const s=new Set(meSelected); e.target.checked?s.add(c.id):s.delete(c.id); setMeSelected(s);}} style={{width:15,height:15}}/>
@@ -2502,7 +2890,7 @@ const Clients = ({ data, setData }) => {
                 </label>
               );
             })}
-            {data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices).total>0).length === 0 && (
+            {data.clients.filter(c=>!c.archived&&getClientAging(c.id,data.invoices,data.payments||[]).total>0).length === 0 && (
               <div style={{padding:"24px",textAlign:"center",color:"var(--c-text4)",fontSize:13}}>No outstanding balances.</div>
             )}
           </div>
@@ -3384,7 +3772,7 @@ const Invoices = ({ data, setData }) => {
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                   <span style={{fontSize:13,fontWeight:700}}>#{inv.number}</span>
-                  <span className={"badge badge-"+(inv.status==="paid"?"green":"yellow")}>{inv.status||"unpaid"}</span>
+                  {(()=>{const ds=getInvoiceDisplayStatus(inv,data.payments||[]);return <span className={"badge badge-"+(ds==="paid"?"green":ds==="partial"?"orange":"yellow")}>{ds}</span>;})()}
                   {inv.claimed && <span className="badge" style={{background:"#bfdbfe",color:"#1e40af",fontWeight:700}}>CLAIMED</span>}
                   {inv.estimateRef && <span className="badge badge-purple">Est #{inv.estimateRef}</span>}
                 </div>
@@ -3613,6 +4001,12 @@ const HelpSection = () => {
         <li><strong>🗑 Delete</strong> — permanently removes the invoice.</li>
         <li><strong style={{color:"#2563eb"}}>CLAIM</strong> — marks the invoice as a Direct Claim to medical aid. See the Direct Claiming section below.</li>
       </UL>
+      <H>Invoice Status Badges</H>
+      <UL>
+        <li><strong style={{background:"#d1fae5",color:"#065f46",padding:"1px 6px",borderRadius:9999}}>paid</strong> — fully settled.</li>
+        <li><strong style={{background:"#ffedd5",color:"#9a3412",padding:"1px 6px",borderRadius:9999}}>partial</strong> — a payment has been received but does not cover the full invoice. The remaining balance still appears in the dentist's age analysis.</li>
+        <li><strong style={{background:"#fef3c7",color:"#92400e",padding:"1px 6px",borderRadius:9999}}>unpaid</strong> — no payment received yet.</li>
+      </UL>
       <H>Searching &amp; Filtering</H>
       <P>Type in the search box to filter by client name or invoice number. Use the status dropdown to show only Unpaid or Paid invoices.</P>
     </div>) },
@@ -3657,10 +4051,25 @@ const HelpSection = () => {
         <li><strong>Referring PCNS</strong> — the dentist's practice number. Printed on invoices — required for medical aid claims.</li>
         <li><strong>WhatsApp</strong> — if filled in, this number is used for WhatsApp invoice sending (instead of Phone).</li>
       </UL>
+      <H>Receiving a Payment</H>
+      <P>Click the <strong>+ Payment</strong> button on any dentist row to record a payment received.</P>
+      <OL>
+        <li>Enter the <strong>date</strong>, <strong>amount received</strong>, <strong>reference</strong> (e.g. EFT ref), and <strong>method</strong>.</li>
+        <li>Outstanding invoices are listed oldest-first. The amount is <strong>auto-allocated</strong> to the oldest invoices first — you can adjust any allocation manually.</li>
+        <li>Any amount not allocated to an invoice is saved as <strong>credit</strong> on the dentist's account and applied automatically next time.</li>
+        <li>Choose the receipt method: <strong>Print</strong>, <strong>WhatsApp</strong>, or <strong>Both</strong> — a payment receipt is issued immediately.</li>
+        <li>Click <em>Save &amp; Issue Receipt</em>.</li>
+      </OL>
+      <H>Editing a Payment</H>
+      <P>Click the <strong>✏</strong> icon in the payment history panel to edit an existing payment. All invoice balances update automatically when you save.</P>
+      <H>Payment History</H>
+      <P>Click <strong>▼ Payment history</strong> under a dentist row to see all payments received. From there you can re-print or re-send any receipt via WhatsApp.</P>
+      <H>Credit Balance</H>
+      <P>If a dentist has paid more than their outstanding invoices, the excess is shown as a <strong style={{color:"#059669"}}>Credit</strong> badge in green. It is applied automatically in the next payment modal.</P>
       <H>Age Analysis (per dentist)</H>
-      <P>Below each dentist you see their outstanding balance split into: <strong>Current</strong> (0–30 days), <strong>30 Days</strong> (31–60 days), and <strong>60+ Days</strong>. Direct Claimed invoices are excluded from these totals.</P>
+      <P>Below each dentist you see their outstanding balance split into: <strong>Current</strong> (0–30 days), <strong>30 Days</strong> (31–60 days), and <strong>60+ Days</strong>. Amounts reflect the <em>remaining balance</em> after any payments — partial payments reduce the outstanding amount. Direct Claimed invoices are excluded.</P>
       <H>Printing a Statement</H>
-      <P>If a dentist has an outstanding balance a <em>Statement</em> button appears. Click it to open a print-ready A4 account statement with all unpaid invoices and an age analysis summary. Print with Ctrl+P / Cmd+P.</P>
+      <P>If a dentist has an outstanding balance a <em>Statement</em> button appears. Click it to open a print-ready A4 account statement with all unpaid/partial invoices and an age analysis summary. Print with Ctrl+P / Cmd+P.</P>
       <H>CSV Import/Export</H>
       <P>Export all dentists to CSV, edit in Excel, and re-import to update the list. Columns: Name, Practice, Email, Phone, WhatsApp, Address, Webpage, Notes, ReferringPCNS.</P>
     </div>) },
@@ -4242,7 +4651,7 @@ const DirectClaimed = ({ data, setData }) => {
                   <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                     <span style={{fontSize:13,fontWeight:700}}>#{inv.number}</span>
                     <span className="badge" style={{background:"#bfdbfe",color:"#1e40af",fontWeight:700}}>CLAIMED</span>
-                    <span className={"badge badge-"+(inv.status==="paid"?"green":"yellow")}>{inv.status||"unpaid"}</span>
+                    {(()=>{const ds=getInvoiceDisplayStatus(inv,data.payments||[]);return <span className={"badge badge-"+(ds==="paid"?"green":ds==="partial"?"orange":"yellow")}>{ds}</span>;})()}
                   </div>
                   <p style={{margin:"3px 0 0",fontSize:13,color:"#4b5563",fontWeight:600}}>{inv.clientName}</p>
                   {(inv.patientName||inv.patientSurname) && <p style={{margin:"1px 0 0",fontSize:12,color:"#6b7280"}}>Patient: {inv.patientName} {inv.patientSurname}</p>}

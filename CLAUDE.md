@@ -19,6 +19,16 @@ Portable single-file dental laboratory invoicing application for South African d
 - **File System Access API** for auto-backup of CSV/JSON files and Direct Claiming PDFs to a user-selected folder
 - **Ed25519 license system** (lines 13–75) — cryptographic key validation via WebCrypto API; currently bypassed (placeholder public key); arms when real key pair is generated
 
+## Version Control
+
+- **Git**: v2.50.1, global config: Sarel Roeloffze / sarel@roeloffze.com, default branch `main`
+- **GitHub repo**: https://github.com/sarelroeloffze/EasyDentalLab (private)
+- **GitHub CLI**: `gh` v2.90.0 installed via Homebrew (`/opt/homebrew`), authenticated as `sarelroeloffze`
+- **First commit**: `3cbb0d4` — "Initial commit — EasyDentalLab v1.0"
+- **Tracked files**: `EasyDentalLab.html`, `CLAUDE.md`, `Tariffs.csv`, `claude_server.py`, `license/`
+- **Excluded** (`.gitignore`): `Clients.csv`, `Macros.csv`, `EasyDentalLab-backup.json`, `Send to Direct Claiming/`, `.claude/`, `Team/`, `Team Inbox/`, `Owner's Inbox/`
+- **Purpose**: Track every app change; foundation for future desktop compilation (Electron/Tauri) and versioned releases
+
 ## File Structure
 
 ```
@@ -252,6 +262,7 @@ Both the Macros page list and the LineItemEditor macro picker sort alphabeticall
 | Tariff Code on printed output | `buildDocumentHTML` and `buildPDFBlob` now print `item.tariffCode \|\| item.code` — the Tariff Code always appears on invoices/estimates/PDFs. User Code stays internal. Line items store `tariffCode` when a tariff is selected (via CodeInput, From Tariff, or From Macro). |
 | Month-End Statements | `buildStatementPDFBlob(clientId, data)` generates jsPDF statement blobs. `whatsappStatement(client, data)` downloads PDF + opens WhatsApp. Per-dentist buttons (Print Statement / WhatsApp Statement) controlled by `layout.statementSendMethod`. Month-End batch modal on Clients page. 3 new Settings: `statementSendMethod` ("print"/"whatsapp"/"both"), `statementFormat` ("pdf"/"browser"), `monthEndMode` ("individual"/"batch"/"both"). Defaults in `INITIAL_DATA.profile.layout`. |
 | Current prices on convert/copy | `toInvoice()` now refreshes item prices from `prev.tariffs` (current rates) instead of copying stored prices. New `copyInvoice()` function on Invoices page does the same — duplicates all patient/item/medical-aid fields as a new unpaid invoice but with today's tariff prices. Copy icon button (⧉) added to each invoice row. |
+| Payment allocation system | New `payments[]` array in data. Helpers: `getInvoiceAmountPaid`, `getInvoiceBalance`, `getInvoiceDisplayStatus`, `getClientCredit`. `getClientAging` now takes `payments` param and uses balance not full total. Invoice status derived: paid/partial/unpaid. `partial` badge (orange) added. `PaymentModal` component: per-payment receipt (print/WhatsApp/both), auto-allocate oldest-first, partial support, credit carry-forward, edit mode. Receipt functions: `buildReceiptHTML`, `printReceipt`, `buildReceiptPDFBlob`, `whatsappReceipt`. Clients page: `+ Payment` button, credit badge, payment history panel with re-print/re-WhatsApp. |
 
 ## License System
 
