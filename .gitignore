@@ -1,17 +1,18 @@
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
+# -------------------------------------------------------
+# EasyDentalLab — repo .gitignore
+# OS/editor junk is handled by ~/.gitignore_global
+# -------------------------------------------------------
 
-# User data files (contain live client/invoice data — not versioned)
+# User data files (contain live client/invoice data — never version these)
 Clients.csv
 Macros.csv
+MedicalAids.csv
 EasyDentalLab-backup.json
 
-# Direct Claiming output folder
+# Direct Claiming PDF output
 Send to Direct Claiming/
 
-# Claude Code internal files
+# Claude Code internals
 .claude/
 
 # AI team operational files
@@ -20,5 +21,47 @@ Team Inbox/
 Owner's Inbox/
 larry_watch.sh
 
-# Logs
-*.log
+# -------------------------------------------------------
+# Python (claude_server.py and future scripts)
+# -------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.env
+.venv
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# -------------------------------------------------------
+# Node / Electron / Tauri (future desktop compilation)
+# -------------------------------------------------------
+node_modules/
+
+# Electron build output
+out/
+dist/
+release/
+app/dist/
+
+# Tauri build output
+src-tauri/target/
+
+# Package lock files (optional — remove these lines to track them)
+# package-lock.json
+# yarn.lock
+
+# -------------------------------------------------------
+# Certificates & secrets (never commit these)
+# -------------------------------------------------------
+*.pem
+*.p12
+*.key
+*.crt
+.env
+.env.*
+!.env.example
