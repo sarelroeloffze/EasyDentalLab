@@ -241,6 +241,7 @@ window.UI_T = {
   .card { background: white; border-radius: 12px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
   .icon-btn { padding: 6px; border-radius: 6px; cursor: pointer; border: none; background: none; display: inline-flex; align-items: center; }
   .icon-btn:hover { background: #f3f4f6; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   @media print { .no-print { display: none !important; } }
 
   /* ── COLOUR TOKENS (light / dark) ── */
@@ -295,6 +296,7 @@ const INITIAL_DATA = {
     logo: "",
     claudeApiKey: "",
     claudeServerUrl: "http://localhost:5765",
+    backupPassword: "", // Optional: encrypts JSON backup with AES-256
     layout: {
       logoPosition: "right",
       logoMaxHeight: 60,
@@ -937,6 +939,8 @@ const saveData = (data) => {
 
 let _backupDirHandle = null;
 let _backupDebounce = null;
+let _showBackupToast = null; // Set by App component
+let _backupPending = false; // Tracks if backup is scheduled but not yet completed
 
 // Try to restore the saved directory handle from IndexedDB on load
 const initAutoBackup = async () => {
@@ -1020,7 +1024,10 @@ const writeBackupFile = async (dirHandle, filename, content) => {
     const writable = await fileHandle.createWritable();
     await writable.write(content);
     await writable.close();
-  } catch (e) { console.warn("Backup write failed for " + filename + ":", e); }
+  } catch (e) {
+    console.warn("Backup write failed for " + filename + ":", e);
+    if (_showBackupToast) _showBackupToast(`⚠️ Backup failed: ${filename} — ${e.message}`, "error");
+  }
 };
 
 // Generate CSV content for each data type
@@ -1059,27 +1066,140 @@ const buildMedicalAidsCSV = (data) => {
   return csv;
 };
 
-// Debounced auto-backup (writes all 3 CSVs after a short delay)
+const buildPaymentsCSV = (data) => {
+  const esc = (s) => '"' + (s || '').replace(/"/g, '""') + '"';
+  let csv = "PaymentID,PaymentDate,ClientID,ClientName,Amount,Reference,Method,Unallocated,InvoiceID,InvoiceNumber,InvoiceDate,Patient,Allocated\n";
+  (data.payments || []).forEach(p => {
+    if ((p.allocations || []).length > 0) {
+      // One row per allocation
+      p.allocations.forEach(a => {
+        csv += [
+          esc(p.id), esc(p.date), esc(p.clientId), esc(p.clientName),
+          p.amount || 0, esc(p.reference), esc(p.method), p.unallocated || 0,
+          esc(a.invoiceId), a.invoiceNumber || '', esc(a.invoiceDate), esc(a.patient), a.allocated || 0
+        ].join(',') + '\n';
+      });
+    } else {
+      // Payment with no allocations (pure credit)
+      csv += [
+        esc(p.id), esc(p.date), esc(p.clientId), esc(p.clientName),
+        p.amount || 0, esc(p.reference), esc(p.method), p.unallocated || 0,
+        '', '', '', '', 0
+      ].join(',') + '\n';
+    }
+  });
+  return csv;
+};
+
+// ============================================================
+// BACKUP ENCRYPTION (AES-256-GCM)
+// ============================================================
+
+// Derive encryption key from password using PBKDF2
+const deriveKey = async (password, salt) => {
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(password),
+    "PBKDF2",
+    false,
+    ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: salt,
+      iterations: 100000,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+};
+
+// Encrypt data with password (returns base64 string with salt + iv + ciphertext)
+const encryptBackup = async (jsonString, password) => {
+  const encoder = new TextEncoder();
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt);
+  const encrypted = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    encoder.encode(jsonString)
+  );
+
+  // Combine salt + iv + ciphertext into single buffer
+  const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+  combined.set(salt, 0);
+  combined.set(iv, salt.length);
+  combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+  // Return as base64
+  return btoa(String.fromCharCode(...combined));
+};
+
+// Decrypt backup with password
+const decryptBackup = async (base64String, password) => {
+  const decoder = new TextDecoder();
+  const combined = Uint8Array.from(atob(base64String), c => c.charCodeAt(0));
+
+  const salt = combined.slice(0, 16);
+  const iv = combined.slice(16, 28);
+  const ciphertext = combined.slice(28);
+
+  const key = await deriveKey(password, salt);
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: iv },
+    key,
+    ciphertext
+  );
+
+  return decoder.decode(decrypted);
+};
+
+// Get backup password from profile settings
+const getBackupPassword = (data) => {
+  return data.profile?.backupPassword || "";
+};
+
+// Debounced auto-backup (writes all CSVs after a short delay)
 const autoBackupCSVs = (data) => {
   if (!_backupDirHandle) return;
   clearTimeout(_backupDebounce);
+  _backupPending = true; // Mark backup as pending
   _backupDebounce = setTimeout(async () => {
     try {
       // Re-verify permission (may have been revoked)
       const perm = await _backupDirHandle.queryPermission({ mode: "readwrite" });
       if (perm !== "granted") {
         const req = await _backupDirHandle.requestPermission({ mode: "readwrite" });
-        if (req !== "granted") { _backupDirHandle = null; return; }
+        if (req !== "granted") { _backupDirHandle = null; _backupPending = false; return; }
       }
+      // Encrypt JSON backup if password is set
+      const password = getBackupPassword(data);
+      const jsonContent = password
+        ? await encryptBackup(JSON.stringify(data, null, 2), password)
+        : JSON.stringify(data, null, 2);
+      const jsonFilename = password ? "EasyDentalLab-backup.encrypted" : "EasyDentalLab-backup.json";
+
       await Promise.all([
         writeBackupFile(_backupDirHandle, "Clients.csv", buildClientsCSV(data)),
         writeBackupFile(_backupDirHandle, "Tariffs.csv", buildTariffsCSV(data)),
         writeBackupFile(_backupDirHandle, "Macros.csv", buildMacrosCSV(data)),
         writeBackupFile(_backupDirHandle, "MedicalAids.csv", buildMedicalAidsCSV(data)),
-        writeBackupFile(_backupDirHandle, "EasyDentalLab-backup.json", JSON.stringify(data, null, 2)),
+        writeBackupFile(_backupDirHandle, "Payments.csv", buildPaymentsCSV(data)),
+        writeBackupFile(_backupDirHandle, jsonFilename, jsonContent),
       ]);
+      _backupPending = false; // Backup complete
       console.log("Auto-backup saved:", new Date().toLocaleTimeString());
-    } catch (e) { console.warn("Auto-backup failed:", e); }
+    } catch (e) {
+      _backupPending = false; // Clear flag even on error
+      console.warn("Auto-backup failed:", e);
+      if (_showBackupToast) _showBackupToast(`⚠️ Auto-backup failed — ${e.message}`, "error");
+    }
   }, 2000); // 2 second debounce to batch rapid changes
 };
 
@@ -1142,6 +1262,51 @@ const Modal = ({ open, onClose, title, wide, children }) => {
           <button className="icon-btn" title="Close this window" onClick={onClose}><SvgIcon path={ICO.x} size={18}/></button>
         </div>
         <div style={{padding:"16px 24px"}}>{children}</div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// COPY MODAL
+// ============================================================
+
+const CopyModal = ({ open, onClose, onCopy, type }) => {
+  if (!open) return null;
+  const handleCopy = (mode) => {
+    onCopy(mode);
+    onClose();
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-content w-full max-w-md" style={{margin:"0 16px"}} onClick={e => e.stopPropagation()}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)"}}>
+          <h2 style={{fontSize:16,fontWeight:700,margin:0}}>Copy {type}</h2>
+          <button className="icon-btn" title="Close" onClick={onClose}><SvgIcon path={ICO.x} size={18}/></button>
+        </div>
+        <div style={{padding:"24px"}}>
+          <p style={{fontSize:13,color:"var(--c-text2)",marginBottom:20}}>Choose what to copy to the new {type.toLowerCase()}:</p>
+          <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <button className="btn btn-primary" onClick={()=>handleCopy("all")} style={{justifyContent:"flex-start",padding:"14px 18px"}}>
+              <div style={{textAlign:"left"}}>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>Copy All</div>
+                <div style={{fontSize:12,opacity:0.9}}>Patient info + Line items (with current prices)</div>
+              </div>
+            </button>
+            <button className="btn btn-secondary" onClick={()=>handleCopy("patient")} style={{justifyContent:"flex-start",padding:"14px 18px"}}>
+              <div style={{textAlign:"left"}}>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>Patient Only</div>
+                <div style={{fontSize:12,opacity:0.8}}>Copy patient & dentist info, blank line items</div>
+              </div>
+            </button>
+            <button className="btn btn-secondary" onClick={()=>handleCopy("detail")} style={{justifyContent:"flex-start",padding:"14px 18px"}}>
+              <div style={{textAlign:"left"}}>
+                <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>Detail Only</div>
+                <div style={{fontSize:12,opacity:0.8}}>Copy line items only, blank patient info</div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1404,7 +1569,11 @@ const buildDocumentHTML = (doc, data, type) => {
   const p = data.profile;
   const isInv = type === "invoice";
   const title = isInv ? "TAX INVOICE" : "ESTIMATE";
-  const items = doc.items || [];
+  const items = (doc.items || []).sort((a, b) => {
+    const codeA = String(a.code || "").toLowerCase();
+    const codeB = String(b.code || "").toLowerCase();
+    return codeA.localeCompare(codeB, undefined, { numeric: true });
+  });
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
   const vatRate = parseFloat(p.vatPercent) || 0;
   const exclusive = vatRate > 0 ? subtotal / (1 + vatRate / 100) : subtotal;
@@ -2050,7 +2219,11 @@ const buildPDFBlob = async (doc, data, type) => {
   const p = data.profile;
   const isInv = type === "invoice";
   const titleLabel = isInv ? "TAX INVOICE" : "ESTIMATE";
-  const items = doc.items || [];
+  const items = (doc.items || []).sort((a, b) => {
+    const codeA = String(a.code || "").toLowerCase();
+    const codeB = String(b.code || "").toLowerCase();
+    return codeA.localeCompare(codeB, undefined, { numeric: true });
+  });
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
   const vatRate = parseFloat(p.vatPercent) || 0;
   const exclusive = vatRate > 0 ? subtotal / (1 + vatRate / 100) : subtotal;
@@ -3205,6 +3378,16 @@ const MacroForm = ({ macro, tariffs, onSave, onCancel }) => {
     return tariffs.filter(t => t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
   }, [tariffs, tSearch]);
 
+  // Sort codes by code (ascending) for display - but keep original index for editing
+  const sortedCodesWithIndex = useMemo(() => {
+    return codes.map((c, idx) => ({ ...c, originalIndex: idx }))
+                .sort((a, b) => {
+                  const codeA = String(a.code || "").toLowerCase();
+                  const codeB = String(b.code || "").toLowerCase();
+                  return codeA.localeCompare(codeB, undefined, { numeric: true });
+                });
+  }, [codes]);
+
   return (
     <div>
       <Input label={tr("macroName")} value={name} onChange={setName} required placeholder="e.g. PFM Crown, Full Denture Upper" style={{ marginBottom: 16 }} />
@@ -3225,7 +3408,8 @@ const MacroForm = ({ macro, tariffs, onSave, onCancel }) => {
               <th style={{ width: 32 }}></th>
             </tr></thead>
             <tbody>
-              {codes.map((c, idx) => {
+              {sortedCodesWithIndex.map((c) => {
+                const idx = c.originalIndex;
                 const t = tariffs.find(t => t.code === c.code);
                 return (
                   <tr key={idx} style={{ borderTop: "1px solid #f3f4f6" }}>
@@ -3393,17 +3577,78 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
   const [showMacroPicker, setShowMacroPicker] = useState(false);
   const [tSearch, setTSearch] = useState("");
   const [mSearch, setMSearch] = useState("");
+  const [toast, setToast] = useState(null);
+
+  // Show toast notification for 3 seconds
+  const showToast = (message) => {
+    setToast(message);
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Consolidate new items into existing items (merge quantities for duplicate codes)
+  const consolidateItems = (currentItems, newItems) => {
+    const consolidated = [...currentItems];
+    let addedCount = 0;
+    let mergedCount = 0;
+
+    newItems.forEach(newItem => {
+      const existingIndex = consolidated.findIndex(existing => existing.code === newItem.code);
+
+      if (existingIndex >= 0) {
+        // Duplicate found - increment quantity
+        consolidated[existingIndex] = {
+          ...consolidated[existingIndex],
+          qty: (parseFloat(consolidated[existingIndex].qty) || 0) + (parseFloat(newItem.qty) || 0),
+          // Update price and description to latest from tariffs
+          price: newItem.price,
+          description: newItem.description,
+          tariffCode: newItem.tariffCode
+        };
+        mergedCount++;
+      } else {
+        // New code - add it
+        consolidated.push(newItem);
+        addedCount++;
+      }
+    });
+
+    return { consolidated, addedCount, mergedCount };
+  };
 
   const addBlank = () => { const id = genId(); setItems([...items, { id, code:"", description:"", qty:1, price:0 }]); return id; };
-  const addTariff = (t) => { setItems([...items, { id:genId(), code:t.code, tariffCode:t.tariffCode||t.code, description:descForLang(t, lang), qty:1, price:t.price }]); setShowPicker(false); setTSearch(""); };
+
+  const addTariff = (t) => {
+    const newItem = { id:genId(), code:t.code, tariffCode:t.tariffCode||t.code, description:descForLang(t, lang), qty:1, price:t.price };
+    const { consolidated, addedCount, mergedCount } = consolidateItems(items, [newItem]);
+    setItems(consolidated);
+    if (mergedCount > 0) {
+      showToast(`Code ${t.code} already exists — quantity increased`);
+    }
+    setShowPicker(false);
+    setTSearch("");
+  };
+
   const addMacro = (macro) => {
     const newItems = macro.codes.map(c => {
       const t = tariffs.find(t => t.code === c.code);
       return { id: genId(), code: c.code, tariffCode: t?.tariffCode || c.code, description: t ? descForLang(t, lang) : c.code, qty: c.qty || 1, price: t?.price || 0 };
     });
-    setItems([...items, ...newItems]);
-    setShowMacroPicker(false); setMSearch("");
+    const { consolidated, addedCount, mergedCount } = consolidateItems(items, newItems);
+    setItems(consolidated);
+
+    // Show notification
+    if (mergedCount > 0 && addedCount > 0) {
+      showToast(`${addedCount} codes added, ${mergedCount} consolidated`);
+    } else if (mergedCount > 0) {
+      showToast(`${mergedCount} codes consolidated (quantities increased)`);
+    } else if (addedCount > 0) {
+      showToast(`${addedCount} codes added`);
+    }
+
+    setShowMacroPicker(false);
+    setMSearch("");
   };
+
   const update = (id, k, v) => setItems(items.map(i => i.id===id ? {...i,[k]:v} : i));
   const remove = (id) => setItems(items.filter(i => i.id!==id));
 
@@ -3411,6 +3656,15 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
     const q = tSearch.toLowerCase();
     return tariffs.filter(t => t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
   }, [tariffs, tSearch]);
+
+  // Sort items by code (ascending) for display
+  const sortedItems = useMemo(() => {
+    return [...items].sort((a, b) => {
+      const codeA = String(a.code || "").toLowerCase();
+      const codeB = String(b.code || "").toLowerCase();
+      return codeA.localeCompare(codeB, undefined, { numeric: true });
+    });
+  }, [items]);
 
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
 
@@ -3439,7 +3693,7 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
               <th style={{width:32}}></th>
             </tr></thead>
             <tbody>
-              {items.map((item, rowIdx) => (
+              {sortedItems.map((item, rowIdx) => (
                 <tr key={item.id} style={{borderTop:"1px solid #f3f4f6"}}>
                   <td style={{padding:"4px 8px"}}><CodeInput value={item.code} onChange={v=>update(item.id,"code",v)} onSelect={t=>{update(item.id,"code",t.code);update(item.id,"tariffCode",t.tariffCode||t.code);update(item.id,"description",descForLang(t,lang));update(item.id,"price",t.price);}} onAddLine={addBlank} tariffs={tariffs} rowId={item.id} inputStyle={{padding:"4px 6px",fontSize:12,fontFamily:"monospace"}}/></td>
                   <td style={{padding:"4px 8px"}}><input className="input-field" data-field="description" data-row={item.id} title="Item description — auto-filled from tariff or type your own" value={item.description} onChange={e=>update(item.id,"description",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const qtyInput=row?.querySelector("input[type='number']");if(qtyInput)qtyInput.focus();}if(e.key==="ArrowDown"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}} style={{padding:"4px 6px",fontSize:12}}/></td>
@@ -3491,6 +3745,13 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
           {(macros||[]).filter(m => m.name.toLowerCase().includes(mSearch.toLowerCase())).length===0 && <p style={{textAlign:"center",padding:24,color:"#9ca3af",fontSize:13}}>No matching macros</p>}
         </div>
       </Modal>
+
+      {/* Toast notification */}
+      {toast && (
+        <div style={{position:"fixed",bottom:24,right:24,background:"#1f2937",color:"white",padding:"12px 20px",borderRadius:8,boxShadow:"0 4px 12px rgba(0,0,0,0.15)",fontSize:13,fontWeight:500,zIndex:10000,animation:"slideIn 0.2s ease-out"}}>
+          {toast}
+        </div>
+      )}
     </div>
   );
 };
@@ -3554,6 +3815,8 @@ const Estimates = ({ data, setData, setPage }) => {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyingEstimate, setCopyingEstimate] = useState(null);
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
@@ -3587,6 +3850,77 @@ const Estimates = ({ data, setData, setPage }) => {
     setPage("invoices");
   };
 
+  const copyEstimate = (est, mode) => {
+    setData(prev => {
+      let refreshedItems = [];
+      let patientTitle = "", patientSurname = "", patientName = "", memberName = "", medicalAidName = "", medicalAidNumber = "";
+      let clientId = "", clientName = "", notes = "", lang = "en", validUntil = "";
+
+      if (mode === "all") {
+        // Copy everything
+        refreshedItems = est.items.map(item => {
+          const tr = prev.tariffs.find(t => t.code === item.code);
+          return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
+        });
+        clientId = est.clientId;
+        clientName = est.clientName;
+        patientTitle = est.patientTitle;
+        patientSurname = est.patientSurname;
+        patientName = est.patientName;
+        memberName = est.memberName;
+        medicalAidName = est.medicalAidName;
+        medicalAidNumber = est.medicalAidNumber;
+        lang = est.lang;
+        notes = est.notes;
+        validUntil = est.validUntil;
+      } else if (mode === "patient") {
+        // Copy patient & client info only (blank line items)
+        refreshedItems = [];
+        clientId = est.clientId;
+        clientName = est.clientName;
+        patientTitle = est.patientTitle;
+        patientSurname = est.patientSurname;
+        patientName = est.patientName;
+        memberName = est.memberName;
+        medicalAidName = est.medicalAidName;
+        medicalAidNumber = est.medicalAidNumber;
+        lang = est.lang;
+      } else if (mode === "detail") {
+        // Copy line items only (blank patient info)
+        refreshedItems = est.items.map(item => {
+          const tr = prev.tariffs.find(t => t.code === item.code);
+          return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
+        });
+        notes = est.notes;
+      }
+
+      const newTotal = refreshedItems.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+      return {
+        ...prev,
+        estimates: [...prev.estimates, {id:genId(),number:prev.nextEstimateNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"draft",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,validUntil}],
+        nextEstimateNo: prev.nextEstimateNo+1,
+      };
+    });
+  };
+
+  const openCopyModal = (est) => {
+    setCopyingEstimate(est);
+    setShowCopyModal(true);
+  };
+
+  const handleCopy = (mode) => {
+    if (copyingEstimate) {
+      copyEstimate(copyingEstimate, mode);
+      setShowCopyModal(false);
+      setCopyingEstimate(null);
+    }
+  };
+
+  const handleContextMenu = (e, est) => {
+    e.preventDefault();
+    openCopyModal(est);
+  };
+
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -3603,7 +3937,7 @@ const Estimates = ({ data, setData, setPage }) => {
       ) : (
         <div className="card">
           {sorted.map((e,i) => (
-            <div key={e.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div key={e.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}} onContextMenu={(evt)=>handleContextMenu(evt,e)}>
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6}}>
                   <span style={{fontSize:13,fontWeight:700}}>#{e.number}</span>
@@ -3619,6 +3953,7 @@ const Estimates = ({ data, setData, setPage }) => {
                   <button className="icon-btn" title="Print or save this estimate as PDF" onClick={()=>printDocument(e,data,"estimate")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Send this estimate via WhatsApp to the client" onClick={()=>whatsappDocument(e,data,"estimate")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
                   {e.status!=="invoiced" && <button className="icon-btn" title="Convert this estimate into an invoice" onClick={()=>toInvoice(e)}><SvgIcon path={ICO.arrowRight} size={15} color="#059669"/></button>}
+                  <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Edit this estimate" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                 </div>
@@ -3631,6 +3966,8 @@ const Estimates = ({ data, setData, setPage }) => {
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?`${t("edit")} Estimate #${editing.number}`:t("newEstimate")} wide>
         <EstimateForm estimate={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
       </Modal>
+
+      <CopyModal open={showCopyModal} onClose={()=>{setShowCopyModal(false);setCopyingEstimate(null)}} onCopy={handleCopy} type="Estimate"/>
     </div>
   );
 };
@@ -3694,6 +4031,8 @@ const Invoices = ({ data, setData }) => {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [statusFilter, setStatusFilter] = useState("");
+  const [showCopyModal, setShowCopyModal] = useState(false);
+  const [copyingInvoice, setCopyingInvoice] = useState(null);
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
@@ -3730,19 +4069,74 @@ const Invoices = ({ data, setData }) => {
     }
   };
 
-  const copyInvoice = (inv) => {
+  const copyInvoice = (inv, mode) => {
     setData(prev => {
-      const refreshedItems = inv.items.map(item => {
-        const tr = prev.tariffs.find(t => t.code === item.code);
-        return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
-      });
+      let refreshedItems = [];
+      let patientTitle = "", patientSurname = "", patientName = "", memberName = "", medicalAidName = "", medicalAidNumber = "";
+      let clientId = "", clientName = "", notes = "", lang = "en";
+
+      if (mode === "all") {
+        // Copy everything
+        refreshedItems = inv.items.map(item => {
+          const tr = prev.tariffs.find(t => t.code === item.code);
+          return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
+        });
+        clientId = inv.clientId;
+        clientName = inv.clientName;
+        patientTitle = inv.patientTitle;
+        patientSurname = inv.patientSurname;
+        patientName = inv.patientName;
+        memberName = inv.memberName;
+        medicalAidName = inv.medicalAidName;
+        medicalAidNumber = inv.medicalAidNumber;
+        lang = inv.lang;
+        notes = inv.notes;
+      } else if (mode === "patient") {
+        // Copy patient & client info only (blank line items)
+        refreshedItems = [];
+        clientId = inv.clientId;
+        clientName = inv.clientName;
+        patientTitle = inv.patientTitle;
+        patientSurname = inv.patientSurname;
+        patientName = inv.patientName;
+        memberName = inv.memberName;
+        medicalAidName = inv.medicalAidName;
+        medicalAidNumber = inv.medicalAidNumber;
+        lang = inv.lang;
+      } else if (mode === "detail") {
+        // Copy line items only (blank patient info)
+        refreshedItems = inv.items.map(item => {
+          const tr = prev.tariffs.find(t => t.code === item.code);
+          return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
+        });
+        notes = inv.notes;
+      }
+
       const newTotal = refreshedItems.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
       return {
         ...prev,
-        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId:inv.clientId,clientName:inv.clientName,date:today(),items:refreshedItems,notes:inv.notes,total:newTotal,status:"unpaid",patientTitle:inv.patientTitle,patientSurname:inv.patientSurname,patientName:inv.patientName,memberName:inv.memberName,medicalAidName:inv.medicalAidName,medicalAidNumber:inv.medicalAidNumber,lang:inv.lang,claimed:false,claimedDate:null,estimateRef:null}],
+        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"unpaid",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,claimed:false,claimedDate:null,estimateRef:null}],
         nextInvoiceNo: prev.nextInvoiceNo+1,
       };
     });
+  };
+
+  const openCopyModal = (inv) => {
+    setCopyingInvoice(inv);
+    setShowCopyModal(true);
+  };
+
+  const handleCopy = (mode) => {
+    if (copyingInvoice) {
+      copyInvoice(copyingInvoice, mode);
+      setShowCopyModal(false);
+      setCopyingInvoice(null);
+    }
+  };
+
+  const handleContextMenu = (e, inv) => {
+    e.preventDefault();
+    openCopyModal(inv);
   };
 
   return (
@@ -3768,7 +4162,7 @@ const Invoices = ({ data, setData }) => {
       ) : (
         <div className="card">
           {sorted.map((inv,i) => (
-            <div key={inv.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+            <div key={inv.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}} onContextMenu={(e)=>handleContextMenu(e,inv)}>
               <div style={{flex:1}}>
                 <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                   <span style={{fontSize:13,fontWeight:700}}>#{inv.number}</span>
@@ -3792,7 +4186,7 @@ const Invoices = ({ data, setData }) => {
                   <button className="icon-btn" title={inv.status==="paid"?"Mark this invoice as unpaid":"Mark this invoice as paid"} onClick={()=>togglePaid(inv)}>
                     <SvgIcon path={ICO.check} size={15} color={inv.status==="paid"?"#d97706":"#059669"}/>
                   </button>
-                  <button className="icon-btn" title="Copy as new invoice with current prices" onClick={()=>copyInvoice(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Edit this invoice" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                 </div>
@@ -3805,6 +4199,8 @@ const Invoices = ({ data, setData }) => {
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?`${t("edit")} Invoice #${editing.number}`:t("newInvoice")} wide>
         <InvoiceForm invoice={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
       </Modal>
+
+      <CopyModal open={showCopyModal} onClose={()=>{setShowCopyModal(false);setCopyingInvoice(null)}} onCopy={handleCopy} type="Invoice"/>
     </div>
   );
 };
@@ -3869,14 +4265,22 @@ const AutoBackupCard = ({ data, setData }) => {
     if (!_backupDirHandle) return;
     setStatus("Saving...");
     try {
+      // Encrypt JSON backup if password is set
+      const password = getBackupPassword(data);
+      const jsonContent = password
+        ? await encryptBackup(JSON.stringify(data, null, 2), password)
+        : JSON.stringify(data, null, 2);
+      const jsonFilename = password ? "EasyDentalLab-backup.encrypted" : "EasyDentalLab-backup.json";
+
       await Promise.all([
         writeBackupFile(_backupDirHandle, "Clients.csv", buildClientsCSV(data)),
         writeBackupFile(_backupDirHandle, "Tariffs.csv", buildTariffsCSV(data)),
         writeBackupFile(_backupDirHandle, "Macros.csv", buildMacrosCSV(data)),
         writeBackupFile(_backupDirHandle, "MedicalAids.csv", buildMedicalAidsCSV(data)),
-        writeBackupFile(_backupDirHandle, "EasyDentalLab-backup.json", JSON.stringify(data, null, 2)),
+        writeBackupFile(_backupDirHandle, "Payments.csv", buildPaymentsCSV(data)),
+        writeBackupFile(_backupDirHandle, jsonFilename, jsonContent),
       ]);
-      setStatus("All files saved!");
+      setStatus(password ? "All files saved (backup encrypted)!" : "All files saved!");
     } catch(e) { setStatus("Save failed: " + e.message); }
     setTimeout(() => setStatus(""), 3000);
   };
@@ -3987,7 +4391,7 @@ const HelpSection = () => {
         <li>Select a <strong>Dentist</strong> from the dropdown (type to search).</li>
         <li>Enter <strong>Patient Surname</strong> and <strong>Patient Name</strong> — required for medical aid claims.</li>
         <li>Optionally fill in <strong>Medical Aid Name</strong> — click the field and scroll to select from the built-in list, or type to filter, or type a custom name and press <strong>Enter</strong> if it's not in the list. Also fill in Member Name and Membership number if applicable.</li>
-        <li>Add line items — type a tariff code in the Code column and press <strong>Enter</strong> to confirm. The description and price fill in automatically. Press <strong>↓ Down Arrow</strong> to add a new line. Or click <em>From Macro</em> to add a full device template in one click.</li>
+        <li>Add line items — type a tariff code in the Code column and press <strong>Enter</strong> to confirm. The description and price fill in automatically. Press <strong>↓ Down Arrow</strong> to add a new line. Or click <em>From Macro</em> to add a full device template in one click. If you add a code that already exists in the line items, the quantity will automatically increase instead of creating a duplicate row — a notification will confirm this. <strong>Line items automatically sort by code number in ascending order</strong> (0001, 0002, 8205…) as you add them.</li>
         <li>Choose <strong>English or Afrikaans</strong> — all descriptions switch language automatically.</li>
         <li>Click <em>Save Invoice</em>.</li>
       </OL>
@@ -3996,7 +4400,7 @@ const HelpSection = () => {
         <li><strong>🖨 Print</strong> — opens a print-ready A4 invoice in a new tab. Click <em>Print / Save as PDF</em> or press Ctrl+P / Cmd+P.</li>
         <li><strong>WhatsApp (green)</strong> — generates a PDF, downloads it, then opens WhatsApp Web with a pre-filled message. Attach the downloaded PDF before sending.</li>
         <li><strong>✓ Check mark</strong> — toggles the invoice between Paid (green) and Unpaid (yellow).</li>
-        <li><strong>⧉ Copy</strong> — creates a new unpaid invoice for the same patient with the same tariff codes, but priced at today's current tariff rates. Useful for recurring work on the same patient.</li>
+        <li><strong>⧉ Copy</strong> — opens a modal with 3 copy options: <em>Copy All</em> (patient + line items with current prices), <em>Patient Only</em> (patient &amp; dentist info, blank line items), or <em>Detail Only</em> (line items with current prices, blank patient info). You can also <strong>right-click</strong> any invoice row to open this copy menu.</li>
         <li><strong>✏ Edit</strong> — reopens the form to change any detail.</li>
         <li><strong>🗑 Delete</strong> — permanently removes the invoice.</li>
         <li><strong style={{color:"#2563eb"}}>CLAIM</strong> — marks the invoice as a Direct Claim to medical aid. See the Direct Claiming section below.</li>
@@ -4022,6 +4426,8 @@ const HelpSection = () => {
       </OL>
       <H>Converting to an Invoice</H>
       <P>Once the work is approved and completed, click the <strong>→ arrow button</strong> on the estimate. A new invoice is instantly created with all the same details (patient, items, medical aid, language). Prices are automatically updated to the <strong>current tariff rates</strong> at the time of conversion — not the prices when the estimate was originally created. The estimate is marked as <em>Invoiced</em>, and the invoice shows a reference back to the estimate number.</P>
+      <H>Copying an Estimate</H>
+      <P>Click the <strong>⧉ Copy button</strong> (or <strong>right-click</strong> the estimate row) to create a duplicate estimate. You'll see 3 options: <em>Copy All</em> (patient + line items with current prices), <em>Patient Only</em> (patient &amp; dentist info, blank line items), or <em>Detail Only</em> (line items with current prices, blank patient info). Useful for creating similar estimates for different patients or reusing tariff lists.</P>
     </div>) },
 
     { id:"directclaim", icon:"🏥", title:"Direct Claiming — Submitting Directly to Medical Aid", content: (<div>
@@ -4109,7 +4515,7 @@ const HelpSection = () => {
       <OL>
         <li>Go to <em>Macros</em> and click <em>New Macro</em>.</li>
         <li>Give it a clear name (e.g. "Full Denture Upper &amp; Lower").</li>
-        <li>Add codes one by one, adjusting quantities where needed.</li>
+        <li>Add codes one by one, adjusting quantities where needed. <strong>Codes automatically sort by number in ascending order</strong> (0001, 0002, 8205…) as you add them.</li>
         <li>Click <em>Save Macro</em>. Macros display in alphabetical order.</li>
       </OL>
       <H>Using a Macro on an Invoice or Estimate</H>
@@ -4119,6 +4525,9 @@ const HelpSection = () => {
         <li>Search or scroll to find your macro and click it.</li>
         <li>All codes and quantities are added instantly. You can still adjust quantities or remove lines.</li>
       </OL>
+      <H>Multiple Macros &amp; Duplicate Code Consolidation</H>
+      <P>If you add multiple macros that contain the same tariff codes, EasyDentalLab automatically <strong>consolidates duplicate codes</strong> — instead of creating separate rows, the quantities are added together on a single line. A subtle notification shows how many codes were added and how many were consolidated. This also works when manually adding tariff codes that already exist in the line items.</P>
+      <P style={{fontSize:12,color:"#6b7280",fontStyle:"italic"}}>Example: Macro A has "0001 (PFM Crown) x2", Macro B has "0001 x1". After adding both, you'll see "0001 x3" on one row, not two separate rows.</P>
     </div>) },
 
     { id:"backup", icon:"💾", title:"Data, Backup & Restore", content: (<div>
@@ -4437,6 +4846,30 @@ const Settings = ({ data, setData }) => {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
           <Input label={t("branchCode")} value={profile.branchCode} onChange={v=>s("branchCode",v)}/>
           <Input label={t("accType")} value={profile.accountType} onChange={v=>s("accountType",v)} placeholder="e.g. Cheque / Savings"/>
+        </div>
+        <div style={{marginTop:16}}><button className="btn btn-success" onClick={saveProfile}><SvgIcon path={ICO.check} size={16}/> Save Settings</button></div>
+      </div>
+
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <h2 style={{fontSize:16,fontWeight:700,margin:"0 0 4px"}}>🔒 Backup Security (Optional)</h2>
+        <p style={{fontSize:13,color:"var(--c-text3)",margin:"0 0 16px"}}>
+          Encrypt your JSON backup files with a password to protect patient data, medical aid numbers, and bank details.
+          CSVs remain unencrypted for Excel compatibility. <strong>Leave blank to disable encryption.</strong>
+        </p>
+        <div style={{maxWidth:400}}>
+          <Input
+            label="Backup Encryption Password"
+            type="password"
+            value={profile.backupPassword || ""}
+            onChange={v=>s("backupPassword",v)}
+            placeholder="Leave blank to disable"
+            title="If set, the EasyDentalLab-backup.json file will be encrypted. You'll need this password to restore backups."
+          />
+          <p style={{fontSize:11,color:"var(--c-text4)",margin:"6px 0 0"}}>
+            {profile.backupPassword
+              ? `✅ Encryption enabled — backup file will be saved as "EasyDentalLab-backup.encrypted"`
+              : `⚠️ Encryption disabled — backup will be plain text JSON`}
+          </p>
         </div>
         <div style={{marginTop:16}}><button className="btn btn-success" onClick={saveProfile}><SvgIcon path={ICO.check} size={16}/> Save Settings</button></div>
       </div>
@@ -5070,6 +5503,16 @@ function App() {
     localStorage.setItem("edl_ui_lang", next);
   };
 
+  // ── Backup Toast Notifications ──────────────────────────────────────────────
+  const [backupToast, setBackupToast] = useState(null); // {message, type: "error"|"success"}
+  useEffect(() => {
+    _showBackupToast = (message, type = "error") => {
+      setBackupToast({ message, type });
+      setTimeout(() => setBackupToast(null), 5000); // 5 seconds for errors
+    };
+    return () => { _showBackupToast = null; };
+  }, []);
+
   // ── License ─────────────────────────────────────────────────────────────────
   const [licStatus, setLicStatus] = useState(null); // null=checking, else {status,type,daysLeft}
   useEffect(() => {
@@ -5085,6 +5528,19 @@ function App() {
   }, [darkMode]);
   const setDataAndSave = useCallback((updater) => {
     setData(prev => typeof updater === "function" ? updater(prev) : updater);
+  }, []);
+
+  // Warn user if closing browser with pending backup
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (_backupPending) {
+        e.preventDefault();
+        e.returnValue = "Backup is still in progress. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, []);
 
   const renderPage = () => {
@@ -5161,6 +5617,27 @@ function App() {
         </div>
       </div>
       <AiAssistant data={data} page={page} darkMode={darkMode}/>
+
+      {/* Backup Toast Notifications */}
+      {backupToast && (
+        <div style={{
+          position:"fixed",
+          bottom:24,
+          right:24,
+          background:backupToast.type==="error"?"#991b1b":"#065f46",
+          color:"white",
+          padding:"14px 20px",
+          borderRadius:8,
+          boxShadow:"0 4px 12px rgba(0,0,0,0.25)",
+          fontSize:13,
+          fontWeight:500,
+          zIndex:10000,
+          maxWidth:400,
+          animation:"slideIn 0.2s ease-out"
+        }}>
+          {backupToast.message}
+        </div>
+      )}
     </div>
     </LangContext.Provider>
   );
