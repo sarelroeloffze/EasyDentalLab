@@ -7,7 +7,9 @@
 Clients.csv
 Macros.csv
 MedicalAids.csv
+Payments.csv
 EasyDentalLab-backup.json
+EasyDentalLab-backup.encrypted
 
 # Direct Claiming PDF output
 Send to Direct Claiming/
@@ -38,11 +40,12 @@ dist/
 build/
 
 # -------------------------------------------------------
-# Node / Electron / Tauri (future desktop compilation)
+# Node / Electron / Tauri (desktop compilation)
 # -------------------------------------------------------
 node_modules/
 
-# Electron build output
+# Electron build output (installers ~ 100 MB each)
+EasyDentalLab-Desktop/build/
 out/
 dist/
 release/

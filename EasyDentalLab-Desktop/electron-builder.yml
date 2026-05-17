@@ -1,0 +1,38 @@
+appId: com.roeloffze.easydentallab
+productName: EasyDentalLab
+copyright: Copyright © 2026 Sarel Roeloffze
+
+directories:
+  output: build
+
+files:
+  - main.js
+  - preload.js
+  - renderer/**/*
+  - resources/**/*
+
+win:
+  target: nsis
+  icon: resources/icon.ico
+
+mac:
+  target: dmg
+  icon: resources/icon.icns
+  category: public.app-category.business
+  # Ad-hoc signing (no Apple Developer account)
+  identity: null
+
+linux:
+  target:
+    - AppImage
+    - deb
+  icon: resources/icon.png
+  category: Office
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  installerIcon: resources/icon.ico
+  uninstallerIcon: resources/icon.ico

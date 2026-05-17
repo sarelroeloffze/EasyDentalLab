@@ -1,0 +1,17 @@
+PLACEHOLDER ICONS NEEDED
+
+The following icon files are referenced in package.json but not yet created:
+- icon.ico (Windows) - 256x256 or multi-resolution
+- icon.icns (macOS) - 512x512 or multi-resolution
+- icon.png (Linux) - 512x512
+
+For now, Electron will use default icons when running `npm start`.
+
+To build production installers, you'll need to provide actual icon files.
+
+You can:
+1. Create icons using a design tool (Figma, Photoshop, etc.)
+2. Use an online icon generator (e.g., https://www.favicon-generator.org/)
+3. Convert a logo/image to multi-platform icons
+
+Recommended icon content: Dental-themed logo or "EDL" monogram

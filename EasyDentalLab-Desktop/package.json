@@ -1,0 +1,56 @@
+{
+  "name": "easydentallab",
+  "version": "2.0.0",
+  "description": "Dental laboratory invoicing application for South Africa",
+  "homepage": "https://github.com/sarelroeloffze/EasyDentalLab",
+  "main": "main.js",
+  "author": "Sarel Roeloffze <sarel@roeloffze.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win --mac --linux"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.roeloffze.easydentallab",
+    "productName": "EasyDentalLab",
+    "directories": {
+      "output": "build"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "resources/**/*"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "resources/icon.ico"
+    },
+    "mac": {
+      "target": ["dmg"],
+      "icon": "resources/icon.icns",
+      "category": "public.app-category.business"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "resources/icon.png",
+      "category": "Office"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}
