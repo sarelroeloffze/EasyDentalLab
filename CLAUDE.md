@@ -10,7 +10,7 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-06-05)
 
-### Current Version: Desktop App v2.1.0 + Web App v1.6 (Production-Ready)
+### Current Version: Desktop App v2.1.1 + Web App v1.7 (Production-Ready)
 **Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
 
 ### Completed Work
@@ -464,6 +464,7 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Installation guide created | `EasyDentalLab-Desktop/INSTALLERS-README.md` — complete installation instructions for Windows/macOS/Linux, system requirements, troubleshooting, SHA256 checksums, known issues, migration guide from web version. |
 | Afrikaans description bug (16 codes) | Fixed embedded CSV format for codes 9314, 9383, 9419, 9431, 9433, 9461, 9463, 9525, 9537, 9541, 9553, 9557, 9561, 9720, 9722, 9788. These had combined English+Afrikaans in Description field causing parser to misalign columns — Afrikaans selection showed price number instead of description. Split descriptions properly: English in Description column, Afrikaans in DescriptionAFR column. Added proper categories (Models, Prosthetics, Chrome Cobalt, Crown & Bridge, Material, Implants) and "each" measure. Lines 370, 423, 446, 452, 454, 469, 470, 512, 520, 523, 533, 534, 537, 600, 601, 657. |
 | Discount feature (invoices + estimates) | Added optional percentage discount (checkbox + input) to invoice and estimate forms. Default 15%, max 100%. Discount applies to subtotal BEFORE VAT calculation. Display shows: Subtotal → Discount (if enabled) → Total (incl. VAT) → VAT breakdown. Discount persisted in `discountEnabled` (boolean) and `discountPercent` (number) fields. Print/PDF output includes discount line when enabled. Convert estimate→invoice and copy functions do NOT carry over discount (fresh start). `EstimateForm` + `InvoiceForm` updated with discount UI (lines ~3765, ~3800, ~4019, ~4060). `buildDocumentHTML` (line ~1577) and `buildPDFBlob` (line ~2239) updated with discount calculation + totals table. Help sections updated for Invoices and Estimates (lines ~4510, ~4527). |
+| Automatic version upgrade detection | Added `APP_VERSION` constant and version tracking in localStorage. On app load, `loadData()` detects version mismatch and sets `_tariffUpdateAvailable` flag. Yellow notification banner appears at top of app (dismissible) with "Update Now" button. New `reloadDefaultTariffs()` function replaces tariffs with embedded CSV. Settings page has manual "Reload Default Tariffs" button with version display. Solves localStorage cache issue when upgrading — users no longer see old tariff data after update. Lines ~288 (APP_VERSION), ~877 (loadData version check), ~945 (reloadDefaultTariffs), ~5745 (upgrade banner), ~5102 (Settings button). |
 
 ## License System
 

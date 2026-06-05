@@ -285,7 +285,10 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
+const APP_VERSION = "2.1.1";
+
 const INITIAL_DATA = {
+  appVersion: APP_VERSION,
   profile: {
     businessName: "EasyDentalLab",
     owner: "Sarel Roeloffze",
@@ -881,6 +884,18 @@ const loadData = () => {
     if (saved) {
       const parsed = JSON.parse(saved);
       const merged = { ...INITIAL_DATA, ...parsed };
+
+      // Check for app version upgrade
+      const savedVersion = parsed.appVersion || "1.0.0";
+      const isUpgrade = savedVersion !== APP_VERSION;
+      if (isUpgrade) {
+        merged._tariffUpdateAvailable = true;
+        merged._oldVersion = savedVersion;
+      }
+
+      // Update app version in data
+      merged.appVersion = APP_VERSION;
+
       // Ensure tariffs, clients, macros are never empty — reload from embedded CSV if missing
       if (!merged.tariffs || merged.tariffs.length === 0) { merged.tariffs = tariffResult.tariffs; merged.categories = tariffResult.categories; }
       else {
@@ -931,6 +946,21 @@ const saveData = (data) => {
   }
   // Auto-backup CSVs to selected folder
   autoBackupCSVs(data);
+};
+
+// Reload tariffs from embedded CSV (for version upgrades or manual reset)
+const reloadDefaultTariffs = (currentData) => {
+  const tariffResult = parseTariffCSV(EMBEDDED_TARIFFS_CSV);
+  return {
+    ...currentData,
+    tariffs: tariffResult.tariffs.map(t =>
+      (t.code && t.code.startsWith("8") && (!t.tariffCode || t.tariffCode === t.code))
+        ? {...t, tariffCode: "9736"} : t
+    ),
+    categories: tariffResult.categories,
+    _tariffUpdateAvailable: false,
+    _oldVersion: undefined,
+  };
 };
 
 // ============================================================
@@ -1246,6 +1276,8 @@ const ICO = {
   send: "M22 2L11 13 M22 2L15 22l-4-9-9-4 22-7z",
   copy: "M20 9h-9a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-9a2 2 0 0 0-2-2z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1",
   sparkles: "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM5 17l.75 2.25L8 20l-2.25.75L5 23l-.75-2.25L2 20l2.25-.75L5 17zM19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75L19 3z",
+  refresh: "M21.5 2v6h-6 M2.5 22v-6h6 M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2",
+  info: "M12 16v-4 M12 8h.01 M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z",
 };
 
 // ============================================================
@@ -5069,6 +5101,32 @@ const Settings = ({ data, setData }) => {
         </div>
       </div>
 
+      {/* Reload Default Tariffs */}
+      <div className="card" style={{padding:24,marginBottom:20}}>
+        <h2 style={{fontSize:16,fontWeight:700,margin:"0 0 4px"}}>🔄 Reload Default Tariffs</h2>
+        <p style={{fontSize:13,color:"#6b7280",margin:"0 0 16px"}}>
+          Reset your tariff list to the latest default tariffs included with this version of EasyDentalLab.
+          Use this if you upgraded to a new version and want the latest tariff codes and fixes.
+        </p>
+        <button
+          className="btn btn-secondary"
+          onClick={() => {
+            if (confirm("Reload default tariffs?\n\nThis will replace your current tariff list with the default tariffs from EasyDentalLab v" + APP_VERSION + ".\n\n⚠️ Any custom tariffs you added will be lost.\n✅ Your invoices, clients, and other data will NOT be affected.\n\nContinue?")) {
+              setData(prev => reloadDefaultTariffs(prev));
+              alert("Tariffs reloaded successfully!\n\nThe tariff list has been reset to the latest defaults.");
+            }
+          }}
+          title="Replace current tariffs with default tariffs from this version">
+          <SvgIcon path={ICO.refresh} size={16}/> Reload Default Tariffs
+        </button>
+        <div style={{padding:12,background:"#f3f4f6",borderRadius:8,border:"1px solid #d1d5db",marginTop:12}}>
+          <p style={{margin:0,fontSize:12,color:"#374151"}}>
+            <strong>Current version:</strong> {data.appVersion || "1.0.0"} • <strong>App version:</strong> {APP_VERSION}
+            {data.appVersion !== APP_VERSION && <span style={{color:"#dc2626",fontWeight:600}}> (Update available!)</span>}
+          </p>
+        </div>
+      </div>
+
       {/* AI Assistant settings */}
       <div className="card" style={{padding:24,marginBottom:20}}>
         <h2 style={{fontSize:16,fontWeight:700,margin:"0 0 4px"}}>AI Assistant</h2>
@@ -5710,6 +5768,67 @@ function App() {
             <SvgIcon path={darkMode ? ICO.sun : ICO.moon} size={18}/>
           </button>
         </div>
+
+        {/* Tariff Update Notification */}
+        {data._tariffUpdateAvailable && (
+          <div style={{
+            background:"#fef3c7",
+            borderBottom:"1px solid #fbbf24",
+            padding:"12px 24px",
+            display:"flex",
+            alignItems:"center",
+            gap:12,
+            justifyContent:"space-between"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
+              <SvgIcon path={ICO.info} size={20} color="#92400e"/>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>
+                  New tariff data available (v{data._oldVersion} → {APP_VERSION})
+                </div>
+                <div style={{fontSize:12,color:"#b45309"}}>
+                  Updated tariff codes with fixes. Click "Update Now" to load the latest data.
+                </div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button
+                onClick={() => {
+                  if (confirm("Update tariffs to latest version?\n\nThis will replace your current tariff list with the updated default tariffs (including fixed Afrikaans descriptions).\n\nYour invoices, clients, and other data will NOT be affected.")) {
+                    setData(prev => reloadDefaultTariffs(prev));
+                    alert("Tariffs updated successfully!");
+                  }
+                }}
+                style={{
+                  background:"#92400e",
+                  color:"white",
+                  border:"none",
+                  padding:"6px 14px",
+                  borderRadius:6,
+                  fontSize:12,
+                  fontWeight:600,
+                  cursor:"pointer"
+                }}>
+                Update Now
+              </button>
+              <button
+                onClick={() => setData(prev => ({...prev, _tariffUpdateAvailable: false}))}
+                style={{
+                  background:"transparent",
+                  color:"#92400e",
+                  border:"1px solid #fbbf24",
+                  padding:"6px 14px",
+                  borderRadius:6,
+                  fontSize:12,
+                  fontWeight:600,
+                  cursor:"pointer"
+                }}>
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         <div style={{flex:1,overflowY:"auto"}}>
           <div style={{maxWidth:960,margin:"0 auto",padding:24}}>
             {renderPage()}
