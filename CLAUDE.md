@@ -10,7 +10,7 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-06-05)
 
-### Current Version: Desktop App v2.1.1 + Web App v1.7 (Production-Ready)
+### Current Version: Desktop App v2.1.2 + Web App v1.7 (Production-Ready)
 **Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
 
 ### Completed Work
@@ -42,14 +42,20 @@ Portable single-file dental laboratory invoicing application for South African d
   - Eliminates localStorage cache issue when upgrading
   - **Result:** Users automatically get latest tariff data on upgrade
 
-### Available Installers (v2.1.1)
+- ✅ **v2.1.2 Update** (June 5, 2026)
+  - Fixed version display (sidebar now shows dynamic version, not hardcoded "v1.0")
+  - Added Afrikaans description column to Tariffs table (makes Afrikaans descriptions visible/editable)
+  - Fixed tariff code 9722 description split: English "Acrylic, per denture" / Afrikaans "Akriel, per gebit"
+  - **Result:** UI polish fixes for better usability
+
+### Available Installers (v2.1.2)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.1.1.exe` | 76 MB | ARM64 |
-| **macOS** | `EasyDentalLab-2.1.1-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.1.1-arm64.AppImage` | 100 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 2.1.2.exe` | 76 MB | ARM64 |
+| **macOS** | `EasyDentalLab-2.1.2-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.1.2-arm64.AppImage` | 100 MB | ARM64 |
 
 **Notes:**
 - macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
