@@ -367,7 +367,7 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9311,9311,Trimming of supplied model,Slyp van model verskaf,38.9,36.0,Models,
 9312,9312,Gingival tissue mask per impression,Gingivale masker,per afdruk,298.5,276.0,Models,
 9313,9313,Duplicating model,Duplisering van model,160.1,148.0,Chrome Cobalt,
-9314,9314,"Refractory model,Vuurvaste model, per eenheid, per unit",145.6,157.5,138.4,
+9314,9314,Refractory model,"Vuurvaste model, per eenheid, per unit",145.6,138.4,Models,each
 9315,9315,Model with die,Model met stempel,218.4,201.9,Models,
 9317,9317,Sectional model for crown & bridge with die,Seksionele model vir kroon & brug met stempel,193.7,179.1,Models,
 9319,9319,Additional die,Addisionele stempel,50.0,46.3,Models,
@@ -420,7 +420,7 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9380,9380,Code deleted,Code deleted,0.0,0.0,Prosthetics,
 9381,9381,Code deleted,Kode bestaan nie meer nie,0.0,0.0,Prosthetics,
 9382,9382,Code deleted,Kode bestaan nie meer,0.0,0.0,Material,
-9383,9383,"Add. fee for tooth colour material,Bykomende geld - voltooiing in tandkleurmateriaal, per tooth",122.8,132.9,116.7,
+9383,9383,Add. fee for tooth colour material,"Bykomende geld - voltooiing in tandkleurmateriaal, per tooth",122.8,116.7,Prosthetics,each
 9385,9385,Duplicate model,Duplikaat model,251.4,232.4,Prosthetics,
 9391,9391,Repair of one fracture,Reparasie van een fraktuur,436.4,403.5,Repairs,
 9391O,9391,Repair orthodontic appliance,Reparasie van ortodontiese toestel,436.4,291.3,Orthodontic,
@@ -443,15 +443,15 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9413,9413,Reline of single denture,Herbassering van enkele kunsgebit,873.1,807.2,Prosthetics,
 9415,9415,Remodel of single denture,Hermodellering van enkele kunsgebit,1342.9,1241.6,Prosthetics,
 9417,9417,Soft base reline per denture,Sagtebasis herbassering van enkele gebit,2205.0,2038.7,Prosthetics,
-9419,9419,"Soft base to new denture,Sagtebasis vir nuwe kunsgebit, per denture",2038.7,2205.0,1937.9,
+9419,9419,Soft base to new denture,"Sagtebasis vir nuwe kunsgebit, per denture",2038.7,1937.9,Prosthetics,each
 9421,9421,Gum tinting per denture,Tandvleis kleuring,per kunsgebit,407.87,377.1,Prosthetics,
 9423,9423,Lingual or palatal bar,Linguale- of palatale stang,328.5,303.7,Prosthetics,
 9425,9425,Cleaning and repolishingof old denture,Skoonmaak en poleer van ou kunsgebit,267.7,247.5,Repairs,
 9427,9427,Mesh strengthener,Gaasversterker,229.6,212.3,Prosthetics,
 9429,9429,Theatre / Consultation out of lab per hour or part,Theatre / Consultation out of lab per hour or part,569.4,526.5,Chrome Cobalt,
-9431,9431,"Special tray,Spesiale akriel afdruklepel, acrylic",199.2,215.5,189.4,
+9431,9431,Special tray,"Spesiale akriel afdruklepel, acrylic",199.2,189.4,Models,each
 9432,9432,Special tray light cure each,Special tray light cure each,234.7,217.0,Prosthetics,
-9433,9433,"Special tray,Spesiale basisplaat materiaal afdruklepel, base plate material",204.1,220.8,194.0,
+9433,9433,Special tray,"Spesiale basisplaat materiaal afdruklepel, base plate material",204.1,194.0,Prosthetics,each
 9435,9435,Single arm clasp to partial denture,Eenarmklammer in gedeeltelike gebit,113.2,104.7,Prosthetics,
 9437,9437,Double arm clasp to partial denture,Tweearmklammer in gedeeltelike gebit,196.3,181.5,Prosthetics,
 9439,9439,Single arm clasp with rest to partial denture,Eenarmklammer met rus in gedeeltelike gebit,254.5,235.3,Prosthetics,
@@ -466,8 +466,8 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9455,9455,One arm clasp,Eenarmklammer,63.4,58.6,Chrome Cobalt,
 9457,9457,Roach clasp,Roach klammer,107.6,99.5,Chrome Cobalt,
 9459,9459,Additonal chargefor each rest,Add fooi vir rus,57.7,53.4,Chrome Cobalt,
-9461,9461,"Continuous clasp,Aaneen,klammer per tand,per tooth",58.6,63.4,55.7,
-9463,9463,"Lingual bar,Linguale stang, per tand, per tooth passed",137.8,149.1,131.0,
+9461,9461,Continuous clasp,"Aaneen, klammer per tand, per tooth",58.6,55.7,Chrome Cobalt,each
+9463,9463,Lingual bar,"Linguale stang, per tand, per tooth passed",137.8,131.0,Chrome Cobalt,each
 9465,9465,Palatal bar,Palatale stang,237.2,219.3,Chrome Cobalt,
 9467,9467,Onlay (CrCo),Oplegsel (CrCo),632.7,584.9,Chrome Cobalt,
 9469,9469,Saddle with finishline,Saalvlak met afwerklyn,105.1,97.2,Chrome Cobalt,
@@ -509,7 +509,7 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9521p,,Full metal crown/MOD/3/4 crown,Volle metaal dopkroon/MOD/3/4 kroon,1031.09,953.3,Crown & Bridge,
 9523,9523,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
 9524,9524,Indirect composite resin inlay,Indirekte komposiet hars inlegsel,387.2,358.0,Crown & Bridge,
-9525,9525,"Class IV,Klas IV, MO inlegsel, MO inlay",1088.3,1177.1,1034.5,
+9525,9525,Class IV,"Klas IV, MO inlegsel, MO inlay",1088.3,1034.5,Crown & Bridge,each
 9525p,,"Class IV,Klas IV, MO inlegsel, MO inlay",785.5,809.04,748.0,
 9526,9526,Add. fee for one piece casting of crown on post,Byk. gelde vir een-stuk gietsel van kroon op stif,359.4,332.2,Crown & Bridge,
 9527SER,9527,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
@@ -517,10 +517,10 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9531,9531,Pin-ledge inlay,Penlegsel,1334.8,1234.1,Crown & Bridge,
 9533,9533,Metal pontic,Metaal foptand,1055.2,975.6,Crown & Bridge,
 9535,9535,Coping cast,Gegote vingerhoed,989.3,914.7,Crown & Bridge,
-9537,9537,"Precicion lock and rest cast,Gegote slotaanhegting, insl. vervaardigde parte, inc. preformed parts",1297.5,1403.4,1233.4,
+9537,9537,Precicion lock and rest cast,"Gegote slotaanhegting, insl. vervaardigde parte, inc. preformed parts",1297.5,1233.4,Crown & Bridge,each
 9538,9538,Lock and rest cast,Gegote slot en okklusale rus,671.3,620.6,Crown & Bridge,
 9539,9539,Rest,Rus,400.4,370.2,Crown & Bridge,
-9541,9541,"Metal inlay or post,Metaal inlegsel of stif, direk gegiet, cast direct",393.3,425.4,373.9,
+9541,9541,Metal inlay or post,"Metaal inlegsel of stif, direk gegiet, cast direct",393.3,373.9,Crown & Bridge,each
 9543,9543,Gold soldering joint,Goue soldeerlas,422.8,390.9,Crown & Bridge,
 9545,9545,Post,Kernstif,704.5,651.3,Crown & Bridge,
 9545A,9545,Ceromer post,Ceromer stif,704.5,470.2,Crown & Bridge,
@@ -530,11 +530,11 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9549,9549,C.S.P. attachment (Steiger),K.S.P.-aanhegting (Steiger),3105.6,2871.3,Crown & Bridge,
 9550,9550,Milling milled edge per unit,Milling milled edge per unit,989.3,914.7,Crown & Bridge,
 9551,9551,Telescope crown,Teleskopiese kroon,2437.3,2253.5,Crown & Bridge,
-9553,9553,"Composite acrylic veneer crown,Komposiet akrielfineerkroon, indirek, indirect",1801.1,1948.0,1712.1,
-9557,9557,"Composite acrylic jacket crown,Komposiet akriel dopkroon, indirek, indirect",1272.4,1376.2,1209.5,
+9553,9553,Composite acrylic veneer crown,"Komposiet akrielfineerkroon, indirek, indirect",1801.1,1712.1,Crown & Bridge,each
+9557,9557,Composite acrylic jacket crown,"Komposiet akriel dopkroon, indirek, indirect",1272.4,1209.5,Crown & Bridge,each
 9559,9559,Composite acrylic veneer post crown,Komposiet akriel fineer stifkroon,1925.9,1780.6,Crown & Bridge,
 9560,9560,Indirect composite resin veneer,Indirekte komposiet hars fineer,815.3,753.8,Crown & Bridge,
-9561,9561,"Composite acrylic jacket crown,Komposiet akriel dopkroon, direk, direct",868.6,939.5,825.7,
+9561,9561,Composite acrylic jacket crown,"Komposiet akriel dopkroon, direk, direct",868.6,825.7,Crown & Bridge,each
 9562,9562,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
 9563,9563,Temporary acrylic crown,Tydelike akriel kroon,671.3,620.6,Crown & Bridge,
 9564,9564,Heat formed template,Hitte gevormde gidsplaat,337.4,311.9,Crown & Bridge,
@@ -597,8 +597,8 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9704,9704,Diatroics: Single posterior,Kunstande: Enkel posterior,98.97,91.5,Material,
 9706,9706,Cost of bleaching tray material,Koste van bleik lepel materiaal,36.45,33.7,Material,
 9707,9706,Essex,Essex,36.45,33.7,Material,
-9720,9720,"Soft base material,Sagtebasis materiaal, per gebit, per denture",975.1,1004.26,928.5,
-9722,9722,"Acrylic,Akriel, per gebit, per denture",110.3,113.57,105.0,
+9720,9720,Soft base material,"Sagtebasis materiaal, per gebit, per denture",975.1,928.5,Material,each
+9722,9722,Acrylic,"Akriel, per gebit, per denture",110.3,105.0,Material,each
 9722p,9722,Thermoplastic,Thermoplastic,773.99,715.6,Material,
 9723,9723,Ultraflex,Ultraflex,759.93,702.6,Material,
 9724,9724,Precision attcahment,Presisie aanhegting,0.0,0.0,,
@@ -654,7 +654,7 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9785,9784,Alignment of clips on Implants,Belyning van clips op Implantate,917.3,846.7,Preparation,
 9786,9786,Waxing and finishing of implant abutment: C & B,Opwas en voltooi van implantaatanker: K & B,395.2,364.7,Chrome Cobalt,
 9787,9787,Waxing; milling and finishing of custom abutment,Waxing; milling and finishing of custom abutment,770.7,711.4,Material,
-9788,9788,"Implant superstructure,Implantaat raamwerk, insluitend onderdele, including placing of parts",3889.6,4214.2,3703.7,
+9788,9788,Implant superstructure,"Implantaat raamwerk, insluitend onderdele, including placing of parts",3889.6,3703.7,Implants,each
 9789,9789,Finishing prosthesis on implant structure per arch,Finishing prosthesis on implant structure per arch,1539.3,1420.7,Material,
 9790,9736,Implant Analogue for BA S/S,Implant Analogue for BA S/S,260.88,241.2,Implants,
 9791,9736,Hex Gold Cyl for BA Imp,Hex Gold Cyl for BA Imp,2606.33,2409.7,Implants,
@@ -1575,9 +1575,13 @@ const buildDocumentHTML = (doc, data, type) => {
     return codeA.localeCompare(codeB, undefined, { numeric: true });
   });
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const discountEnabled = doc.discountEnabled || false;
+  const discountPercent = Math.min(100, Math.max(0, parseFloat(doc.discountPercent) || 0));
+  const discountAmount = discountEnabled ? subtotal * (discountPercent / 100) : 0;
+  const afterDiscount = subtotal - discountAmount;
   const vatRate = parseFloat(p.vatPercent) || 0;
-  const exclusive = vatRate > 0 ? subtotal / (1 + vatRate / 100) : subtotal;
-  const vatAmount = subtotal - exclusive;
+  const exclusive = vatRate > 0 ? afterDiscount / (1 + vatRate / 100) : afterDiscount;
+  const vatAmount = afterDiscount - exclusive;
   const patientFull = [doc.patientSurname, doc.patientName ? doc.patientName + (doc.patientTitle ? " [" + doc.patientTitle + "]" : "") : ""].filter(Boolean).join(", ");
   const memberFull = doc.memberName || "";
   const bd = [p.bankName, p.accountNumber, p.branchCode ? "Branch " + p.branchCode : ""].filter(Boolean).join(", ");
@@ -1701,12 +1705,20 @@ const buildDocumentHTML = (doc, data, type) => {
       </tbody>
     </table>
 
-    <!-- ===== TOTALS TABLE (right-aligned, VAT-inclusive total + VAT component) ===== -->
+    <!-- ===== TOTALS TABLE (right-aligned, with discount if enabled, VAT-inclusive total + VAT component) ===== -->
     <div style="margin-top:8px;margin-bottom:6px;display:flex;justify-content:flex-end">
       <table style="font-size:${L.bodyFontSize||11}px;border:1px solid #000;border-collapse:collapse;min-width:240px">
         <tr>
+          <td style="padding:3px 8px;white-space:nowrap">Subtotal</td>
+          <td style="padding:3px 8px;text-align:right;border-left:1px solid #000">R&nbsp;&nbsp;${subtotal.toFixed(2)}</td>
+        </tr>
+        ${discountEnabled ? `<tr>
+          <td style="padding:3px 8px;white-space:nowrap">Discount (${discountPercent.toFixed(1)}%)</td>
+          <td style="padding:3px 8px;text-align:right;border-left:1px solid #000">-R&nbsp;&nbsp;${discountAmount.toFixed(2)}</td>
+        </tr>` : ""}
+        <tr style="border-top:1px solid #000">
           <td style="padding:3px 8px;white-space:nowrap">${isInv?"Invoice total":"Estimate total"}${vatRate>0?` (incl. VAT at ${vatRate}%)`:" (no VAT)"}</td>
-          <td style="padding:3px 8px;text-align:right;font-weight:bold;border-left:1px solid #000">R&nbsp;&nbsp;${subtotal.toFixed(2)}</td>
+          <td style="padding:3px 8px;text-align:right;font-weight:bold;border-left:1px solid #000">R&nbsp;&nbsp;${afterDiscount.toFixed(2)}</td>
         </tr>
         ${vatRate > 0 ? `<tr style="border-top:1px solid #000">
           <td style="padding:3px 8px;white-space:nowrap">VAT at ${vatRate}% included</td>
@@ -2225,9 +2237,13 @@ const buildPDFBlob = async (doc, data, type) => {
     return codeA.localeCompare(codeB, undefined, { numeric: true });
   });
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const discountEnabled = doc.discountEnabled || false;
+  const discountPercent = Math.min(100, Math.max(0, parseFloat(doc.discountPercent) || 0));
+  const discountAmount = discountEnabled ? subtotal * (discountPercent / 100) : 0;
+  const afterDiscount = subtotal - discountAmount;
   const vatRate = parseFloat(p.vatPercent) || 0;
-  const exclusive = vatRate > 0 ? subtotal / (1 + vatRate / 100) : subtotal;
-  const vatAmount = subtotal - exclusive;
+  const exclusive = vatRate > 0 ? afterDiscount / (1 + vatRate / 100) : afterDiscount;
+  const vatAmount = afterDiscount - exclusive;
   const L = {...(INITIAL_DATA.profile.layout), ...(p.layout || {})};
   const patientFull = [doc.patientSurname, doc.patientName ? doc.patientName + (doc.patientTitle ? " [" + doc.patientTitle + "]" : "") : ""].filter(Boolean).join(", ");
   const memberFull = doc.memberName || "";
@@ -2420,12 +2436,16 @@ const buildPDFBlob = async (doc, data, type) => {
     });
     y = pdf.lastAutoTable.finalY + 2;
 
-    // --- TOTALS TABLE (right-aligned, VAT-inclusive total + VAT component) ---
+    // --- TOTALS TABLE (right-aligned, with discount if enabled, VAT-inclusive total + VAT component) ---
     const totW = cw * 0.55;
-    const totLabel = (isInv ? "Invoice total" : "Estimate total") + (vatRate > 0 ? " (incl. VAT at " + vatRate + "%)" : " (no VAT)");
     const totBody = [
-      [{ content: totLabel, styles: { fontStyle: "bold" } }, { content: "R  " + subtotal.toFixed(2), styles: { halign: "right", fontStyle: "bold" } }],
+      ["Subtotal", { content: "R  " + subtotal.toFixed(2), styles: { halign: "right" } }],
     ];
+    if (discountEnabled) {
+      totBody.push(["Discount (" + discountPercent.toFixed(1) + "%)", { content: "-R  " + discountAmount.toFixed(2), styles: { halign: "right" } }]);
+    }
+    const totLabel = (isInv ? "Invoice total" : "Estimate total") + (vatRate > 0 ? " (incl. VAT at " + vatRate + "%)" : " (no VAT)");
+    totBody.push([{ content: totLabel, styles: { fontStyle: "bold" } }, { content: "R  " + afterDiscount.toFixed(2), styles: { halign: "right", fontStyle: "bold" } }]);
     if (vatRate > 0) {
       totBody.push(["VAT at " + vatRate + "% included", { content: "R  " + vatAmount.toFixed(2), styles: { halign: "right" } }]);
     }
@@ -3762,8 +3782,10 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
 
 const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
   const t = useT();
-  const [f, setF] = useState(estimate || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:[], lang:"en" });
+  const [f, setF] = useState(estimate || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:[], lang:"en", discountEnabled:false, discountPercent:15 });
   const [lang, setLang] = useState(estimate?.lang || "en");
+  const [discountEnabled, setDiscountEnabled] = useState(estimate?.discountEnabled || false);
+  const [discountPercent, setDiscountPercent] = useState(estimate?.discountPercent || 15);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
   const switchLang = (newLang) => {
     setLang(newLang);
@@ -3773,7 +3795,12 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
     })}));
   };
   const clients = data.clients.filter(c => !c.archived);
-  const total = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const subtotal = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const discountAmount = discountEnabled ? subtotal * (Math.min(100, Math.max(0, parseFloat(discountPercent) || 0)) / 100) : 0;
+  const afterDiscount = subtotal - discountAmount;
+  const vatRate = parseFloat(data.profile.vatPercent) || 0;
+  const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
+  const total = afterDiscount;
 
   return (
     <div>
@@ -3799,12 +3826,43 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
       </div>
       <div style={{marginBottom:16}}><LineItemEditor items={f.items} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid #e5e7eb",paddingTop:12}}>
-        <span style={{fontSize:18,fontWeight:700}}>{t("estimateTotal")}: {fmt(total)}</span>
-        <div style={{display:"flex",gap:8}}>
-          <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
-          <button className="btn btn-primary" title="Save this estimate" onClick={()=>onSave({...f,lang,total})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_estimates").replace(/s$/,"")}</button>
+      <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <label style={{fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+            <input type="checkbox" checked={discountEnabled} onChange={e=>{setDiscountEnabled(e.target.checked);if(e.target.checked&&!discountPercent)setDiscountPercent(15);}}/>
+            <span>Discount</span>
+          </label>
+          {discountEnabled && (
+            <input type="number" min="0" max="100" step="0.1" value={discountPercent} onChange={e=>setDiscountPercent(e.target.value)} style={{width:70,padding:"4px 8px",border:"1px solid #d1d5db",borderRadius:4,fontSize:13}} placeholder="%" title="Discount percentage (max 100%)"/>
+          )}
+          {discountEnabled && <span style={{fontSize:13,color:"#6b7280"}}>%</span>}
         </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,fontSize:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",width:250}}>
+            <span>Subtotal:</span>
+            <span>{fmt(subtotal)}</span>
+          </div>
+          {discountEnabled && (
+            <div style={{display:"flex",justifyContent:"space-between",width:250,color:"#dc2626"}}>
+              <span>Discount ({Math.min(100,Math.max(0,parseFloat(discountPercent)||0)).toFixed(1)}%):</span>
+              <span>- {fmt(discountAmount)}</span>
+            </div>
+          )}
+          {vatRate > 0 && (
+            <div style={{display:"flex",justifyContent:"space-between",width:250,fontSize:12,color:"#6b7280"}}>
+              <span>VAT at {vatRate}% included:</span>
+              <span>{fmt(vatAmount)}</span>
+            </div>
+          )}
+          <div style={{display:"flex",justifyContent:"space-between",width:250,fontSize:18,fontWeight:700,borderTop:"1px solid #e5e7eb",paddingTop:4}}>
+            <span>{t("estimateTotal")}:</span>
+            <span>{fmt(total)}</span>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+        <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
+        <button className="btn btn-primary" title="Save this estimate" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_estimates").replace(/s$/,"")}</button>
       </div>
     </div>
   );
@@ -3978,8 +4036,10 @@ const Estimates = ({ data, setData, setPage }) => {
 
 const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
   const t = useT();
-  const [f, setF] = useState(invoice || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:[], lang:"en" });
+  const [f, setF] = useState(invoice || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:[], lang:"en", discountEnabled:false, discountPercent:15 });
   const [lang, setLang] = useState(invoice?.lang || "en");
+  const [discountEnabled, setDiscountEnabled] = useState(invoice?.discountEnabled || false);
+  const [discountPercent, setDiscountPercent] = useState(invoice?.discountPercent || 15);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
   const switchLang = (newLang) => {
     setLang(newLang);
@@ -3989,7 +4049,12 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
     })}));
   };
   const clients = data.clients.filter(c => !c.archived);
-  const total = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const subtotal = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const discountAmount = discountEnabled ? subtotal * (Math.min(100, Math.max(0, parseFloat(discountPercent) || 0)) / 100) : 0;
+  const afterDiscount = subtotal - discountAmount;
+  const vatRate = parseFloat(data.profile.vatPercent) || 0;
+  const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
+  const total = afterDiscount;
 
   return (
     <div>
@@ -4014,12 +4079,43 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
       </div>
       <div style={{marginBottom:16}}><LineItemEditor items={f.items} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"1px solid #e5e7eb",paddingTop:12}}>
-        <span style={{fontSize:18,fontWeight:700}}>{t("invoiceTotal")}: {fmt(total)}</span>
-        <div style={{display:"flex",gap:8}}>
-          <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
-          <button className="btn btn-primary" title="Save this invoice" onClick={()=>onSave({...f,lang,total})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_invoices").replace(/s$/,"")}</button>
+      <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+          <label style={{fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",gap:6}}>
+            <input type="checkbox" checked={discountEnabled} onChange={e=>{setDiscountEnabled(e.target.checked);if(e.target.checked&&!discountPercent)setDiscountPercent(15);}}/>
+            <span>Discount</span>
+          </label>
+          {discountEnabled && (
+            <input type="number" min="0" max="100" step="0.1" value={discountPercent} onChange={e=>setDiscountPercent(e.target.value)} style={{width:70,padding:"4px 8px",border:"1px solid #d1d5db",borderRadius:4,fontSize:13}} placeholder="%" title="Discount percentage (max 100%)"/>
+          )}
+          {discountEnabled && <span style={{fontSize:13,color:"#6b7280"}}>%</span>}
         </div>
+        <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4,fontSize:14}}>
+          <div style={{display:"flex",justifyContent:"space-between",width:250}}>
+            <span>Subtotal:</span>
+            <span>{fmt(subtotal)}</span>
+          </div>
+          {discountEnabled && (
+            <div style={{display:"flex",justifyContent:"space-between",width:250,color:"#dc2626"}}>
+              <span>Discount ({Math.min(100,Math.max(0,parseFloat(discountPercent)||0)).toFixed(1)}%):</span>
+              <span>- {fmt(discountAmount)}</span>
+            </div>
+          )}
+          {vatRate > 0 && (
+            <div style={{display:"flex",justifyContent:"space-between",width:250,fontSize:12,color:"#6b7280"}}>
+              <span>VAT at {vatRate}% included:</span>
+              <span>{fmt(vatAmount)}</span>
+            </div>
+          )}
+          <div style={{display:"flex",justifyContent:"space-between",width:250,fontSize:18,fontWeight:700,borderTop:"1px solid #e5e7eb",paddingTop:4}}>
+            <span>{t("invoiceTotal")}:</span>
+            <span>{fmt(total)}</span>
+          </div>
+        </div>
+      </div>
+      <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+        <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
+        <button className="btn btn-primary" title="Save this invoice" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_invoices").replace(/s$/,"")}</button>
       </div>
     </div>
   );
@@ -4411,6 +4507,8 @@ const HelpSection = () => {
         <li><strong style={{background:"#ffedd5",color:"#9a3412",padding:"1px 6px",borderRadius:9999}}>partial</strong> — a payment has been received but does not cover the full invoice. The remaining balance still appears in the dentist's age analysis.</li>
         <li><strong style={{background:"#fef3c7",color:"#92400e",padding:"1px 6px",borderRadius:9999}}>unpaid</strong> — no payment received yet.</li>
       </UL>
+      <H>Discount Feature</H>
+      <P>Apply a percentage discount to the invoice total before VAT calculation. Tick the <strong>Discount</strong> checkbox at the bottom of the form, then enter a percentage (default 15%, maximum 100%). The discount is deducted from the subtotal before VAT is calculated. The discount line appears on both the form and the printed invoice/PDF. When you convert an estimate to an invoice or copy an invoice, the discount is <strong>not</strong> carried over — each new invoice starts with no discount applied.</P>
       <H>Searching &amp; Filtering</H>
       <P>Type in the search box to filter by client name or invoice number. Use the status dropdown to show only Unpaid or Paid invoices.</P>
     </div>) },
@@ -4428,6 +4526,8 @@ const HelpSection = () => {
       <P>Once the work is approved and completed, click the <strong>→ arrow button</strong> on the estimate. A new invoice is instantly created with all the same details (patient, items, medical aid, language). Prices are automatically updated to the <strong>current tariff rates</strong> at the time of conversion — not the prices when the estimate was originally created. The estimate is marked as <em>Invoiced</em>, and the invoice shows a reference back to the estimate number.</P>
       <H>Copying an Estimate</H>
       <P>Click the <strong>⧉ Copy button</strong> (or <strong>right-click</strong> the estimate row) to create a duplicate estimate. You'll see 3 options: <em>Copy All</em> (patient + line items with current prices), <em>Patient Only</em> (patient &amp; dentist info, blank line items), or <em>Detail Only</em> (line items with current prices, blank patient info). Useful for creating similar estimates for different patients or reusing tariff lists.</P>
+      <H>Discount Feature</H>
+      <P>Apply a percentage discount to the estimate total before VAT calculation. Tick the <strong>Discount</strong> checkbox at the bottom of the form, then enter a percentage (default 15%, maximum 100%). The discount is deducted from the subtotal before VAT is calculated. The discount line appears on both the form and the printed estimate/PDF. When you convert an estimate to an invoice or copy an estimate, the discount is <strong>not</strong> carried over — each new estimate/invoice starts with no discount applied.</P>
     </div>) },
 
     { id:"directclaim", icon:"🏥", title:"Direct Claiming — Submitting Directly to Medical Aid", content: (<div>

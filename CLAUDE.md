@@ -8,7 +8,7 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change**: update this CLAUDE.md file — add/update the feature in the appropriate section, fix any line numbers that shifted, and add a row to the Bug Fixes / Features table if applicable.
 - These two rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-05-17)
+## 🎯 PROJECT STATUS (Updated 2026-06-05)
 
 ### Current Version: Desktop App v2.0.0 + Web App v1.5 (Production-Ready)
 **Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
@@ -456,6 +456,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | macOS installer built | `EasyDentalLab-2.0.0-arm64.dmg` (90 MB, Apple Silicon M1/M2/M3). Ad-hoc signed (no Apple Developer certificate — "unidentified developer" warning expected). Drag-to-Applications installer. Requires macOS 10.15+ (Catalina). |
 | Linux installer built | `EasyDentalLab-2.0.0-arm64.AppImage` (100 MB, ARM64). Self-contained, runs on all modern distros (Ubuntu 20.04+, Fedora, Debian) without installation. Executable via `chmod +x` + `./EasyDentalLab-2.0.0-arm64.AppImage`. .deb package broken (96 bytes packaging error) — use AppImage instead. |
 | Installation guide created | `EasyDentalLab-Desktop/INSTALLERS-README.md` — complete installation instructions for Windows/macOS/Linux, system requirements, troubleshooting, SHA256 checksums, known issues, migration guide from web version. |
+| Afrikaans description bug (16 codes) | Fixed embedded CSV format for codes 9314, 9383, 9419, 9431, 9433, 9461, 9463, 9525, 9537, 9541, 9553, 9557, 9561, 9720, 9722, 9788. These had combined English+Afrikaans in Description field causing parser to misalign columns — Afrikaans selection showed price number instead of description. Split descriptions properly: English in Description column, Afrikaans in DescriptionAFR column. Added proper categories (Models, Prosthetics, Chrome Cobalt, Crown & Bridge, Material, Implants) and "each" measure. Lines 370, 423, 446, 452, 454, 469, 470, 512, 520, 523, 533, 534, 537, 600, 601, 657. |
+| Discount feature (invoices + estimates) | Added optional percentage discount (checkbox + input) to invoice and estimate forms. Default 15%, max 100%. Discount applies to subtotal BEFORE VAT calculation. Display shows: Subtotal → Discount (if enabled) → Total (incl. VAT) → VAT breakdown. Discount persisted in `discountEnabled` (boolean) and `discountPercent` (number) fields. Print/PDF output includes discount line when enabled. Convert estimate→invoice and copy functions do NOT carry over discount (fresh start). `EstimateForm` + `InvoiceForm` updated with discount UI (lines ~3765, ~3800, ~4019, ~4060). `buildDocumentHTML` (line ~1577) and `buildPDFBlob` (line ~2239) updated with discount calculation + totals table. Help sections updated for Invoices and Estimates (lines ~4510, ~4527). |
 
 ## License System
 
