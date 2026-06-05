@@ -35,14 +35,21 @@ Portable single-file dental laboratory invoicing application for South African d
   - Desktop installers rebuilt with latest features
   - **Result:** Feature parity between web v1.6 and desktop v2.1.0
 
-### Available Installers (v2.1.0)
+- ✅ **v2.1.1 Update** (June 5, 2026)
+  - Automatic version upgrade detection system
+  - Yellow notification banner prompts users to update tariffs on app upgrade
+  - Manual "Reload Default Tariffs" button in Settings
+  - Eliminates localStorage cache issue when upgrading
+  - **Result:** Users automatically get latest tariff data on upgrade
+
+### Available Installers (v2.1.1)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.1.0.exe` | 76 MB | ARM64 |
-| **macOS** | `EasyDentalLab-2.1.0-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.1.0-arm64.AppImage` | 100 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 2.1.1.exe` | 76 MB | ARM64 |
+| **macOS** | `EasyDentalLab-2.1.1-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.1.1-arm64.AppImage` | 100 MB | ARM64 |
 
 **Notes:**
 - macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
