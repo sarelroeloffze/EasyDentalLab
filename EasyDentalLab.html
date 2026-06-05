@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.1.1";
+const APP_VERSION = "2.1.2";
 
 const INITIAL_DATA = {
   appVersion: APP_VERSION,
@@ -601,7 +601,7 @@ const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,P
 9706,9706,Cost of bleaching tray material,Koste van bleik lepel materiaal,36.45,33.7,Material,
 9707,9706,Essex,Essex,36.45,33.7,Material,
 9720,9720,Soft base material,"Sagtebasis materiaal, per gebit, per denture",975.1,928.5,Material,each
-9722,9722,Acrylic,"Akriel, per gebit, per denture",110.3,105.0,Material,each
+9722,9722,"Acrylic, per denture","Akriel, per gebit",110.3,105.0,Material,each
 9722p,9722,Thermoplastic,Thermoplastic,773.99,715.6,Material,
 9723,9723,Ultraflex,Ultraflex,759.93,702.6,Material,
 9724,9724,Precision attcahment,Presisie aanhegting,0.0,0.0,,
@@ -3362,6 +3362,7 @@ const Tariffs = ({ data, setData }) => {
               <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("userCode")}</th>
               <th style={{padding:"10px 12px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("tariffCode")}</th>
               <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("description")}</th>
+              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("descriptionAFR")}</th>
               <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("category")}</th>
               <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("price")}</th>
               <th style={{width:70}}></th>
@@ -3372,6 +3373,7 @@ const Tariffs = ({ data, setData }) => {
                   <td style={{padding:"8px 16px",fontSize:13,fontFamily:"monospace",color:"#2563eb",fontWeight:600}}>{t.code}</td>
                   <td style={{padding:"8px 12px",fontSize:12,fontFamily:"monospace",color:t.tariffCode&&t.tariffCode!==t.code?"#7c3aed":"#9ca3af",fontWeight:600}}>{t.tariffCode||t.code}</td>
                   <td style={{padding:"8px 16px",fontSize:13}}>{t.description}</td>
+                  <td style={{padding:"8px 16px",fontSize:13,color:"#6b7280",fontStyle:"italic"}}>{t.descriptionAFR||"—"}</td>
                   <td style={{padding:"8px 16px"}}><span className="badge badge-gray">{t.category||"—"}</span></td>
                   <td style={{padding:"8px 16px",fontSize:13,fontWeight:600,textAlign:"right"}}>{fmt(t.price)}</td>
                   <td style={{padding:"8px 8px"}}>
@@ -5748,7 +5750,7 @@ function App() {
             </button>
           ))}
         </nav>
-        {sidebarOpen && <div style={{padding:12,borderTop:"1px solid var(--c-border2)"}}><p style={{margin:0,fontSize:11,color:"var(--c-text4)",textAlign:"center"}}>EasyDentalLab v1.0</p></div>}
+        {sidebarOpen && <div style={{padding:12,borderTop:"1px solid var(--c-border2)"}}><p style={{margin:0,fontSize:11,color:"var(--c-text4)",textAlign:"center"}}>EasyDentalLab v{APP_VERSION}</p></div>}
       </div>
 
       {/* Main */}
