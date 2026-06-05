@@ -10,7 +10,7 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-06-05)
 
-### Current Version: Desktop App v2.0.0 + Web App v1.5 (Production-Ready)
+### Current Version: Desktop App v2.1.0 + Web App v1.6 (Production-Ready)
 **Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
 
 ### Completed Work
@@ -29,14 +29,20 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Installers built:** Windows (76 MB), macOS ARM64 (90 MB), Linux ARM64 (100 MB)
   - **Result:** Standalone desktop app, no browser dependency, native file system access
 
-### Available Installers (v2.0.0)
+- ✅ **v2.1.0 Update** (June 5, 2026)
+  - Discount feature added (invoices + estimates, 0-100%, default 15%)
+  - Fixed 16 tariff codes with malformed Afrikaans descriptions
+  - Desktop installers rebuilt with latest features
+  - **Result:** Feature parity between web v1.6 and desktop v2.1.0
+
+### Available Installers (v2.1.0)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.0.0.exe` | 76 MB | ARM64 |
-| **macOS** | `EasyDentalLab-2.0.0-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.0.0-arm64.AppImage` | 100 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 2.1.0.exe` | 76 MB | ARM64 |
+| **macOS** | `EasyDentalLab-2.1.0-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.1.0-arm64.AppImage` | 100 MB | ARM64 |
 
 **Notes:**
 - macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
