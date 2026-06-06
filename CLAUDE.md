@@ -8,9 +8,9 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change**: update this CLAUDE.md file — add/update the feature in the appropriate section, fix any line numbers that shifted, and add a row to the Bug Fixes / Features table if applicable.
 - These two rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-06-05)
+## 🎯 PROJECT STATUS (Updated 2026-06-06)
 
-### Current Version: Desktop App v2.1.2 + Web App v1.7 (Production-Ready)
+### Current Version: Desktop App v2.2.0 + Web App v1.7 (Production-Ready)
 **Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
 
 ### Completed Work
@@ -48,14 +48,23 @@ Portable single-file dental laboratory invoicing application for South African d
   - Fixed tariff code 9722 description split: English "Acrylic, per denture" / Afrikaans "Akriel, per gebit"
   - **Result:** UI polish fixes for better usability
 
-### Available Installers (v2.1.2)
+- ✅ **v2.2.0 Update** (June 6, 2026)
+  - Multi-PC sync with Dropbox (conflict detection, first-run restore wizard, sync setup guidance)
+  - Auto-updater (electron-updater with GitHub Releases backend, silent background downloads)
+  - Save-on-close (force flush before app quit, 2-second grace period)
+  - In-app support (WhatsApp + email buttons in Settings)
+  - Workflow improvements: auto-focus code input on form open, Down Arrow registers code+description before moving to next line
+  - Desktop installers rebuilt with all v2.2.0 features
+  - **Result:** Production-ready multi-PC desktop app with auto-update capability
+
+### Available Installers (v2.2.0)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.1.2.exe` | 76 MB | ARM64 |
-| **macOS** | `EasyDentalLab-2.1.2-arm64.dmg` | 90 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.1.2-arm64.AppImage` | 100 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 2.2.0.exe` | 76 MB | ARM64 |
+| **macOS** | `EasyDentalLab-2.2.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.2.0-arm64.AppImage` | 101 MB | ARM64 |
 
 **Notes:**
 - macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
@@ -479,6 +488,13 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Discount feature (invoices + estimates) | Added optional percentage discount (checkbox + input) to invoice and estimate forms. Default 15%, max 100%. Discount applies to subtotal BEFORE VAT calculation. Display shows: Subtotal → Discount (if enabled) → Total (incl. VAT) → VAT breakdown. Discount persisted in `discountEnabled` (boolean) and `discountPercent` (number) fields. Print/PDF output includes discount line when enabled. Convert estimate→invoice and copy functions do NOT carry over discount (fresh start). `EstimateForm` + `InvoiceForm` updated with discount UI (lines ~3765, ~3800, ~4019, ~4060). `buildDocumentHTML` (line ~1577) and `buildPDFBlob` (line ~2239) updated with discount calculation + totals table. Help sections updated for Invoices and Estimates (lines ~4510, ~4527). |
 | Automatic version upgrade detection | Added `APP_VERSION` constant and version tracking in localStorage. On app load, `loadData()` detects version mismatch and sets `_tariffUpdateAvailable` flag. Yellow notification banner appears at top of app (dismissible) with "Update Now" button. New `reloadDefaultTariffs()` function replaces tariffs with embedded CSV. Settings page has manual "Reload Default Tariffs" button with version display. Solves localStorage cache issue when upgrading — users no longer see old tariff data after update. Lines ~288 (APP_VERSION), ~877 (loadData version check), ~945 (reloadDefaultTariffs), ~5745 (upgrade banner), ~5102 (Settings button). |
 | UI fixes: version display + Afrikaans column | Fixed sidebar version display to show `APP_VERSION` instead of hardcoded "v1.0" (line ~5751). Added Afrikaans description column to Tariffs table (line ~3364) — was missing, making Afrikaans descriptions invisible/uneditable. Fixed 9722 tariff: English "Acrylic, per denture" / Afrikaans "Akriel, per gebit" (line ~601). |
+| **v2.2.0 Features & Fixes** | **Multi-PC sync, auto-updater, save-on-close, workflow improvements** |
+| Multi-PC sync (desktop only) | First-run restore wizard with file picker. Conflict detection scans for Dropbox conflicted copies on startup and shows yellow warning banner. Multi-PC setup guidance panel in AutoBackupCard with 3-PC workflow instructions. `initDataFromFile()` checks backup file timestamp vs localStorage on startup. `scanForConflicts()` IPC handler added. Desktop-only features (web version remains single-PC). |
+| Auto-updater (desktop only) | `electron-updater` integrated with GitHub Releases backend. `setupAutoUpdater()` in main.js configures silent background downloads. Three UI states: downloading (blue banner), ready to install (green banner with "Restart Now" button), manual download required (macOS unsigned — opens GitHub Releases URL). `autoDownload: true` and `autoInstallOnAppQuit: true`. Updates check on startup after 5-second delay. Desktop-only (web version has no auto-update). |
+| Save-on-close (desktop only) | `before-quit` handler in main.js calls `window._flushDataNow()` to force immediate backup flush before app exit. 2-second grace period to complete write. `autoBackupCSVs()` accepts `force` parameter to bypass debounce. Prevents data loss when quitting within 2-second auto-backup window. Desktop-only (web version uses `beforeunload` warning only). |
+| In-app support | `SUPPORT_WHATSAPP` and `SUPPORT_EMAIL` constants added. `openExternalUrl()` helper with URL scheme validation (https/mailto only). `SupportCard` component in Settings with WhatsApp and email buttons. Alert icon added to ICO object. `openExternal` IPC handler in desktop version. Both web and desktop versions. |
+| Code input auto-focus | `useEffect` hook in `InvoiceForm` and `EstimateForm` auto-focuses first code input on form open. Uses `setTimeout(100ms)` to wait for DOM render, then `querySelector('input[data-field="code"]')` to find and focus the input. Eliminates manual click to start data entry. Both web and desktop versions. |
+| Down Arrow confirmation timing | Fixed `CodeInput` ArrowDown handler to properly register code+description before adding new line. Now calls `pick(match)` first (which sets the item), then uses nested `setTimeout` (10ms + 50ms) to ensure state updates complete before `onAddLine()` is called and new row is focused. Previously the code was not being registered because `setOpen(false)` happened before `pick()`. Both web and desktop versions. |
 
 ## License System
 
