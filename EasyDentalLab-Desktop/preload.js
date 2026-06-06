@@ -8,5 +8,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
   readBackupFile: (filename) => ipcRenderer.invoke('read-backup-file', filename),
   writeSubfolderFile: (subfolderName, filename, content) => ipcRenderer.invoke('write-subfolder-file', subfolderName, filename, content),
   getBackupFolder: () => ipcRenderer.invoke('get-backup-folder'),
+  flushComplete: () => ipcRenderer.invoke('flush-complete'),
+  scanForConflicts: () => ipcRenderer.invoke('scan-for-conflicts'),
+  getFileTimestamp: (filename) => ipcRenderer.invoke('get-file-timestamp', filename),
+  pickRestoreFile: () => ipcRenderer.invoke('pick-restore-file'),
+  // Auto-updater
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (e, info) => callback(info)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (e, info) => callback(info)),
+  onUpdateAvailableManual: (callback) => ipcRenderer.on('update-available-manual', (e, info) => callback(info)),
+  installUpdate: () => ipcRenderer.send('install-update'),
+  // External URL opener
+  openExternal: (url) => ipcRenderer.invoke('open-external', url),
   platform: process.platform // 'win32', 'darwin', 'linux'
 });

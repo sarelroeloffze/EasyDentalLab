@@ -2,6 +2,12 @@ appId: com.roeloffze.easydentallab
 productName: EasyDentalLab
 copyright: Copyright © 2026 Sarel Roeloffze
 
+publish:
+  provider: github
+  owner: sarelroeloffze
+  repo: EasyDentalLab
+  private: true
+
 directories:
   output: build
 

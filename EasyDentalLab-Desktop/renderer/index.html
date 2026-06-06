@@ -285,7 +285,9 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.1.2";
+const APP_VERSION = "2.2.0";
+const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
+const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
 const INITIAL_DATA = {
   appVersion: APP_VERSION,
@@ -938,7 +940,10 @@ const loadData = () => {
 };
 
 const saveData = (data) => {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {
+  try {
+    const toSave = { ...data, _savedAt: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {
     console.warn("Failed to save:", e);
     if (e && (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22 || e.code === 1014)) {
       alert("WARNING: Storage is full! Your changes could not be saved.\n\nPlease go to Settings and export a backup immediately.");
@@ -1196,11 +1201,10 @@ const getBackupPassword = (data) => {
 };
 
 // Debounced auto-backup (writes all CSVs after a short delay)
-const autoBackupCSVs = (data) => {
+const autoBackupCSVs = async (data, force = false) => {
   if (!_backupDirHandle) return;
-  clearTimeout(_backupDebounce);
-  _backupPending = true; // Mark backup as pending
-  _backupDebounce = setTimeout(async () => {
+
+  const _doBackup = async () => {
     try {
       // Re-verify permission (may have been revoked)
       const perm = await _backupDirHandle.queryPermission({ mode: "readwrite" });
@@ -1230,7 +1234,18 @@ const autoBackupCSVs = (data) => {
       console.warn("Auto-backup failed:", e);
       if (_showBackupToast) _showBackupToast(`⚠️ Auto-backup failed — ${e.message}`, "error");
     }
-  }, 2000); // 2 second debounce to batch rapid changes
+  };
+
+  if (force) {
+    // Immediate write, no debounce
+    _backupPending = true;
+    await _doBackup();
+  } else {
+    // Debounced write
+    clearTimeout(_backupDebounce);
+    _backupPending = true; // Mark backup as pending
+    _backupDebounce = setTimeout(_doBackup, 2000); // 2 second debounce to batch rapid changes
+  }
 };
 
 const genId = () => Math.random().toString(36).slice(2, 11);
@@ -1241,6 +1256,15 @@ const fmtDate = (d) => {
   return new Date(d + "T00:00:00").toLocaleDateString("en-ZA", { year: "numeric", month: "short", day: "numeric" });
 };
 const today = () => new Date().toISOString().split("T")[0];
+
+// Open external URL (WhatsApp, email, download links) — uses shell.openExternal in Electron
+const openExternalUrl = (url) => {
+  if (window.electronAPI?.openExternal) {
+    window.electronAPI.openExternal(url); // Electron: use shell.openExternal
+  } else {
+    window.open(url, "_blank");           // Web browser: normal tab
+  }
+};
 
 // ============================================================
 // SVG ICONS
@@ -1278,6 +1302,7 @@ const ICO = {
   sparkles: "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM5 17l.75 2.25L8 20l-2.25.75L5 23l-.75-2.25L2 20l2.25-.75L5 17zM19 3l.75 2.25L22 6l-2.25.75L19 9l-.75-2.25L16 6l2.25-.75L19 3z",
   refresh: "M21.5 2v6h-6 M2.5 22v-6h6 M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2",
   info: "M12 16v-4 M12 8h.01 M22 12c0 5.523-4.477 10-10 10S2 17.523 2 12 6.477 2 12 2s10 4.477 10 10z",
+  alert: "M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01",
 };
 
 // ============================================================
@@ -1525,21 +1550,27 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       e.preventDefault();
       confirmAndMove();
     } else if (e.key === "ArrowDown") {
-      if (open && filtered.length > 0) {
-        // Navigate dropdown
-        e.preventDefault();
-        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
-      } else {
-        // Add new line and focus its code input
-        e.preventDefault();
-        setOpen(false);
-        if (onAddLine) {
-          const newId = onAddLine();
-          setTimeout(() => {
-            const table = inputRef.current?.closest("table");
-            if (table) { const allCodeInputs = table.querySelectorAll("input[data-field='code']"); const last = allCodeInputs[allCodeInputs.length - 1]; if (last) last.focus(); }
-          }, 50);
-        }
+      // Always: confirm current code + add new line + focus new code input
+      e.preventDefault();
+      setOpen(false);
+
+      // Step 1: confirm whatever is typed (same logic as confirmAndMove but without moving to description)
+      const q = (query || value || "").toLowerCase().trim();
+      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
+      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+      if (match) { pick(match); }
+
+      // Step 2: add new blank line below, focus its code input
+      if (onAddLine) {
+        onAddLine();
+        setTimeout(() => {
+          const table = inputRef.current?.closest("table");
+          if (table) {
+            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+            const last = allCodeInputs[allCodeInputs.length - 1];
+            if (last) last.focus();
+          }
+        }, 50);
       }
     } else if (e.key === "ArrowUp" && open && filtered.length > 0) {
       e.preventDefault();
@@ -3750,9 +3781,9 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
               {sortedItems.map((item, rowIdx) => (
                 <tr key={item.id} style={{borderTop:"1px solid #f3f4f6"}}>
                   <td style={{padding:"4px 8px"}}><CodeInput value={item.code} onChange={v=>update(item.id,"code",v)} onSelect={t=>{update(item.id,"code",t.code);update(item.id,"tariffCode",t.tariffCode||t.code);update(item.id,"description",descForLang(t,lang));update(item.id,"price",t.price);}} onAddLine={addBlank} tariffs={tariffs} rowId={item.id} inputStyle={{padding:"4px 6px",fontSize:12,fontFamily:"monospace"}}/></td>
-                  <td style={{padding:"4px 8px"}}><input className="input-field" data-field="description" data-row={item.id} title="Item description — auto-filled from tariff or type your own" value={item.description} onChange={e=>update(item.id,"description",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const qtyInput=row?.querySelector("input[type='number']");if(qtyInput)qtyInput.focus();}if(e.key==="ArrowDown"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}} style={{padding:"4px 6px",fontSize:12}}/></td>
-                  <td style={{padding:"4px 8px"}}><input className="input-field" title="Quantity" type="number" value={item.qty} onChange={e=>update(item.id,"qty",e.target.value)} min="1" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const priceInput=row?.querySelectorAll("input[type='number']")[1];if(priceInput)priceInput.focus();}if(e.key==="ArrowDown"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}} style={{padding:"4px 6px",fontSize:12,textAlign:"center"}}/></td>
-                  <td style={{padding:"4px 8px"}}><input className="input-field" title="Unit price — auto-filled from tariff or type your own" type="number" value={item.price} onChange={e=>update(item.id,"price",e.target.value)} step="0.01" onKeyDown={e=>{if(e.key==="Enter"||e.key==="ArrowDown"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}} style={{padding:"4px 6px",fontSize:12,textAlign:"right"}}/></td>
+                  <td style={{padding:"4px 8px"}}><input className="input-field" data-field="description" data-row={item.id} title="Item description — auto-filled from tariff or type your own" value={item.description} onChange={e=>update(item.id,"description",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const qtyInput=row?.querySelector("input[type='number']");if(qtyInput)qtyInput.focus();}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextDesc=nextRow.querySelector("input[data-field='description']");if(nextDesc)nextDesc.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevDesc=prevRow.querySelector("input[data-field='description']");if(prevDesc)prevDesc.focus();}}}} style={{padding:"4px 6px",fontSize:12}}/></td>
+                  <td style={{padding:"4px 8px"}}><input className="input-field" title="Quantity" type="number" value={item.qty} onChange={e=>update(item.id,"qty",e.target.value)} min="1" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const priceInput=row?.querySelectorAll("input[type='number']")[1];if(priceInput)priceInput.focus();}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextQty=nextRow.querySelectorAll("input[type='number']")[0];if(nextQty)nextQty.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevQty=prevRow.querySelectorAll("input[type='number']")[0];if(prevQty)prevQty.focus();}}}} style={{padding:"4px 6px",fontSize:12,textAlign:"center"}}/></td>
+                  <td style={{padding:"4px 8px"}}><input className="input-field" title="Unit price — auto-filled from tariff or type your own" type="number" value={item.price} onChange={e=>update(item.id,"price",e.target.value)} step="0.01" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextPrice=nextRow.querySelectorAll("input[type='number']")[1];if(nextPrice)nextPrice.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevPrice=prevRow.querySelectorAll("input[type='number']")[1];if(prevPrice)prevPrice.focus();}}}} style={{padding:"4px 6px",fontSize:12,textAlign:"right"}}/></td>
                   <td style={{padding:"4px 8px",fontSize:12,fontWeight:600,textAlign:"right"}}>{fmt((parseFloat(item.qty)||0)*(parseFloat(item.price)||0))}</td>
                   <td><button className="icon-btn" title="Remove this line item" onClick={()=>remove(item.id)}><SvgIcon path={ICO.x} size={13} color="#ef4444"/></button></td>
                 </tr>
@@ -4472,6 +4503,29 @@ const AutoBackupCard = ({ data, setData }) => {
       )}
 
       {status && <p style={{fontSize:12,color:"#059669",margin:"8px 0 0",fontWeight:600}}>{status}</p>}
+
+      {/* Multi-PC Sync Setup Info */}
+      {window.electronAPI && (
+        <details style={{marginTop:16,padding:12,background:"#f0f9ff",border:"1px solid #bfdbfe",borderRadius:8}}>
+          <summary style={{fontSize:13,fontWeight:600,color:"#1e40af",cursor:"pointer",userSelect:"none"}}>
+            💡 Using on Multiple Computers?
+          </summary>
+          <div style={{marginTop:8,fontSize:12,color:"#1e3a8a",lineHeight:1.6}}>
+            <p style={{margin:"0 0 8px"}}>
+              Point all computers to the same Dropbox (or OneDrive / Google Drive) folder:
+            </p>
+            <ol style={{paddingLeft:20,margin:"0 0 8px"}}>
+              <li>On each PC: Settings → Auto-Backup → Select Backup Folder</li>
+              <li>Choose the <strong>same cloud-synced folder</strong> on each machine</li>
+              <li>Wait for Dropbox to fully sync before opening the app on the second machine</li>
+              <li><strong>⚠️ Never run the app on two computers at the same time</strong> — data may conflict</li>
+            </ol>
+            <p style={{margin:"0",fontSize:11,color:"#3730a3"}}>
+              EasyDentalLab automatically detects when another machine has newer data and will ask if you want to load it.
+            </p>
+          </div>
+        </details>
+      )}
     </div>
   );
 };
@@ -4521,7 +4575,7 @@ const HelpSection = () => {
         <li>Select a <strong>Dentist</strong> from the dropdown (type to search).</li>
         <li>Enter <strong>Patient Surname</strong> and <strong>Patient Name</strong> — required for medical aid claims.</li>
         <li>Optionally fill in <strong>Medical Aid Name</strong> — click the field and scroll to select from the built-in list, or type to filter, or type a custom name and press <strong>Enter</strong> if it's not in the list. Also fill in Member Name and Membership number if applicable.</li>
-        <li>Add line items — type a tariff code in the Code column and press <strong>Enter</strong> to confirm. The description and price fill in automatically. Press <strong>↓ Down Arrow</strong> to add a new line. Or click <em>From Macro</em> to add a full device template in one click. If you add a code that already exists in the line items, the quantity will automatically increase instead of creating a duplicate row — a notification will confirm this. <strong>Line items automatically sort by code number in ascending order</strong> (0001, 0002, 8205…) as you add them.</li>
+        <li>Add line items — type a tariff code in the Code column and press <strong>Enter</strong> to confirm (or <strong>↓ Down Arrow</strong> to confirm + jump to a new line). The description and price fill in automatically. <strong>Keyboard navigation:</strong> Press <strong>↓ Down Arrow</strong> in any field to move to the same field in the next row (or add a new row if you're on the last row). Press <strong>↑ Up Arrow</strong> to move to the same field in the previous row. Or click <em>From Macro</em> to add a full device template in one click. If you add a code that already exists in the line items, the quantity will automatically increase instead of creating a duplicate row — a notification will confirm this. <strong>Line items automatically sort by code number in ascending order</strong> (0001, 0002, 8205…) as you add them.</li>
         <li>Choose <strong>English or Afrikaans</strong> — all descriptions switch language automatically.</li>
         <li>Click <em>Save Invoice</em>.</li>
       </OL>
@@ -4552,7 +4606,7 @@ const HelpSection = () => {
       <H>Creating an Estimate</H>
       <OL>
         <li>Go to <em>Estimates</em> and click <em>New Estimate</em>.</li>
-        <li>Fill in Dentist, patient details and line items — same as an invoice.</li>
+        <li>Fill in Dentist, patient details and line items — same as an invoice. <strong>Keyboard navigation:</strong> Press <strong>↓ Down Arrow</strong> in any field to move to the same field in the next row (or add a new row if you're on the last row). Press <strong>↑ Up Arrow</strong> to move to the same field in the previous row. In the Code field, <strong>↓ Down Arrow</strong> confirms the code and jumps to a new line.</li>
         <li>Optionally set a <strong>Valid Until</strong> date.</li>
         <li>Click <em>Save Estimate</em>. It is saved with status <em>Draft</em>.</li>
       </OL>
@@ -4851,6 +4905,99 @@ const HelpSection = () => {
           )}
         </div>
       ))}
+    </div>
+  );
+};
+
+// ============================================================
+// SUPPORT & FEEDBACK
+// ============================================================
+
+const SupportCard = ({ data }) => {
+  const [supportText, setSupportText] = useState("");
+  const [sent, setSent] = useState(false);
+
+  const getPlatform = () => {
+    if (!window.electronAPI) return "Web Browser";
+    const p = window.electronAPI.platform;
+    if (p === "darwin") return "macOS";
+    if (p === "win32") return "Windows";
+    if (p === "linux") return "Linux";
+    return "Desktop";
+  };
+
+  const sendSupportWhatsapp = () => {
+    const bizName = data.profile?.businessName || "Not set";
+    const platform = getPlatform();
+    const message = [
+      `Hi Sarel,`,
+      ``,
+      `I need help with EasyDentalLab.`,
+      ``,
+      `Business: ${bizName}`,
+      `Version:  v${APP_VERSION}`,
+      `Platform: ${platform}`,
+      ``,
+      `Issue / Request:`,
+      supportText.trim() || "(No details provided)",
+    ].join("\n");
+
+    const url = `https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent(message)}`;
+    openExternalUrl(url);
+    setSent(true);
+    setSupportText("");
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  const sendSupportEmail = () => {
+    const bizName = data.profile?.businessName || "Not set";
+    const subject = encodeURIComponent(`EasyDentalLab Support — v${APP_VERSION}`);
+    const body = encodeURIComponent([
+      `Hi Sarel,`,
+      ``,
+      `Business: ${bizName}`,
+      `Version:  v${APP_VERSION}`,
+      ``,
+      `Issue / Request:`,
+      supportText.trim() || "(No details provided)",
+    ].join("\n"));
+
+    openExternalUrl(`mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`);
+    setSent(true);
+    setSupportText("");
+    setTimeout(() => setSent(false), 4000);
+  };
+
+  return (
+    <div className="card" style={{padding:24,marginBottom:20}}>
+      <h2 style={{fontSize:16,fontWeight:700,margin:"0 0 8px"}}>📬 Support & Feedback</h2>
+      <p style={{fontSize:13,color:"var(--c-text2)",margin:"0 0 12px"}}>
+        Have a question, found a bug, or want a new feature?
+        Send a message directly to the developer.
+      </p>
+      <textarea
+        className="input-field"
+        rows={4}
+        value={supportText}
+        onChange={e => setSupportText(e.target.value)}
+        placeholder="Describe your issue or request…"
+        style={{width:"100%",marginBottom:12,resize:"vertical",fontFamily:"inherit"}}
+      />
+      {sent ? (
+        <p style={{color:"#059669",fontSize:13,fontWeight:600}}>✅ Opening — your message is ready to send!</p>
+      ) : (
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn-primary" onClick={sendSupportWhatsapp}>
+            💬 Send via WhatsApp
+          </button>
+          <button className="btn-secondary" onClick={sendSupportEmail}>
+            ✉️ Send via Email
+          </button>
+        </div>
+      )}
+      <p style={{color:"var(--c-text3)",fontSize:11,marginTop:8,margin:"8px 0 0"}}>
+        Your message includes your app version and business name automatically.
+      </p>
     </div>
   );
 };
@@ -5183,6 +5330,8 @@ const Settings = ({ data, setData }) => {
           </button>
         </div>
       </div>
+
+      <SupportCard data={data} />
 
     </div>
   );
@@ -5644,6 +5793,40 @@ function TrialBanner({ daysLeft }) {
   );
 }
 
+// ─── Startup sync check (Desktop only) ───────────────────────────────────────
+
+const initDataFromFile = async () => {
+  if (!window.electronAPI) return; // Web version — skip
+
+  try {
+    const result = await window.electronAPI.readBackupFile('EasyDentalLab-backup.json');
+    if (!result.success) return; // No file yet
+
+    const fileData = JSON.parse(result.content);
+    const localData = loadData(); // Current localStorage
+
+    const fileTimestamp = fileData._savedAt || 0;
+    const localTimestamp = localData._savedAt || 0;
+
+    // If file is newer by more than 30 seconds, offer to load it
+    if (fileTimestamp > localTimestamp + 30000) {
+      const ok = confirm(
+        `⚠️ Data on disk is newer than your local data.\n\n` +
+        `File saved: ${new Date(fileTimestamp).toLocaleString()}\n` +
+        `Local saved: ${new Date(localTimestamp).toLocaleString()}\n\n` +
+        `Load the newer data from disk?\n\n` +
+        `(This usually means another computer saved after you last used this app)`
+      );
+      if (ok) {
+        saveData(fileData);
+        window.location.reload(); // Reload app with new data
+      }
+    }
+  } catch (e) {
+    console.warn('Could not parse backup file for sync check:', e);
+  }
+};
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 function App() {
@@ -5680,6 +5863,70 @@ function App() {
     window.LicenseValidator.getStatus().then(s => setLicStatus(s)).catch(() => setLicStatus({ status: "valid", type: "full" }));
   }, []);
 
+  // ── Multi-PC Sync & Conflict Detection ──────────────────────────────────────
+  const [conflictWarning, setConflictWarning] = useState(null); // array of conflicted filenames or null
+
+  // ── First-Run Restore Flow ───────────────────────────────────────────────────
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    const checkFirstRun = async () => {
+      if (!window.electronAPI) return;
+
+      // Detect first-run: localStorage is empty AND no backup folder configured
+      const hasData = localStorage.getItem(STORAGE_KEY);
+      const folderResult = await window.electronAPI.getBackupFolder();
+      const hasFolder = folderResult.success;
+
+      if (!hasData && !hasFolder) {
+        setShowWelcome(true);
+      }
+    };
+
+    checkFirstRun();
+  }, []);
+
+  const handleRestoreFromFile = async () => {
+    const result = await window.electronAPI.pickRestoreFile();
+    if (!result.success) {
+      setShowWelcome(false);
+      return;
+    }
+
+    try {
+      const fileData = JSON.parse(result.content);
+      saveData(fileData);
+      setShowWelcome(false);
+      window.location.reload();
+    } catch (e) {
+      alert('Failed to restore backup: ' + e.message);
+    }
+  };
+
+  useEffect(() => {
+    const checkSyncAndConflicts = async () => {
+      if (!window.electronAPI) return;
+
+      // Wait a moment for backup folder to be restored
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Check if data on disk is newer than local
+      await initDataFromFile();
+
+      // Scan for Dropbox conflict files
+      try {
+        const result = await window.electronAPI.scanForConflicts();
+        if (result.success && result.conflicts.length > 0) {
+          setConflictWarning(result.conflicts);
+        }
+      } catch (e) {
+        console.warn('Conflict scan failed:', e);
+      }
+    };
+
+    checkSyncAndConflicts();
+  }, []);
+
   // Auto-save on every data change (useEffect ensures save always uses the committed state)
   useEffect(() => { saveData(data); }, [data]);
   useEffect(() => {
@@ -5701,6 +5948,39 @@ function App() {
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Register flush handler for Electron before-quit
+  useEffect(() => {
+    if (window.electronAPI) {
+      window._flushDataNow = async () => {
+        await autoBackupCSVs(data, true); // force=true: skip debounce, write immediately
+        if (window.electronAPI.flushComplete) window.electronAPI.flushComplete();
+      };
+    }
+    return () => { delete window._flushDataNow; };
+  }, [data]);
+
+  // ── Auto-Updater ─────────────────────────────────────────────────────────────
+  const [updateBanner, setUpdateBanner] = useState(null); // {type: 'downloading'|'ready'|'manual', version, url}
+
+  useEffect(() => {
+    if (!window.electronAPI) return;
+
+    // New version available — downloading
+    window.electronAPI.onUpdateAvailable((info) => {
+      setUpdateBanner({ type: 'downloading', version: info.version });
+    });
+
+    // Download complete — ready to install
+    window.electronAPI.onUpdateDownloaded((info) => {
+      setUpdateBanner({ type: 'ready', version: info.version });
+    });
+
+    // macOS manual update (unsigned, can't auto-install)
+    window.electronAPI.onUpdateAvailableManual((info) => {
+      setUpdateBanner({ type: 'manual', version: info.version, url: info.downloadUrl });
+    });
   }, []);
 
   const renderPage = () => {
@@ -5771,6 +6051,117 @@ function App() {
           </button>
         </div>
 
+        {/* App Update Banner */}
+        {updateBanner && (
+          <div style={{
+            background: updateBanner.type === 'ready' ? "#ecfdf5" : "#dbeafe",
+            borderBottom: updateBanner.type === 'ready' ? "1px solid #6ee7b7" : "1px solid #93c5fd",
+            padding:"12px 24px",
+            display:"flex",
+            alignItems:"center",
+            gap:12,
+            justifyContent:"space-between"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
+              <SvgIcon path={updateBanner.type === 'ready' ? ICO.check : ICO.download} size={20} color={updateBanner.type === 'ready' ? "#059669" : "#2563eb"}/>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:updateBanner.type === 'ready' ? "#065f46" : "#1e40af"}}>
+                  {updateBanner.type === 'downloading' && `🔄 Version ${updateBanner.version} is available — downloading in background...`}
+                  {updateBanner.type === 'ready' && `✅ Update ready — restart to install version ${updateBanner.version}`}
+                  {updateBanner.type === 'manual' && `⬇️ Version ${updateBanner.version} available (macOS)`}
+                </div>
+                {updateBanner.type === 'manual' && (
+                  <div style={{fontSize:12,color:"#1e3a8a",marginTop:4}}>
+                    macOS requires manual download (unsigned app)
+                  </div>
+                )}
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              {updateBanner.type === 'ready' && (
+                <>
+                  <button
+                    onClick={() => window.electronAPI.installUpdate()}
+                    style={{
+                      background:"#059669",
+                      color:"white",
+                      border:"none",
+                      padding:"6px 14px",
+                      borderRadius:6,
+                      fontSize:12,
+                      fontWeight:600,
+                      cursor:"pointer"
+                    }}>
+                    Restart Now
+                  </button>
+                  <button
+                    onClick={() => setUpdateBanner(null)}
+                    style={{
+                      background:"transparent",
+                      color:"#065f46",
+                      border:"1px solid #6ee7b7",
+                      padding:"6px 14px",
+                      borderRadius:6,
+                      fontSize:12,
+                      fontWeight:600,
+                      cursor:"pointer"
+                    }}>
+                    Install on Next Launch
+                  </button>
+                </>
+              )}
+              {updateBanner.type === 'manual' && (
+                <>
+                  <button
+                    onClick={() => window.open(updateBanner.url, '_blank')}
+                    style={{
+                      background:"#2563eb",
+                      color:"white",
+                      border:"none",
+                      padding:"6px 14px",
+                      borderRadius:6,
+                      fontSize:12,
+                      fontWeight:600,
+                      cursor:"pointer"
+                    }}>
+                    Download Now →
+                  </button>
+                  <button
+                    onClick={() => setUpdateBanner(null)}
+                    style={{
+                      background:"transparent",
+                      color:"#1e40af",
+                      border:"1px solid #93c5fd",
+                      padding:"6px 14px",
+                      borderRadius:6,
+                      fontSize:12,
+                      fontWeight:600,
+                      cursor:"pointer"
+                    }}>
+                    Later
+                  </button>
+                </>
+              )}
+              {updateBanner.type === 'downloading' && (
+                <button
+                  onClick={() => setUpdateBanner(null)}
+                  style={{
+                    background:"transparent",
+                    color:"#1e40af",
+                    border:"1px solid #93c5fd",
+                    padding:"6px 14px",
+                    borderRadius:6,
+                    fontSize:12,
+                    fontWeight:600,
+                    cursor:"pointer"
+                  }}>
+                  Later
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Tariff Update Notification */}
         {data._tariffUpdateAvailable && (
           <div style={{
@@ -5831,6 +6222,47 @@ function App() {
           </div>
         )}
 
+        {/* Conflict Warning Banner (Dropbox sync conflicts) */}
+        {conflictWarning && conflictWarning.length > 0 && (
+          <div style={{
+            background:"#fef3c7",
+            borderBottom:"1px solid #fbbf24",
+            padding:"12px 24px",
+            display:"flex",
+            alignItems:"center",
+            gap:12,
+            justifyContent:"space-between"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
+              <SvgIcon path={ICO.alert} size={20} color="#92400e"/>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:"#92400e"}}>
+                  ⚠️ Sync Conflict Detected
+                </div>
+                <div style={{fontSize:12,color:"#b45309"}}>
+                  Dropbox found {conflictWarning.length} conflicted {conflictWarning.length === 1 ? 'file' : 'files'}: <strong>{conflictWarning[0]}</strong>{conflictWarning.length > 1 && ` and ${conflictWarning.length - 1} more`}. This means two computers saved changes at the same time. Check your backup folder and manually merge if needed.
+                </div>
+              </div>
+            </div>
+            <div style={{display:"flex",gap:8}}>
+              <button
+                onClick={() => setConflictWarning(null)}
+                style={{
+                  background:"transparent",
+                  color:"#92400e",
+                  border:"1px solid #fbbf24",
+                  padding:"6px 14px",
+                  borderRadius:6,
+                  fontSize:12,
+                  fontWeight:600,
+                  cursor:"pointer"
+                }}>
+                Dismiss
+              </button>
+            </div>
+          </div>
+        )}
+
         <div style={{flex:1,overflowY:"auto"}}>
           <div style={{maxWidth:960,margin:"0 auto",padding:24}}>
             {renderPage()}
@@ -5857,6 +6289,51 @@ function App() {
           animation:"slideIn 0.2s ease-out"
         }}>
           {backupToast.message}
+        </div>
+      )}
+
+      {/* First-Run Welcome Modal */}
+      {showWelcome && (
+        <div style={{
+          position:"fixed",
+          top:0,
+          left:0,
+          right:0,
+          bottom:0,
+          background:"rgba(0,0,0,0.5)",
+          display:"flex",
+          alignItems:"center",
+          justifyContent:"center",
+          zIndex:20000
+        }}>
+          <div style={{
+            background:"white",
+            borderRadius:12,
+            padding:32,
+            maxWidth:480,
+            boxShadow:"0 20px 60px rgba(0,0,0,0.3)"
+          }}>
+            <h2 style={{margin:"0 0 16px",fontSize:24,fontWeight:700,color:"#111827"}}>
+              Welcome to EasyDentalLab!
+            </h2>
+            <p style={{margin:"0 0 24px",fontSize:14,color:"#6b7280",lineHeight:1.6}}>
+              Is this a new installation, or do you have existing data to restore?
+            </p>
+            <div style={{display:"flex",gap:12}}>
+              <button
+                onClick={() => setShowWelcome(false)}
+                className="btn-primary"
+                style={{flex:1}}>
+                Start Fresh
+              </button>
+              <button
+                onClick={handleRestoreFromFile}
+                className="btn-secondary"
+                style={{flex:1}}>
+                Restore from Backup File
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
