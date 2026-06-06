@@ -1542,25 +1542,32 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     } else if (e.key === "ArrowDown") {
       // Always: confirm current code + add new line + focus new code input
       e.preventDefault();
-      setOpen(false);
 
-      // Step 1: confirm whatever is typed (same logic as confirmAndMove but without moving to description)
+      // Step 1: confirm whatever is typed
       const q = (query || value || "").toLowerCase().trim();
       let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
       if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-      if (match) { pick(match); }
+
+      if (match) {
+        pick(match); // pick() calls setOpen(false) internally
+      } else {
+        setOpen(false);
+      }
 
       // Step 2: add new blank line below, focus its code input
+      // Use setTimeout to ensure the pick state update completes first
       if (onAddLine) {
-        onAddLine();
         setTimeout(() => {
-          const table = inputRef.current?.closest("table");
-          if (table) {
-            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-            const last = allCodeInputs[allCodeInputs.length - 1];
-            if (last) last.focus();
-          }
-        }, 50);
+          onAddLine();
+          setTimeout(() => {
+            const table = inputRef.current?.closest("table");
+            if (table) {
+              const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+              const last = allCodeInputs[allCodeInputs.length - 1];
+              if (last) last.focus();
+            }
+          }, 50);
+        }, 10);
       }
     } else if (e.key === "ArrowUp" && open && filtered.length > 0) {
       e.preventDefault();
@@ -3857,6 +3864,14 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
   const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
   const total = afterDiscount;
 
+  // Auto-focus first code input when form opens
+  useEffect(() => {
+    setTimeout(() => {
+      const firstCodeInput = document.querySelector('input[data-field="code"]');
+      if (firstCodeInput) firstCodeInput.focus();
+    }, 100);
+  }, []);
+
   return (
     <div>
       <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:12,marginBottom:16}}>
@@ -4110,6 +4125,14 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
   const vatRate = parseFloat(data.profile.vatPercent) || 0;
   const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
   const total = afterDiscount;
+
+  // Auto-focus first code input when form opens
+  useEffect(() => {
+    setTimeout(() => {
+      const firstCodeInput = document.querySelector('input[data-field="code"]');
+      if (firstCodeInput) firstCodeInput.focus();
+    }, 100);
+  }, []);
 
   return (
     <div>
