@@ -1517,28 +1517,34 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
 
   const pick = (t) => { onSelect(t); setQuery(""); setOpen(false); };
 
-  // Confirm current code: look up tariff, fill description/price, move focus to description
-  const confirmAndMove = () => {
+  // Confirm current code and move to qty field (skip description since it's auto-filled)
+  const confirmAndMoveToQty = () => {
     const q = (query || value || "").toLowerCase().trim();
     let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
     if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
     if (match) { pick(match); }
     setOpen(false);
-    // Move focus to description input in same row
+    // Move focus to qty input in same row
     setTimeout(() => {
       const row = inputRef.current?.closest("tr");
-      if (row) { const descInput = row.querySelector("input[data-field='description']"); if (descInput) descInput.focus(); }
+      if (row) {
+        const qtyInput = row.querySelector("input[type='number']");
+        if (qtyInput) {
+          qtyInput.focus();
+          qtyInput.select(); // Select the "1" so user can immediately type to replace
+        }
+      }
     }, 50);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      confirmAndMove();
+      confirmAndMoveToQty();
     } else if (e.key === "ArrowRight" && (inputRef.current?.selectionStart === (query||value||"").length)) {
-      // Right arrow at end of text — confirm and move to description
+      // Right arrow at end of text — confirm and move to qty field
       e.preventDefault();
-      confirmAndMove();
+      confirmAndMoveToQty();
     } else if (e.key === "ArrowDown") {
       // Always: confirm current code + add new line + focus new code input
       e.preventDefault();
@@ -3777,7 +3783,7 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
             <tbody>
               {sortedItems.map((item, rowIdx) => (
                 <tr key={item.id} style={{borderTop:"1px solid #f3f4f6"}}>
-                  <td style={{padding:"4px 8px"}}><CodeInput value={item.code} onChange={v=>update(item.id,"code",v)} onSelect={t=>{update(item.id,"code",t.code);update(item.id,"tariffCode",t.tariffCode||t.code);update(item.id,"description",descForLang(t,lang));update(item.id,"price",t.price);}} onAddLine={addBlank} tariffs={tariffs} rowId={item.id} inputStyle={{padding:"4px 6px",fontSize:12,fontFamily:"monospace"}}/></td>
+                  <td style={{padding:"4px 8px"}}><CodeInput value={item.code} onChange={v=>update(item.id,"code",v)} onSelect={t=>{update(item.id,"code",t.code);update(item.id,"tariffCode",t.tariffCode||t.code);update(item.id,"description",descForLang(t,lang));update(item.id,"price",t.price);if(!item.qty||item.qty==='0')update(item.id,"qty","1");}} onAddLine={addBlank} tariffs={tariffs} rowId={item.id} inputStyle={{padding:"4px 6px",fontSize:12,fontFamily:"monospace"}}/></td>
                   <td style={{padding:"4px 8px"}}><input className="input-field" data-field="description" data-row={item.id} title="Item description — auto-filled from tariff or type your own" value={item.description} onChange={e=>update(item.id,"description",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const qtyInput=row?.querySelector("input[type='number']");if(qtyInput)qtyInput.focus();}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextDesc=nextRow.querySelector("input[data-field='description']");if(nextDesc)nextDesc.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevDesc=prevRow.querySelector("input[data-field='description']");if(prevDesc)prevDesc.focus();}}}} style={{padding:"4px 6px",fontSize:12}}/></td>
                   <td style={{padding:"4px 8px"}}><input className="input-field" title="Quantity" type="number" value={item.qty} onChange={e=>update(item.id,"qty",e.target.value)} min="1" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const priceInput=row?.querySelectorAll("input[type='number']")[1];if(priceInput)priceInput.focus();}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextQty=nextRow.querySelectorAll("input[type='number']")[0];if(nextQty)nextQty.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevQty=prevRow.querySelectorAll("input[type='number']")[0];if(prevQty)prevQty.focus();}}}} style={{padding:"4px 6px",fontSize:12,textAlign:"center"}}/></td>
                   <td style={{padding:"4px 8px"}}><input className="input-field" title="Unit price — auto-filled from tariff or type your own" type="number" value={item.price} onChange={e=>update(item.id,"price",e.target.value)} step="0.01" onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextPrice=nextRow.querySelectorAll("input[type='number']")[1];if(nextPrice)nextPrice.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevPrice=prevRow.querySelectorAll("input[type='number']")[1];if(prevPrice)prevPrice.focus();}}}} style={{padding:"4px 6px",fontSize:12,textAlign:"right"}}/></td>
