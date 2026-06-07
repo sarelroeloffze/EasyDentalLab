@@ -3851,7 +3851,11 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
 
 const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
   const t = useT();
-  const [f, setF] = useState(estimate || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:[], lang:"en", discountEnabled:false, discountPercent:15 });
+  const getInitialItems = () => {
+    if (estimate) return Array.isArray(estimate.items) ? estimate.items : [];
+    return [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}];
+  };
+  const [f, setF] = useState(estimate ? {...estimate, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 });
   const [lang, setLang] = useState(estimate?.lang || "en");
   const [discountEnabled, setDiscountEnabled] = useState(estimate?.discountEnabled || false);
   const [discountPercent, setDiscountPercent] = useState(estimate?.discountPercent || 15);
@@ -3871,15 +3875,12 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
   const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
   const total = afterDiscount;
 
-  // Auto-add first blank line and focus code input when form opens
+  // Auto-focus first code input when form opens
   useEffect(() => {
-    if (!Array.isArray(f.items) || f.items.length === 0) {
-      s('items', [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}]);
-    }
     setTimeout(() => {
       const firstCodeInput = document.querySelector('input[data-field="code"]');
       if (firstCodeInput) firstCodeInput.focus();
-    }, 150);
+    }, 100);
   }, []);
 
   return (
@@ -4116,7 +4117,11 @@ const Estimates = ({ data, setData, setPage }) => {
 
 const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
   const t = useT();
-  const [f, setF] = useState(invoice || { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:[], lang:"en", discountEnabled:false, discountPercent:15 });
+  const getInitialItems = () => {
+    if (invoice) return Array.isArray(invoice.items) ? invoice.items : [];
+    return [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}];
+  };
+  const [f, setF] = useState(invoice ? {...invoice, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 });
   const [lang, setLang] = useState(invoice?.lang || "en");
   const [discountEnabled, setDiscountEnabled] = useState(invoice?.discountEnabled || false);
   const [discountPercent, setDiscountPercent] = useState(invoice?.discountPercent || 15);
@@ -4136,15 +4141,12 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
   const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
   const total = afterDiscount;
 
-  // Auto-add first blank line and focus code input when form opens
+  // Auto-focus first code input when form opens
   useEffect(() => {
-    if (!Array.isArray(f.items) || f.items.length === 0) {
-      s('items', [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}]);
-    }
     setTimeout(() => {
       const firstCodeInput = document.querySelector('input[data-field="code"]');
       if (firstCodeInput) firstCodeInput.focus();
-    }, 150);
+    }, 100);
   }, []);
 
   return (
