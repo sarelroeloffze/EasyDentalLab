@@ -972,7 +972,7 @@ const reloadDefaultTariffs = (currentData) => {
 // AUTO-BACKUP: File System Access API
 // ============================================================
 
-let _backupDirHandle = null;
+let _backupFolderPath = null;
 let _backupDebounce = null;
 let _showBackupToast = null; // Set by App component
 let _backupPending = false; // Tracks if backup is scheduled but not yet completed
@@ -980,29 +980,14 @@ let _backupPending = false; // Tracks if backup is scheduled but not yet complet
 // Try to restore the saved directory handle from IndexedDB on load
 const initAutoBackup = async () => {
   try {
-    const db = await new Promise((res, rej) => {
-      const req = indexedDB.open("EasyDentalLabBackup", 1);
-      req.onupgradeneeded = () => req.result.createObjectStore("handles");
-      req.onsuccess = () => res(req.result);
-      req.onerror = () => rej(req.error);
-    });
-    const tx = db.transaction("handles", "readonly");
-    const store = tx.objectStore("handles");
-    const handle = await new Promise((res, rej) => {
-      const req = store.get("backupDir");
-      req.onsuccess = () => res(req.result);
-      req.onerror = () => rej(req.error);
-    });
-    db.close();
-    if (handle) {
-      // Verify we still have permission
-      const perm = await handle.queryPermission({ mode: "readwrite" });
-      if (perm === "granted") {
-        _backupDirHandle = handle;
-        console.log("Auto-backup folder restored:", handle.name);
-      }
+    const result = await window.electronAPI.getBackupFolder();
+    if (result.success) {
+      _backupFolderPath = result.path;
+      console.log("Auto-backup folder restored:", result.path);
     }
-  } catch (e) { console.warn("Could not restore backup folder handle:", e); }
+  } catch (e) {
+    console.warn("Could not restore backup folder path:", e);
+  }
 };
 initAutoBackup();
 
@@ -1025,30 +1010,23 @@ const saveBackupHandle = async (handle) => {
 // Let user pick a backup folder
 const pickBackupFolder = async () => {
   try {
-    const handle = await window.showDirectoryPicker({ mode: "readwrite" });
-    _backupDirHandle = handle;
-    await saveBackupHandle(handle);
-    return handle.name;
+    const result = await window.electronAPI.selectBackupFolder();
+    if (result.success) {
+      _backupFolderPath = result.path;
+      return result.path.split('/').pop(); // Return folder name
+    }
+    return null;
   } catch (e) {
-    if (e.name !== "AbortError") console.warn("Folder picker error:", e);
+    console.warn("Folder picker error:", e);
     return null;
   }
 };
 
 // Clear backup folder
 const clearBackupFolder = async () => {
-  _backupDirHandle = null;
+  _backupFolderPath = null;
   try {
-    const db = await new Promise((res, rej) => {
-      const req = indexedDB.open("EasyDentalLabBackup", 1);
-      req.onupgradeneeded = () => req.result.createObjectStore("handles");
-      req.onsuccess = () => res(req.result);
-      req.onerror = () => rej(req.error);
-    });
-    const tx = db.transaction("handles", "readwrite");
-    tx.objectStore("handles").delete("backupDir");
-    await new Promise((res, rej) => { tx.oncomplete = res; tx.onerror = rej; });
-    db.close();
+    await window.electronAPI.clearBackupFolder();
   } catch (e) {}
 };
 
@@ -2562,17 +2540,20 @@ const buildPDFBlob = async (doc, data, type) => {
 
 // Save a claim PDF to the "Send to Direct Claiming" subfolder of the backup folder
 const saveClaimPDF = async (inv, data) => {
-  if (!_backupDirHandle) return false;
+  if (!_backupFolderPath) return false;
   try {
-    const perm = await _backupDirHandle.queryPermission({ mode: "readwrite" });
-    if (perm !== "granted") {
-      const req = await _backupDirHandle.requestPermission({ mode: "readwrite" });
-      if (req !== "granted") return false;
-    }
     const blob = await buildPDFBlob(inv, data, "invoice");
-    const subDir = await _backupDirHandle.getDirectoryHandle("Send to Direct Claiming", { create: true });
-    await writeBackupFile(subDir, `Invoice_${inv.number}.pdf`, blob);
-    return true;
+    const reader = new FileReader();
+    const dataUrl = await new Promise(resolve => {
+      reader.onloadend = () => resolve(reader.result);
+      reader.readAsDataURL(blob);
+    });
+    const result = await window.electronAPI.writeSubfolderFile(
+      "Send to Direct Claiming",
+      `Invoice_${inv.number}.pdf`,
+      dataUrl
+    );
+    return result.success;
   } catch(e) {
     console.warn("saveClaimPDF failed:", e);
     return false;
@@ -4399,18 +4380,25 @@ const readMedicalAidsFromFolder = async (dirHandle) => {
 };
 
 const AutoBackupCard = ({ data, setData }) => {
-  const [folderName, setFolderName] = useState(_backupDirHandle?.name || null);
+  const [folderName, setFolderName] = useState(_backupFolderPath ? _backupFolderPath.split('/').pop() : null);
   const [status, setStatus] = useState("");
-  const supported = typeof window.showDirectoryPicker === "function";
+  const supported = !!window.electronAPI;
 
   // Load MedicalAids.csv from folder; create it if missing
-  const syncMedicalAids = async (dirHandle) => {
-    const names = await readMedicalAidsFromFolder(dirHandle);
-    if (names && names.length > 0) {
-      setData(prev => ({...prev, medicalAids: names}));
-    } else {
-      // File doesn't exist yet — create it from current data
-      await writeBackupFile(dirHandle, "MedicalAids.csv", buildMedicalAidsCSV(data));
+  const syncMedicalAids = async () => {
+    try {
+      const result = await window.electronAPI.readBackupFile("MedicalAids.csv");
+      if (result.success) {
+        const names = parseMedicalAidsCSV(result.content);
+        if (names && names.length > 0) {
+          setData(prev => ({...prev, medicalAids: names}));
+        }
+      } else {
+        // File doesn't exist yet — create it from current data
+        await window.electronAPI.writeBackupFile("MedicalAids.csv", buildMedicalAidsCSV(data));
+      }
+    } catch (e) {
+      console.warn("syncMedicalAids failed:", e);
     }
   };
 
@@ -4420,7 +4408,7 @@ const AutoBackupCard = ({ data, setData }) => {
       setFolderName(name);
       setStatus("Folder selected! CSVs will auto-save here.");
       autoBackupCSVs(data);
-      await syncMedicalAids(_backupDirHandle);
+      await syncMedicalAids();
       setTimeout(() => setStatus(""), 3000);
     }
   };
@@ -4442,7 +4430,7 @@ const AutoBackupCard = ({ data, setData }) => {
   };
 
   const handleManualBackup = async () => {
-    if (!_backupDirHandle) return;
+    if (!_backupFolderPath) return;
     setStatus("Saving...");
     try {
       // Encrypt JSON backup if password is set
@@ -4453,24 +4441,24 @@ const AutoBackupCard = ({ data, setData }) => {
       const jsonFilename = password ? "EasyDentalLab-backup.encrypted" : "EasyDentalLab-backup.json";
 
       await Promise.all([
-        writeBackupFile(_backupDirHandle, "Clients.csv", buildClientsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Tariffs.csv", buildTariffsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Macros.csv", buildMacrosCSV(data)),
-        writeBackupFile(_backupDirHandle, "MedicalAids.csv", buildMedicalAidsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Payments.csv", buildPaymentsCSV(data)),
-        writeBackupFile(_backupDirHandle, jsonFilename, jsonContent),
+        writeBackupFile(null, "Clients.csv", buildClientsCSV(data)),
+        writeBackupFile(null, "Tariffs.csv", buildTariffsCSV(data)),
+        writeBackupFile(null, "Macros.csv", buildMacrosCSV(data)),
+        writeBackupFile(null, "MedicalAids.csv", buildMedicalAidsCSV(data)),
+        writeBackupFile(null, "Payments.csv", buildPaymentsCSV(data)),
+        writeBackupFile(null, jsonFilename, jsonContent),
       ]);
       setStatus(password ? "All files saved (backup encrypted)!" : "All files saved!");
     } catch(e) { setStatus("Save failed: " + e.message); }
     setTimeout(() => setStatus(""), 3000);
   };
 
-  // On mount, check if handle was restored and sync MedicalAids.csv
+  // On mount, check if folder was restored and sync MedicalAids.csv
   useEffect(() => {
     const check = async () => {
-      if (_backupDirHandle) {
-        setFolderName(_backupDirHandle.name);
-        await syncMedicalAids(_backupDirHandle);
+      if (_backupFolderPath) {
+        setFolderName(_backupFolderPath.split('/').pop());
+        await syncMedicalAids();
       }
     };
     const timer = setTimeout(check, 500);
