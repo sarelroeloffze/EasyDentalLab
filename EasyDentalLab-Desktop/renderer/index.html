@@ -3892,7 +3892,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>setF(prev=>({...prev,items:typeof updater==='function'?updater(prev.items):updater}))} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -4157,7 +4157,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>setF(prev=>({...prev,items:typeof updater==='function'?updater(prev.items):updater}))} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
