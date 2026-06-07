@@ -3703,7 +3703,7 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
     return { consolidated, addedCount, mergedCount };
   };
 
-  const addBlank = () => { const id = genId(); setItems([...items, { id, code:"", description:"", qty:1, price:0 }]); return id; };
+  const addBlank = () => { const id = genId(); setItems(prev => [...prev, { id, code:"", description:"", qty:1, price:0 }]); return id; };
 
   const addTariff = (t) => {
     const newItem = { id:genId(), code:t.code, tariffCode:t.tariffCode||t.code, description:descForLang(t, lang), qty:1, price:t.price };
@@ -3737,9 +3737,9 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
     setMSearch("");
   };
 
-  const update = (id, k, v) => setItems(items.map(i => i.id===id ? {...i,[k]:v} : i));
-  const multiUpdate = (id, fields) => setItems(items.map(i => i.id===id ? {...i,...fields} : i));
-  const remove = (id) => setItems(items.filter(i => i.id!==id));
+  const update = (id, k, v) => setItems(prev => prev.map(i => i.id===id ? {...i,[k]:v} : i));
+  const multiUpdate = (id, fields) => setItems(prev => prev.map(i => i.id===id ? {...i,...fields} : i));
+  const remove = (id) => setItems(prev => prev.filter(i => i.id!==id));
 
   const fTariffs = useMemo(() => {
     const q = tSearch.toLowerCase();
