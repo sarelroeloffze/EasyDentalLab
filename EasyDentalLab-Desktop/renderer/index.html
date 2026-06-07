@@ -1055,10 +1055,10 @@ const clearBackupFolder = async () => {
 // Write a single file to the backup folder
 const writeBackupFile = async (dirHandle, filename, content) => {
   try {
-    const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(content);
-    await writable.close();
+    const result = await window.electronAPI.writeBackupFile(filename, content);
+    if (!result.success) {
+      throw new Error(result.error);
+    }
   } catch (e) {
     console.warn("Backup write failed for " + filename + ":", e);
     if (_showBackupToast) _showBackupToast(`⚠️ Backup failed: ${filename} — ${e.message}`, "error");
@@ -1202,16 +1202,12 @@ const getBackupPassword = (data) => {
 
 // Debounced auto-backup (writes all CSVs after a short delay)
 const autoBackupCSVs = async (data, force = false) => {
-  if (!_backupDirHandle) return;
+  // Check if folder is connected
+  const folderCheck = await window.electronAPI.getBackupFolder();
+  if (!folderCheck.success) return;
 
   const _doBackup = async () => {
     try {
-      // Re-verify permission (may have been revoked)
-      const perm = await _backupDirHandle.queryPermission({ mode: "readwrite" });
-      if (perm !== "granted") {
-        const req = await _backupDirHandle.requestPermission({ mode: "readwrite" });
-        if (req !== "granted") { _backupDirHandle = null; _backupPending = false; return; }
-      }
       // Encrypt JSON backup if password is set
       const password = getBackupPassword(data);
       const jsonContent = password
@@ -1220,12 +1216,12 @@ const autoBackupCSVs = async (data, force = false) => {
       const jsonFilename = password ? "EasyDentalLab-backup.encrypted" : "EasyDentalLab-backup.json";
 
       await Promise.all([
-        writeBackupFile(_backupDirHandle, "Clients.csv", buildClientsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Tariffs.csv", buildTariffsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Macros.csv", buildMacrosCSV(data)),
-        writeBackupFile(_backupDirHandle, "MedicalAids.csv", buildMedicalAidsCSV(data)),
-        writeBackupFile(_backupDirHandle, "Payments.csv", buildPaymentsCSV(data)),
-        writeBackupFile(_backupDirHandle, jsonFilename, jsonContent),
+        writeBackupFile(null, "Clients.csv", buildClientsCSV(data)),
+        writeBackupFile(null, "Tariffs.csv", buildTariffsCSV(data)),
+        writeBackupFile(null, "Macros.csv", buildMacrosCSV(data)),
+        writeBackupFile(null, "MedicalAids.csv", buildMedicalAidsCSV(data)),
+        writeBackupFile(null, "Payments.csv", buildPaymentsCSV(data)),
+        writeBackupFile(null, jsonFilename, jsonContent),
       ]);
       _backupPending = false; // Backup complete
       console.log("Auto-backup saved:", new Date().toLocaleTimeString());
