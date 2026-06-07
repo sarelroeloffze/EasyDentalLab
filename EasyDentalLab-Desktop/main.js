@@ -232,7 +232,7 @@ function createWindow() {
   mainWindow.loadFile('renderer/index.html');
 
   // Open DevTools in development
-  // mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 }
 
 let isQuitting = false;
