@@ -3858,13 +3858,13 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
   const s = (k,v) => setF(p => ({...p,[k]:v}));
   const switchLang = (newLang) => {
     setLang(newLang);
-    setF(prev => ({...prev, lang: newLang, items: prev.items.map(item => {
+    setF(prev => ({...prev, lang: newLang, items: (prev.items||[]).map(item => {
       const t = data.tariffs.find(t => t.code === item.code);
       return t ? {...item, description: descForLang(t, newLang)} : item;
     })}));
   };
   const clients = data.clients.filter(c => !c.archived);
-  const subtotal = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const subtotal = (f.items||[]).reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
   const discountAmount = discountEnabled ? subtotal * (Math.min(100, Math.max(0, parseFloat(discountPercent) || 0)) / 100) : 0;
   const afterDiscount = subtotal - discountAmount;
   const vatRate = parseFloat(data.profile.vatPercent) || 0;
@@ -3904,7 +3904,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={f.items} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={f.items||[]} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -4123,13 +4123,13 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
   const s = (k,v) => setF(p => ({...p,[k]:v}));
   const switchLang = (newLang) => {
     setLang(newLang);
-    setF(prev => ({...prev, lang: newLang, items: prev.items.map(item => {
+    setF(prev => ({...prev, lang: newLang, items: (prev.items||[]).map(item => {
       const t = data.tariffs.find(t => t.code === item.code);
       return t ? {...item, description: descForLang(t, newLang)} : item;
     })}));
   };
   const clients = data.clients.filter(c => !c.archived);
-  const subtotal = f.items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
+  const subtotal = (f.items||[]).reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
   const discountAmount = discountEnabled ? subtotal * (Math.min(100, Math.max(0, parseFloat(discountPercent) || 0)) / 100) : 0;
   const afterDiscount = subtotal - discountAmount;
   const vatRate = parseFloat(data.profile.vatPercent) || 0;
@@ -4168,7 +4168,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={f.items} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={f.items||[]} setItems={items=>s("items",items)} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
