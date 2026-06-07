@@ -3691,7 +3691,17 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
     return { consolidated, addedCount, mergedCount };
   };
 
-  const addBlank = () => { const id = genId(); setItems(prev => [...prev, { id, code:"", description:"", qty:1, price:0 }]); return id; };
+  const addBlank = () => {
+    console.log("🟢 addBlank called");
+    const id = genId();
+    setItems(prev => {
+      console.log("🟢 addBlank prev items:", prev);
+      const result = [...prev, { id, code:"", description:"", qty:1, price:0 }];
+      console.log("🟢 addBlank result:", result);
+      return result;
+    });
+    return id;
+  };
 
   const addTariff = (t) => {
     const newItem = { id:genId(), code:t.code, tariffCode:t.tariffCode||t.code, description:descForLang(t, lang), qty:1, price:t.price };
@@ -3726,7 +3736,15 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
   };
 
   const update = (id, k, v) => setItems(prev => prev.map(i => i.id===id ? {...i,[k]:v} : i));
-  const multiUpdate = (id, fields) => setItems(prev => prev.map(i => i.id===id ? {...i,...fields} : i));
+  const multiUpdate = (id, fields) => {
+    console.log("🔵 multiUpdate called with:", {id, fields});
+    setItems(prev => {
+      console.log("🔵 multiUpdate prev items:", prev);
+      const result = prev.map(i => i.id===id ? {...i,...fields} : i);
+      console.log("🔵 multiUpdate result:", result);
+      return result;
+    });
+  };
   const remove = (id) => setItems(prev => prev.filter(i => i.id!==id));
 
   const fTariffs = useMemo(() => {
@@ -3893,7 +3911,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>setF(prev=>({...prev,items:typeof updater==='function'?updater(prev.items):updater}))} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{console.log("🔴 Parent setItems called, updater type:",typeof updater);setF(prev=>{console.log("🔴 Parent setF prev.items:",prev.items);const newItems=typeof updater==='function'?updater(prev.items):updater;console.log("🔴 Parent setF newItems:",newItems);return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -4158,7 +4176,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>setF(prev=>({...prev,items:typeof updater==='function'?updater(prev.items):updater}))} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{console.log("🔴 Parent setItems called, updater type:",typeof updater);setF(prev=>{console.log("🔴 Parent setF prev.items:",prev.items);const newItems=typeof updater==='function'?updater(prev.items):updater;console.log("🔴 Parent setF newItems:",newItems);return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
