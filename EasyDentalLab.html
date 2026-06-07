@@ -1555,39 +1555,26 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
 
       if (match) {
-        pick(match); // pick() calls setOpen(false) internally
-
-        // Step 2: add new blank line AFTER pick completes
-        // Use longer timeout to ensure functional setState completes
-        if (onAddLine) {
-          setTimeout(() => {
-            onAddLine();
-            setTimeout(() => {
-              const table = inputRef.current?.closest("table");
-              if (table) {
-                const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-                const last = allCodeInputs[allCodeInputs.length - 1];
-                if (last) last.focus();
-              }
-            }, 100);
-          }, 100);
-        }
+        // Call onSelect synchronously
+        onSelect(match);
+        setOpen(false);
+        setQuery("");
       } else {
         setOpen(false);
-        // No match found, still add new line if requested
-        if (onAddLine) {
-          setTimeout(() => {
-            onAddLine();
-            setTimeout(() => {
-              const table = inputRef.current?.closest("table");
-              if (table) {
-                const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-                const last = allCodeInputs[allCodeInputs.length - 1];
-                if (last) last.focus();
-              }
-            }, 100);
-          }, 100);
-        }
+      }
+
+      // Step 2: add new blank line - React will batch with onSelect update
+      if (onAddLine) {
+        onAddLine();
+        // Focus new line after a brief delay for DOM update
+        setTimeout(() => {
+          const table = inputRef.current?.closest("table");
+          if (table) {
+            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+            const last = allCodeInputs[allCodeInputs.length - 1];
+            if (last) last.focus();
+          }
+        }, 50);
       }
     } else if (e.key === "ArrowUp" && open && filtered.length > 0) {
       e.preventDefault();
