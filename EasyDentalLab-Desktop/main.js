@@ -231,8 +231,8 @@ function createWindow() {
 
   mainWindow.loadFile('renderer/index.html');
 
-  // Open DevTools in development
-  mainWindow.webContents.openDevTools();
+  // Open DevTools in development (disabled for production)
+  // mainWindow.webContents.openDevTools();
 }
 
 let isQuitting = false;

@@ -1539,7 +1539,6 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
 
       if (match) {
-        // Call onSelect synchronously
         onSelect(match);
         setOpen(false);
         setQuery("");
@@ -3692,14 +3691,8 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
   };
 
   const addBlank = () => {
-    console.log("🟢 addBlank called");
     const id = genId();
-    setItems(prev => {
-      console.log("🟢 addBlank prev items:", prev);
-      const result = [...prev, { id, code:"", description:"", qty:1, price:0 }];
-      console.log("🟢 addBlank result:", result);
-      return result;
-    });
+    setItems(prev => [...prev, { id, code:"", description:"", qty:1, price:0 }]);
     return id;
   };
 
@@ -3737,13 +3730,7 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
 
   const update = (id, k, v) => setItems(prev => prev.map(i => i.id===id ? {...i,[k]:v} : i));
   const multiUpdate = (id, fields) => {
-    console.log("🔵 multiUpdate called with:", {id, fields});
-    setItems(prev => {
-      console.log("🔵 multiUpdate prev items:", prev);
-      const result = prev.map(i => i.id===id ? {...i,...fields} : i);
-      console.log("🔵 multiUpdate result:", result);
-      return result;
-    });
+    setItems(prev => prev.map(i => i.id===id ? {...i,...fields} : i));
   };
   const remove = (id) => setItems(prev => prev.filter(i => i.id!==id));
 
@@ -3788,7 +3775,7 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
               <th style={{width:32}}></th>
             </tr></thead>
             <tbody>
-              {sortedItems.map((item, rowIdx) => (
+              {items.map((item, rowIdx) => (
                 <tr key={item.id} style={{borderTop:"1px solid #f3f4f6"}}>
                   <td style={{padding:"4px 8px"}}><CodeInput value={item.code} onChange={v=>update(item.id,"code",v)} onSelect={t=>multiUpdate(item.id,{code:t.code,tariffCode:t.tariffCode||t.code,description:descForLang(t,lang),price:t.price,qty:"1"})} onAddLine={addBlank} tariffs={tariffs} rowId={item.id} inputStyle={{padding:"4px 6px",fontSize:12,fontFamily:"monospace"}}/></td>
                   <td style={{padding:"4px 8px"}}><input className="input-field" data-field="description" data-row={item.id} title="Item description — auto-filled from tariff or type your own" value={item.description} onChange={e=>update(item.id,"description",e.target.value)} onKeyDown={e=>{if(e.key==="Enter"){e.preventDefault();const row=e.target.closest("tr");const qtyInput=row?.querySelector("input[type='number']");if(qtyInput)qtyInput.focus();}else if(e.key==="ArrowDown"){e.preventDefault();const row=e.target.closest("tr");const nextRow=row?.nextElementSibling;if(nextRow){const nextDesc=nextRow.querySelector("input[data-field='description']");if(nextDesc)nextDesc.focus();}else{addBlank();setTimeout(()=>{const table=e.target.closest("table");if(table){const allCode=table.querySelectorAll("input[data-field='code']");const last=allCode[allCode.length-1];if(last)last.focus();}},50);}}else if(e.key==="ArrowUp"){e.preventDefault();const row=e.target.closest("tr");const prevRow=row?.previousElementSibling;if(prevRow){const prevDesc=prevRow.querySelector("input[data-field='description']");if(prevDesc)prevDesc.focus();}}}} style={{padding:"4px 6px",fontSize:12}}/></td>
@@ -3911,7 +3898,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="estLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{console.log("🔴 Parent setItems called, updater type:",typeof updater);setF(prev=>{console.log("🔴 Parent setF prev.items:",prev.items);const newItems=typeof updater==='function'?updater(prev.items):updater;console.log("🔴 Parent setF newItems:",newItems);return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{setF(prev=>{const newItems=typeof updater==='function'?updater(prev.items):updater;return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
@@ -4176,7 +4163,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="en" checked={lang==="en"} onChange={()=>switchLang("en")}/> English</label>
         <label style={{fontSize:12,cursor:"pointer"}}><input type="radio" name="invLang" value="af" checked={lang==="af"} onChange={()=>switchLang("af")}/> Afrikaans</label>
       </div>
-      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{console.log("🔴 Parent setItems called, updater type:",typeof updater);setF(prev=>{console.log("🔴 Parent setF prev.items:",prev.items);const newItems=typeof updater==='function'?updater(prev.items):updater;console.log("🔴 Parent setF newItems:",newItems);return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
+      <div style={{marginBottom:16}}><LineItemEditor items={Array.isArray(f.items) ? f.items : []} setItems={updater=>{setF(prev=>{const newItems=typeof updater==='function'?updater(prev.items):updater;return {...prev,items:newItems};});}} tariffs={data.tariffs} macros={data.macros} lang={lang}/></div>
       <Input label={t("clientNotes")} value={f.notes} onChange={v=>s("notes",v)} textarea rows={2} style={{marginBottom:16}}/>
       <div style={{borderTop:"1px solid #e5e7eb",paddingTop:12,marginBottom:12}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
