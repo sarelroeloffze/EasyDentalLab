@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-06-06)
+## 🎯 PROJECT STATUS (Updated 2026-07-12)
 
-### Current Version: Desktop App v2.2.0 + Web App v1.7 (Production-Ready)
-**Status:** ✅ **PHASE 2 COMPLETE** — Desktop installers built, app is production-ready
+### Current Version: Desktop App v2.3.0 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE WITH AUTO-UPDATES** — v2.3.0 published, auto-updater active
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -58,14 +58,22 @@ Portable single-file dental laboratory invoicing application for South African d
   - Desktop installers rebuilt with all v2.2.0 features
   - **Result:** Production-ready multi-PC desktop app with auto-update capability
 
-### Available Installers (v2.2.0)
+- ✅ **v2.3.0 Update** (July 12, 2026)
+  - **Multi-PC sync enhancements:** Folder-first data loading (backup folder = source of truth), safe folder selection prevents data loss
+  - **Save as Macro:** Convert any invoice/estimate into reusable macro with one click (sparkles icon button)
+  - **Download PDF button:** Direct PDF download (blue icon) separate from print button
+  - **Bug fixes:** Modal click fix (only closes on overlay click), autocomplete dropdown positioning (below input), patient name made optional
+  - **x64 build support:** Added `npm run dist:win-x64` script for Intel Windows PCs
+  - **Result:** Enhanced multi-PC workflow + macro creation from existing work
+
+### Available Installers (v2.3.0)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.2.0.exe` | 76 MB | ARM64 |
-| **macOS** | `EasyDentalLab-2.2.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.2.0-arm64.AppImage` | 101 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 2.3.0.exe` | 76 MB | ARM64 |
+| **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
 **Notes:**
 - macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
@@ -499,6 +507,14 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Code input auto-focus | `useEffect` hook in `InvoiceForm` and `EstimateForm` auto-focuses first code input on form open. Uses `setTimeout(100ms)` to wait for DOM render, then `querySelector('input[data-field="code"]')` to find and focus the input. Eliminates manual click to start data entry. Both web and desktop versions. |
 | Down Arrow confirmation timing | Fixed `CodeInput` ArrowDown handler to properly register code+description before adding new line. Now calls `pick(match)` first (which sets the item), then uses nested `setTimeout` (10ms + 50ms) to ensure state updates complete before `onAddLine()` is called and new row is focused. Previously the code was not being registered because `setOpen(false)` happened before `pick()`. Both web and desktop versions. |
 | Line items sorting during edit | Fixed `LineItemEditor` to render `items` directly instead of `sortedItems`. Sorting by code caused rows to swap positions during data entry (blank code `''` sorts before filled codes like `'9704'`), making the focused row disappear. Changed line ~3805 (desktop) and ~3818 (web) from `{sortedItems.map(` to `{items.map(`. Rows now stay in insertion order during editing. Sorting still applies to print/PDF output where it belongs (lines ~1453, ~2103 in `buildDocumentHTML` and `buildPDFBlob`). Both web and desktop versions. |
+| **v2.3.0 Features & Fixes** | **Multi-PC sync enhancements, macro creation, UX improvements** |
+| Folder-first sync (multi-PC) | New `loadDataFromFolder()` function reads backup folder JSON on startup. Modified `initAutoBackup()` to merge folder data with localStorage (folder wins). Modified `pickBackupFolder()` to load existing data BEFORE allowing auto-save (prevents overwriting shared Dropbox data with empty localStorage). `folder-synced` custom event triggers React reload. Backup folder is now the authoritative source of truth for multi-PC setups. Lines ~978-1025 (desktop renderer), ~978-1003 (web app). Both web and desktop versions. |
+| Save as Macro feature | New `saveAsMacro()` function on Invoices and Estimates pages. Prompts for macro name, extracts line items (code + qty), creates new macro. Sparkles icon button (✨) added to each invoice/estimate row. Uses current tariff prices when macro is later applied. Lines ~4133-4161 (Estimates), ~4431-4459 (Invoices). Both web and desktop versions. |
+| Download PDF button | New `savePDFDocument()` function generates PDF blob and downloads directly (no print dialog). Blue download icon button added next to print button on Invoices and Estimates pages. Complements WhatsApp PDF sharing. Lines ~2659-2676 (savePDFDocument), ~4190 (Estimates), ~4501 (Invoices). Both web and desktop versions. |
+| Modal click fix | Fixed Modal component `onClick` handler to only close when clicking overlay background (not modal content). Changed from `onClick={onClose}` to `onClick={e => { if (e.target.classList.contains('modal-overlay')) onClose(); }}`. Prevents accidental modal closure when clicking inside forms. Line ~1349 (desktop), ~1362 (web). Both versions. |
+| Autocomplete dropdown position | Changed `CodeInput` dropdown from `bottom:"100%"` (above input) to `top:"100%"` (below input). Improves UX — dropdown less likely to go off-screen at top of viewport. Line ~1656 (desktop), ~1672 (web). Both versions. |
+| Patient name made optional | Removed `required` attribute from `patientName` input field. Removed from validation logic (Save button). Some dental work only requires member name/medical aid, not patient first name. Lines ~3966, ~4016 (EstimateForm), ~4261, ~4311 (InvoiceForm). Both versions. |
+| x64 Windows build script | Added `"dist:win-x64": "electron-builder --win --x64"` to package.json scripts. Allows building x64 Windows installers for Intel PCs. Line ~18 (package.json). Desktop only. |
 
 ## License System
 

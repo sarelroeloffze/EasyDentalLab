@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.2.0";
+const APP_VERSION = "2.3.0";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -978,6 +978,25 @@ let _showBackupToast = null; // Set by App component
 let _backupPending = false; // Tracks if backup is scheduled but not yet completed
 
 // Try to restore the saved directory handle from IndexedDB on load
+// Load data from backup folder files (makes folder the source of truth for multi-PC sync)
+const loadDataFromFolder = async () => {
+  if (!_backupDirHandle) return null;
+
+  try {
+    // Try to read the JSON backup file first (contains all data)
+    const fileHandle = await _backupDirHandle.getFileHandle("EasyDentalLab-backup.json");
+    const file = await fileHandle.getFile();
+    const content = await file.text();
+    const folderData = JSON.parse(content);
+    console.log("✅ Loaded data from backup folder:", _backupDirHandle.name);
+    return folderData;
+  } catch (e) {
+    console.warn("Could not load JSON backup from folder:", e);
+  }
+
+  return null;
+};
+
 const initAutoBackup = async () => {
   try {
     const db = await new Promise((res, rej) => {
@@ -1000,6 +1019,26 @@ const initAutoBackup = async () => {
       if (perm === "granted") {
         _backupDirHandle = handle;
         console.log("Auto-backup folder restored:", handle.name);
+
+        // Load data from folder if it exists (multi-PC sync)
+        const folderData = await loadDataFromFolder();
+        if (folderData) {
+          // Merge folder data with any existing localStorage data
+          // Folder data wins (source of truth)
+          const currentData = loadData();
+          const merged = {
+            ...currentData,
+            ...folderData,
+            // Preserve UI state flags from localStorage
+            _tariffUpdateAvailable: currentData._tariffUpdateAvailable,
+            _oldVersion: currentData._oldVersion
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+          console.log("📂 Synced localStorage from backup folder");
+
+          // Trigger React to reload data
+          window.dispatchEvent(new CustomEvent("folder-synced"));
+        }
       }
     }
   } catch (e) { console.warn("Could not restore backup folder handle:", e); }
@@ -1028,6 +1067,27 @@ const pickBackupFolder = async () => {
     const handle = await window.showDirectoryPicker({ mode: "readwrite" });
     _backupDirHandle = handle;
     await saveBackupHandle(handle);
+
+    // CRITICAL: Load existing data from folder BEFORE allowing auto-save
+    // This prevents overwriting existing data with empty localStorage
+    const folderData = await loadDataFromFolder();
+    if (folderData) {
+      const currentData = loadData();
+      const merged = {
+        ...currentData,
+        ...folderData,
+        _tariffUpdateAvailable: currentData._tariffUpdateAvailable,
+        _oldVersion: currentData._oldVersion
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      console.log("📂 Loaded existing data from newly selected folder");
+
+      // Trigger React to reload
+      window.dispatchEvent(new CustomEvent("folder-synced"));
+    } else {
+      console.log("📂 No existing data in folder - will save current data on next change");
+    }
+
     return handle.name;
   } catch (e) {
     if (e.name !== "AbortError") console.warn("Folder picker error:", e);
@@ -1302,7 +1362,10 @@ const ICO = {
 const Modal = ({ open, onClose, title, wide, children }) => {
   if (!open) return null;
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={e => {
+      // Only close if clicking directly on overlay background
+      if (e.target.classList.contains('modal-overlay')) onClose();
+    }}>
       <div className={"modal-content " + (wide ? "w-full max-w-4xl" : "w-full max-w-lg")} style={{margin:"0 16px"}} onClick={e => e.stopPropagation()}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)",position:"sticky",top:0,background:"var(--c-surface)",borderRadius:"12px 12px 0 0",zIndex:10}}>
           <h2 style={{fontSize:16,fontWeight:700,margin:0}}>{title}</h2>
@@ -1609,7 +1672,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         autoComplete="off"
       />
       {open && filtered.length > 0 && (
-        <div style={{position:"absolute",bottom:"100%",left:0,zIndex:100,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginBottom:2,minWidth:360}}>
+        <div style={{position:"absolute",top:"100%",right:0,zIndex:100,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:360}}>
           {filtered.map((t, idx) => (
             <div key={t.id}
               onMouseDown={(e) => { e.preventDefault(); pick(t); }}
@@ -2606,6 +2669,23 @@ const whatsappDocument = async (doc, data, type) => {
     console.error("WhatsApp PDF failed:", e);
     alert("Could not generate PDF: " + e.message + "\nOpening for printing instead.");
     printDocument(doc, data, type);
+  }
+};
+
+const savePDFDocument = async (doc, data, type) => {
+  const isInv = type === "invoice";
+  const fileLabel = isInv ? "Invoice" : "Estimate";
+  const filename = `${fileLabel}_${doc.number}.pdf`;
+  try {
+    const pdfBlob = await buildPDFBlob(doc, data, type);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(pdfBlob);
+    a.download = filename;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } catch (e) {
+    console.error("Save PDF failed:", e);
+    alert("Could not generate PDF: " + e.message);
   }
 };
 
@@ -3899,7 +3979,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
         <Select label={t("patTitle")} value={f.patientTitle} onChange={v=>s("patientTitle",v)} options={[{value:"Mr",label:"Mr"},{value:"Mrs",label:"Mrs"},{value:"Miss",label:"Miss"},{value:"Dr",label:"Dr"},{value:"Prof",label:"Prof"}]} placeholder="Select..." style={{}} title="Patient title — optional"/>
         <Input label={t("patSurname")} value={f.patientSurname} onChange={v=>s("patientSurname",v)} required placeholder="e.g. Smith" title="Patient surname — required"/>
-        <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} required placeholder="e.g. John" title="Patient first/given name — required"/>
+        <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} placeholder="e.g. John" title="Patient first/given name — optional"/>
         <Input label={t("memberName")} value={f.memberName} onChange={v=>s("memberName",v)} placeholder="e.g. Main member" title="Medical aid member name — optional"/>
         <MedicalAidSelect label={t("medAid")} value={f.medicalAidName} onChange={v=>s("medicalAidName",v)} options={(data.medicalAids||[]).map(n=>({value:n,label:n}))}/>
       </div>
@@ -3949,7 +4029,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
       </div>
       <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
         <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
-        <button className="btn btn-primary" title="Save this estimate" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_estimates").replace(/s$/,"")}</button>
+        <button className="btn btn-primary" title="Save this estimate" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||f.items.length===0}>{t("save")} {t("nav_estimates").replace(/s$/,"")}</button>
       </div>
     </div>
   );
@@ -4066,6 +4146,34 @@ const Estimates = ({ data, setData, setPage }) => {
     openCopyModal(est);
   };
 
+  const saveAsMacro = (est) => {
+    const macroName = prompt("Enter a name for this macro:", `Estimate #${est.number} Macro`);
+    if (!macroName || !macroName.trim()) return;
+
+    const macroCodes = est.items
+      .filter(item => item.code && item.code.trim())
+      .map(item => ({
+        code: item.code,
+        qty: item.qty || 1
+      }));
+
+    if (macroCodes.length === 0) {
+      alert("This estimate has no line items to save as a macro.");
+      return;
+    }
+
+    setData(prev => ({
+      ...prev,
+      macros: [...prev.macros, {
+        id: genId(),
+        name: macroName.trim(),
+        codes: macroCodes
+      }]
+    }));
+
+    alert(`Macro "${macroName.trim()}" created with ${macroCodes.length} codes!`);
+  };
+
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -4095,10 +4203,12 @@ const Estimates = ({ data, setData, setPage }) => {
               <div style={{display:"flex",alignItems:"center",gap:12}}>
                 <span style={{fontSize:14,fontWeight:700}}>{fmt(e.total)}</span>
                 <div style={{display:"flex",gap:2}}>
-                  <button className="icon-btn" title="Print or save this estimate as PDF" onClick={()=>printDocument(e,data,"estimate")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Print this estimate" onClick={()=>printDocument(e,data,"estimate")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Save this estimate as PDF (downloads immediately)" onClick={()=>savePDFDocument(e,data,"estimate")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
                   <button className="icon-btn" title="Send this estimate via WhatsApp to the client" onClick={()=>whatsappDocument(e,data,"estimate")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
                   {e.status!=="invoiced" && <button className="icon-btn" title="Convert this estimate into an invoice" onClick={()=>toInvoice(e)}><SvgIcon path={ICO.arrowRight} size={15} color="#059669"/></button>}
                   <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(e)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                   <button className="icon-btn" title="Edit this estimate" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                 </div>
@@ -4164,7 +4274,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
         <Select label={t("patTitle")} value={f.patientTitle} onChange={v=>s("patientTitle",v)} options={[{value:"Mr",label:"Mr"},{value:"Mrs",label:"Mrs"},{value:"Miss",label:"Miss"},{value:"Dr",label:"Dr"},{value:"Prof",label:"Prof"}]} placeholder="Select..." style={{}} title="Patient title — optional"/>
         <Input label={t("patSurname")} value={f.patientSurname} onChange={v=>s("patientSurname",v)} required placeholder="e.g. Smith" title="Patient surname — required"/>
-        <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} required placeholder="e.g. John" title="Patient first/given name — required"/>
+        <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} placeholder="e.g. John" title="Patient first/given name — optional"/>
         <Input label={t("memberName")} value={f.memberName} onChange={v=>s("memberName",v)} placeholder="e.g. Main member" title="Medical aid member name — optional"/>
         <MedicalAidSelect label={t("medAid")} value={f.medicalAidName} onChange={v=>s("medicalAidName",v)} options={(data.medicalAids||[]).map(n=>({value:n,label:n}))}/>
       </div>
@@ -4214,7 +4324,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
       </div>
       <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
         <button className="btn btn-secondary" title="Discard changes and close" onClick={onCancel}>{t("cancel")}</button>
-        <button className="btn btn-primary" title="Save this invoice" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||!f.patientName?.trim()||f.items.length===0}>{t("save")} {t("nav_invoices").replace(/s$/,"")}</button>
+        <button className="btn btn-primary" title="Save this invoice" onClick={()=>onSave({...f,lang,total,discountEnabled,discountPercent:parseFloat(discountPercent)||15})} disabled={!f.clientId||!f.patientSurname?.trim()||f.items.length===0}>{t("save")} {t("nav_invoices").replace(/s$/,"")}</button>
       </div>
     </div>
   );
@@ -4334,6 +4444,34 @@ const Invoices = ({ data, setData }) => {
     openCopyModal(inv);
   };
 
+  const saveAsMacro = (inv) => {
+    const macroName = prompt("Enter a name for this macro:", `Invoice #${inv.number} Macro`);
+    if (!macroName || !macroName.trim()) return;
+
+    const macroCodes = inv.items
+      .filter(item => item.code && item.code.trim())
+      .map(item => ({
+        code: item.code,
+        qty: item.qty || 1
+      }));
+
+    if (macroCodes.length === 0) {
+      alert("This invoice has no line items to save as a macro.");
+      return;
+    }
+
+    setData(prev => ({
+      ...prev,
+      macros: [...prev.macros, {
+        id: genId(),
+        name: macroName.trim(),
+        codes: macroCodes
+      }]
+    }));
+
+    alert(`Macro "${macroName.trim()}" created with ${macroCodes.length} codes!`);
+  };
+
   return (
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
@@ -4376,12 +4514,14 @@ const Invoices = ({ data, setData }) => {
                     ? <button title="Submit directly to medical aid — removes from dentist account statement" onClick={()=>claimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#2563eb",color:"white",border:"none",borderRadius:6,cursor:"pointer"}}>CLAIM</button>
                     : <button title="Remove direct claim status — invoice returns to dentist account" onClick={()=>unclaimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#dbeafe",color:"#1e40af",border:"1px solid #93c5fd",borderRadius:6,cursor:"pointer"}}>UNCLAIM</button>
                   }
-                  <button className="icon-btn" title="Print or save this invoice as PDF" onClick={()=>printDocument(inv,data,"invoice")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Print this invoice" onClick={()=>printDocument(inv,data,"invoice")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Save this invoice as PDF (downloads immediately)" onClick={()=>savePDFDocument(inv,data,"invoice")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
                   <button className="icon-btn" title="Send this invoice via WhatsApp to the client" onClick={()=>whatsappDocument(inv,data,"invoice")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
                   <button className="icon-btn" title={inv.status==="paid"?"Mark this invoice as unpaid":"Mark this invoice as paid"} onClick={()=>togglePaid(inv)}>
                     <SvgIcon path={ICO.check} size={15} color={inv.status==="paid"?"#d97706":"#059669"}/>
                   </button>
                   <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
+                  <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(inv)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                   <button className="icon-btn" title="Edit this invoice" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
                   <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                 </div>
@@ -5831,6 +5971,16 @@ function App() {
       setTimeout(() => setBackupToast(null), 5000); // 5 seconds for errors
     };
     return () => { _showBackupToast = null; };
+  }, []);
+
+  // ── Multi-PC Sync: Reload data when folder sync completes ───────────────────
+  useEffect(() => {
+    const handleFolderSync = () => {
+      console.log("📂 Folder sync detected - reloading data");
+      setData(loadData());
+    };
+    window.addEventListener("folder-synced", handleFolderSync);
+    return () => window.removeEventListener("folder-synced", handleFolderSync);
   }, []);
 
   // ── License ─────────────────────────────────────────────────────────────────
