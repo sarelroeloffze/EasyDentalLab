@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-12)
 
-### Current Version: Desktop App v2.3.0 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE WITH AUTO-UPDATES** — v2.3.0 published, auto-updater active
+### Current Version: Desktop App v2.3.17 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.17 published, auto-updater fully functional
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -66,29 +66,39 @@ Portable single-file dental laboratory invoicing application for South African d
   - **x64 build support:** Added `npm run dist:win-x64` script for Intel Windows PCs
   - **Result:** Enhanced multi-PC workflow + macro creation from existing work
 
-### Available Installers (v2.3.0)
+- ✅ **v2.3.14-17 Auto-Update Fixes** (July 12, 2026)
+  - **ROOT CAUSE FIXED:** `autoUpdater.logger.transports.file` crash preventing setupAutoUpdater() from running
+  - **Timing fix:** Moved setupAutoUpdater() to `did-finish-load` event (was running before page loaded)
+  - **Installer fix:** Changed NSIS to `oneClick: true` (prevents "cannot be closed" error during auto-install)
+  - **Force quit:** Close all windows + `quitAndInstall(false, true)` for clean exit before update
+  - **Diagnostic logging:** Main process logs relay to renderer console for debugging
+  - **Result:** Auto-update now fully functional — blue download banner → green "Restart Now" → silent install → relaunch
+
+### Available Installers (v2.3.17)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 2.3.0.exe` | 76 MB | ARM64 |
+| **Windows** | `EasyDentalLab.Setup.2.3.17.exe` | 77 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
 **Notes:**
-- macOS: Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
-- Windows: Unsigned (no code signing cert) — SmartScreen warning expected
-- Icons: Electron defaults (placeholder — not dental-themed)
-- Architecture: ARM64 only (built on Apple Silicon — x64 requires rebuild on Intel machine)
+- **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
+- **macOS:** Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
+- **Icons:** Electron defaults (placeholder — not dental-themed)
+- **Auto-update:** Users on v2.3.16+ will auto-update silently via GitHub Releases backend
 
 **See:** `EasyDentalLab-Desktop/INSTALLERS-README.md` for installation instructions & troubleshooting
 
 ### Next Phase: Production Deployment
-**Status:** ✅ **DEPLOYED** — App is live with auto-updates enabled
+**Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **Published v2.3.0 to GitHub Releases** (July 12, 2026) — auto-updater is active
-- ✅ **v2.2.0 users will auto-update** to v2.3.0 on next app launch
+- ✅ **v2.3.17 published to GitHub Releases** (July 12, 2026) — auto-updater fully functional
+- ✅ **Users on v2.3.16+ auto-update silently** — blue download banner → "Restart Now" → silent install
+- ✅ **Root cause fixed:** `logger.transports.file` crash, timing issues, oneClick installer
+- ✅ **Verified working:** v2.3.16 → v2.3.17 tested successfully
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -516,6 +526,13 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Autocomplete dropdown position | Changed `CodeInput` dropdown from `bottom:"100%"` (above input) to `top:"100%"` (below input). Improves UX — dropdown less likely to go off-screen at top of viewport. Line ~1656 (desktop), ~1672 (web). Both versions. |
 | Patient name made optional | Removed `required` attribute from `patientName` input field. Removed from validation logic (Save button). Some dental work only requires member name/medical aid, not patient first name. Lines ~3966, ~4016 (EstimateForm), ~4261, ~4311 (InvoiceForm). Both versions. |
 | x64 Windows build script | Added `"dist:win-x64": "electron-builder --win --x64"` to package.json scripts. Allows building x64 Windows installers for Intel PCs. Line ~18 (package.json). Desktop only. |
+| **v2.3.14-17 Auto-Update Fixes** | **Root cause identified and fixed — auto-update now fully functional** |
+| Auto-updater crash (ROOT CAUSE) | **Critical bug:** `autoUpdater.logger.transports.file.level = 'info'` in `setupAutoUpdater()` (main.js line ~163) was trying to access `transports.file` on `console` object, which doesn't exist. This caused immediate crash before any event listeners could be registered. **Fix:** Removed the problematic line — only `autoUpdater.logger = console` is needed. This was why auto-update never worked — setupAutoUpdater() crashed on startup before it could set up update checks. Desktop only. |
+| Auto-updater timing issue | `setupAutoUpdater()` was called in `app.on('ready')` before page finished loading, so the log relay function (`global.sendLogToRenderer`) wasn't defined yet when update check ran 5 seconds later. **Fix:** Moved `setupAutoUpdater()` call to `did-finish-load` event in `createWindow()`, ensuring page + IPC relay are ready before auto-updater starts. Main.js line ~291-301. Desktop only. |
+| oneClick installer for auto-update | NSIS installer with `oneClick: false` caused "EasyDentalLab cannot be closed" errors during auto-update because the installer requires user interaction but runs in background after `quitAndInstall()`. **Fix:** Changed `package.json` NSIS config to `oneClick: true` (silent install, no prompts). Also added `runAfterFinish: true` to relaunch automatically. Line ~62-68. Desktop only. |
+| Force quit before auto-update | `quitAndInstall()` wasn't closing windows cleanly, leaving background Electron processes running, which blocked the installer. **Fix:** Added force-close logic in `install-update` IPC handler: close all windows with `removeAllListeners('close')`, then `setImmediate(() => autoUpdater.quitAndInstall(false, true))` to ensure windows close before quit. Main.js line ~250-262. Desktop only. |
+| Main process log relay | No way to see main process console.log output in renderer DevTools, making auto-updater debugging impossible. **Fix:** Added `global.sendLogToRenderer()` helper in `did-finish-load` that sends IPC events with log messages. Renderer listens via `onMainProcessLog` and displays with `[MAIN]` prefix. Main.js line ~297-301, preload.js line ~17, renderer line ~5781-5783. Desktop only (debug feature). |
+| IPC connectivity test | Added `main-process-ready` event sent immediately on `did-finish-load` to verify IPC is working. Renderer logs "🚀 MAIN PROCESS IPC TEST" with PID when received. Used to diagnose that IPC was functional but auto-updater was crashing. Main.js line ~293-296, preload.js line ~17, renderer line ~5776-5778. Desktop only (debug feature). |
 
 ## License System
 
@@ -692,37 +709,66 @@ Main Process (Node.js)
 **CRITICAL:** Desktop apps check GitHub Releases for updates. Every code change to the desktop app MUST be published as a GitHub Release or users won't receive the update.
 
 **Steps:**
-1. **Update version number** in `EasyDentalLab-Desktop/package.json` (line 3: `"version": "X.X.X"`)
-2. **Rebuild installers**:
+1. **Update version number** in `EasyDentalLab-Desktop/package.json`:
    ```bash
    cd EasyDentalLab-Desktop
-   npm run build  # Builds for current platform only
-   # OR for all platforms: npm run dist
+   npm version patch --no-git-tag-version  # Auto-increments version (e.g., 2.3.17 → 2.3.18)
    ```
-3. **Create git tag and commit**:
+
+2. **Update APP_VERSION constants** in both:
+   - `renderer/index.html` (line ~288)
+   - `../EasyDentalLab.html` (web version, line ~288)
+   
+3. **Build installer** (x64 Windows):
    ```bash
-   git add .
-   git commit -m "Release vX.X.X: [description of changes]"
-   git push
+   npm run dist:win-x64
    ```
-4. **Publish GitHub Release**:
+
+4. **Fix latest.yml** — electron-builder uses dashes, GitHub normalizes to dots:
+   - Edit `build/latest.yml`
+   - Change `EasyDentalLab-Setup-X.X.X.exe` → `EasyDentalLab.Setup.X.X.X.exe` (in both `url` and `path` fields)
+
+5. **Rename installer files** to match:
    ```bash
+   cd build
+   mv "EasyDentalLab Setup X.X.X.exe" "EasyDentalLab.Setup.X.X.X.exe"
+   mv "EasyDentalLab Setup X.X.X.exe.blockmap" "EasyDentalLab.Setup.X.X.X.exe.blockmap"
+   ```
+
+6. **Commit and push**:
+   ```bash
+   cd ..
+   git add -A
+   git commit -m "vX.X.X: [description of changes]
+
+   Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
+   git push origin main
+   ```
+
+7. **Publish GitHub Release**:
+   ```bash
+   cd build
    gh release create vX.X.X \
-     --repo sarelroeloffze/EasyDentalLab \
-     --title "EasyDentalLab vX.X.X" \
-     --notes "[Release notes - what changed]" \
-     "EasyDentalLab-Desktop/build/EasyDentalLab Setup X.X.X.exe" \
-     "EasyDentalLab-Desktop/build/EasyDentalLab-X.X.X-arm64.dmg" \
-     "EasyDentalLab-Desktop/build/EasyDentalLab-X.X.X-arm64.AppImage"
+     "EasyDentalLab.Setup.X.X.X.exe#Windows Installer (x64)" \
+     "EasyDentalLab.Setup.X.X.X.exe.blockmap#Windows Blockmap" \
+     "latest.yml#Auto-Update Metadata" \
+     --title "vX.X.X - [Short Description]" \
+     --notes "[Release notes - what changed]"
    ```
+
+**CRITICAL FILES for auto-update:**
+- `EasyDentalLab.Setup.X.X.X.exe` — the installer
+- `EasyDentalLab.Setup.X.X.X.exe.blockmap` — delta update file
+- `latest.yml` — metadata (version, sha512, size, filename)
 
 **What happens next:**
-- Windows/Linux users: App checks for updates on startup (5-second delay), downloads silently, installs on next quit
-- macOS users: App shows notification with GitHub download link (unsigned apps can't auto-install)
+- Users on v2.3.16+ will auto-detect the update on next app launch (5-second delay)
+- **Blue banner** appears: "🔄 Downloading update to version X.X.X..."
+- After download: **Green banner** with "Restart Now" button
+- Click "Restart Now" → app closes, installs silently (oneClick), relaunches automatically
 
 **Testing auto-update:**
-- Build a new version with incremented version number
-- Publish to GitHub Releases
-- Open the old version of the app
-- Wait 5 seconds — blue "Downloading update" banner should appear
-- When download completes — green "Update ready" banner with "Restart Now" button
+- Keep old version running
+- Publish new version to GitHub Releases
+- Wait ~30 seconds — blue banner should appear
+- Click "Restart Now" — should install cleanly without errors
