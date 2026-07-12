@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.11";
+const APP_VERSION = "2.3.12";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6047,6 +6047,11 @@ function App() {
     // Debug: Main process IPC test
     window.electronAPI.onMainProcessReady((info) => {
       console.log("🚀 MAIN PROCESS IPC TEST:", info.message, "PID:", info.pid);
+    });
+
+    // Debug: Main process log relay
+    window.electronAPI.onMainProcessLog((log) => {
+      console.log("[MAIN]", log.message, log.data || '');
     });
 
     // Debug: Update check lifecycle events

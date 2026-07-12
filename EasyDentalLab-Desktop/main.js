@@ -204,27 +204,46 @@ function setupAutoUpdater() {
 
   // Check on startup (after a short delay so UI loads first)
   setTimeout(() => {
-    console.log('Starting update check...');
-    // Notify renderer that update check is starting
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('update-check-started');
+    try {
+      const log = (msg, data) => {
+        console.log(msg, data || '');
+        if (global.sendLogToRenderer) global.sendLogToRenderer(msg, data);
+      };
+
+      log('🔔 setTimeout fired - starting update check...');
+
+      // Notify renderer that update check is starting
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        log('🔔 Sending update-check-started event to renderer');
+        mainWindow.webContents.send('update-check-started');
+      } else {
+        log('🔔 ERROR: mainWindow is null or destroyed!');
+        return;
+      }
+
+      log('🔔 Calling autoUpdater.checkForUpdates()...');
+      autoUpdater.checkForUpdates()
+        .then(result => {
+          log('🔔 Update check result:', result);
+          // Notify renderer of result
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-check-complete', {
+              updateAvailable: result ? result.updateInfo !== null : false
+            });
+          }
+        })
+        .catch(err => {
+          log('🔔 Update check failed:', err.message);
+          if (mainWindow && !mainWindow.isDestroyed()) {
+            mainWindow.webContents.send('update-check-failed', { error: err.message });
+          }
+        });
+    } catch (error) {
+      console.error('🔔 FATAL ERROR in setTimeout callback:', error);
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('update-check-failed', { error: error.message });
+      }
     }
-    autoUpdater.checkForUpdates()
-      .then(result => {
-        console.log('Update check result:', result);
-        // Notify renderer of result
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('update-check-complete', {
-            updateAvailable: result ? result.updateInfo !== null : false
-          });
-        }
-      })
-      .catch(err => {
-        console.error('Update check failed:', err);
-        if (mainWindow && !mainWindow.isDestroyed()) {
-          mainWindow.webContents.send('update-check-failed', { error: err.message });
-        }
-      });
   }, 5000); // 5 second delay
 }
 
@@ -297,6 +316,13 @@ function createWindow() {
       message: 'Main process is alive and IPC is working!',
       pid: process.pid
     });
+
+    // Helper function to relay main process logs to renderer
+    global.sendLogToRenderer = (message, data) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('main-process-log', { message, data });
+      }
+    };
   });
 
   // Open DevTools in development (disabled for production)

@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   pickRestoreFile: () => ipcRenderer.invoke('pick-restore-file'),
   // Diagnostic
   onMainProcessReady: (callback) => ipcRenderer.on('main-process-ready', (e, info) => callback(info)),
+  onMainProcessLog: (callback) => ipcRenderer.on('main-process-log', (e, log) => callback(log)),
   // Auto-updater
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (e, info) => callback(info)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (e, info) => callback(info)),
