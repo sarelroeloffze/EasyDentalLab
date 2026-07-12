@@ -205,9 +205,26 @@ function setupAutoUpdater() {
   // Check on startup (after a short delay so UI loads first)
   setTimeout(() => {
     console.log('Starting update check...');
+    // Notify renderer that update check is starting
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-check-started');
+    }
     autoUpdater.checkForUpdates()
-      .then(result => console.log('Update check result:', result))
-      .catch(err => console.error('Update check failed:', err));
+      .then(result => {
+        console.log('Update check result:', result);
+        // Notify renderer of result
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-check-complete', {
+            updateAvailable: result ? result.updateInfo !== null : false
+          });
+        }
+      })
+      .catch(err => {
+        console.error('Update check failed:', err);
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.send('update-check-failed', { error: err.message });
+        }
+      });
   }, 5000); // 5 second delay
 }
 

@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.9";
+const APP_VERSION = "2.3.10";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6043,6 +6043,19 @@ function App() {
 
     console.log("✅ Auto-update event listeners registered");
     console.log("⏳ Waiting for update check from main process (5 sec delay)...");
+
+    // Debug: Update check lifecycle events
+    window.electronAPI.onUpdateCheckStarted(() => {
+      console.log("🔍 Update check started by main process");
+    });
+
+    window.electronAPI.onUpdateCheckComplete((info) => {
+      console.log("✔️ Update check complete:", info);
+    });
+
+    window.electronAPI.onUpdateCheckFailed((error) => {
+      console.error("❌ Update check failed:", error.message);
+    });
 
     // Listen for update events from main process
     window.electronAPI.onUpdateAvailable((info) => {
