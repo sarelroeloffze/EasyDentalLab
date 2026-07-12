@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.5";
+const APP_VERSION = "2.3.6";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6036,21 +6036,27 @@ function App() {
   const [updateStatus, setUpdateStatus] = useState(null); // null | {status: "downloading"|"ready", version: "x.x.x"}
 
   useEffect(() => {
-    if (!window.electronAPI) return; // Desktop only
+    if (!window.electronAPI) {
+      console.log("❌ electronAPI not available - running in web browser");
+      return;
+    }
+
+    console.log("✅ Auto-update event listeners registered");
+    console.log("⏳ Waiting for update check from main process (5 sec delay)...");
 
     // Listen for update events from main process
     window.electronAPI.onUpdateAvailable((info) => {
-      console.log("Update available:", info.version);
+      console.log("🔵 Update available:", info.version);
       setUpdateStatus({ status: "downloading", version: info.version });
     });
 
     window.electronAPI.onUpdateDownloaded((info) => {
-      console.log("Update downloaded:", info.version);
+      console.log("🟢 Update downloaded:", info.version);
       setUpdateStatus({ status: "ready", version: info.version });
     });
 
     window.electronAPI.onUpdateError((error) => {
-      console.error("Update error:", error.message);
+      console.error("🔴 Update error:", error.message);
       setUpdateStatus(null); // Hide banner on error
     });
   }, []);
