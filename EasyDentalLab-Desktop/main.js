@@ -248,7 +248,18 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  autoUpdater.quitAndInstall();
+  console.log('Installing update - force quitting all windows...');
+
+  // Close all windows immediately
+  BrowserWindow.getAllWindows().forEach(window => {
+    window.removeAllListeners('close');
+    window.close();
+  });
+
+  // Force quit and install (setImmediate ensures windows close first)
+  setImmediate(() => {
+    autoUpdater.quitAndInstall(false, true);
+  });
 });
 
 // IPC: Manual update check (for debugging)
