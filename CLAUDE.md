@@ -76,10 +76,10 @@ Portable single-file dental laboratory invoicing application for South African d
 **See:** `EasyDentalLab-Desktop/INSTALLERS-README.md` for installation instructions & troubleshooting
 
 ### Next Phase: Production Deployment
-**Status:** 🎯 **READY FOR USERS** — App is fully functional
+**Status:** ✅ **DEPLOYED** — App is live with auto-updates enabled
 
-**Required for auto-updates:**
-- [ ] **Publish v2.2.0 to GitHub Releases** (see "Publishing a new release" in Common Tasks) — auto-updater requires this
+**Auto-updates status:**
+- ✅ **Published v2.2.0 to GitHub Releases** (July 12, 2026) — auto-updater is now active
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
