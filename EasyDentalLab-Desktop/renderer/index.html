@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.2";
+const APP_VERSION = "2.3.3";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -3819,13 +3819,21 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
     return tariffs.filter(t => t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q));
   }, [tariffs, tSearch]);
 
-  // Sort items by code (ascending) for display
+  // Filter out empty items and sort by code (ascending) for display
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
+    // Remove items with no code (empty rows)
+    const nonEmpty = items.filter(item => item.code && item.code.trim());
+    // Sort by code
+    const sorted = nonEmpty.sort((a, b) => {
       const codeA = String(a.code || "").toLowerCase();
       const codeB = String(b.code || "").toLowerCase();
       return codeA.localeCompare(codeB, undefined, { numeric: true });
     });
+    // Always ensure at least one blank row for adding items
+    if (sorted.length === 0 || sorted[sorted.length - 1].code.trim()) {
+      sorted.push({ id: genId(), code: "", description: "", qty: 1, price: 0 });
+    }
+    return sorted;
   }, [items]);
 
   const subtotal = items.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
@@ -3963,7 +3971,7 @@ const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
         <Input label={t("invoiceDate")} value={f.date} onChange={v=>s("date",v)} type="date"/>
         <Input label="Valid Until" value={f.validUntil} onChange={v=>s("validUntil",v)} type="date"/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
         <Select label={t("patTitle")} value={f.patientTitle} onChange={v=>s("patientTitle",v)} options={[{value:"Mr",label:"Mr"},{value:"Mrs",label:"Mrs"},{value:"Miss",label:"Miss"},{value:"Dr",label:"Dr"},{value:"Prof",label:"Prof"}]} placeholder="Select..." style={{}} title="Patient title — optional"/>
         <Input label={t("patSurname")} value={f.patientSurname} onChange={v=>s("patientSurname",v)} required placeholder="e.g. Smith" title="Patient surname — required"/>
         <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} placeholder="e.g. John" title="Patient first/given name — optional"/>
@@ -4258,7 +4266,7 @@ const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
         <SearchSelect label={t("dentistName")} value={f.clientId} onChange={v=>s("clientId",v)} options={clients.map(c=>({value:c.id,label:c.name+(c.practice?" — "+c.practice:"")}))} placeholder="Type to search dentists..."/>
         <Input label={t("invoiceDate")} value={f.date} onChange={v=>s("date",v)} type="date"/>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 2fr 2fr 2fr 2fr",gap:12,marginBottom:16}}>
         <Select label={t("patTitle")} value={f.patientTitle} onChange={v=>s("patientTitle",v)} options={[{value:"Mr",label:"Mr"},{value:"Mrs",label:"Mrs"},{value:"Miss",label:"Miss"},{value:"Dr",label:"Dr"},{value:"Prof",label:"Prof"}]} placeholder="Select..." style={{}} title="Patient title — optional"/>
         <Input label={t("patSurname")} value={f.patientSurname} onChange={v=>s("patientSurname",v)} required placeholder="e.g. Smith" title="Patient surname — required"/>
         <Input label={t("patName")} value={f.patientName} onChange={v=>s("patientName",v)} placeholder="e.g. John" title="Patient first/given name — optional"/>
