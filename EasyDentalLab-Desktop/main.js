@@ -158,7 +158,16 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = true;     // Download silently in background
   autoUpdater.autoInstallOnAppQuit = true; // Install when user quits naturally
 
+  // Enable logging
+  autoUpdater.logger = console;
+  autoUpdater.logger.transports.file.level = 'info';
+
+  autoUpdater.on('checking-for-update', () => {
+    console.log('Checking for updates...');
+  });
+
   autoUpdater.on('update-available', (info) => {
+    console.log('Update available:', info.version);
     if (process.platform === 'darwin') {
       // macOS unsigned — notify + open download URL (can't auto-install without code signing)
       mainWindow.webContents.send('update-available-manual', {
@@ -171,19 +180,34 @@ function setupAutoUpdater() {
     }
   });
 
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('Update not available. Current version is the latest.');
+  });
+
+  autoUpdater.on('download-progress', (progressObj) => {
+    console.log(`Download progress: ${Math.round(progressObj.percent)}%`);
+  });
+
   autoUpdater.on('update-downloaded', (info) => {
+    console.log('Update downloaded:', info.version);
     // Notify renderer: update ready to install
     mainWindow.webContents.send('update-downloaded', info);
   });
 
   autoUpdater.on('error', (err) => {
-    // Silent fail — don't interrupt user
-    console.log('Auto-update error:', err);
+    console.error('Auto-update error:', err);
+    // Show error to user if update check fails
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('update-error', { message: err.message });
+    }
   });
 
   // Check on startup (after a short delay so UI loads first)
   setTimeout(() => {
-    autoUpdater.checkForUpdates().catch(err => console.log('Update check failed:', err));
+    console.log('Starting update check...');
+    autoUpdater.checkForUpdates()
+      .then(result => console.log('Update check result:', result))
+      .catch(err => console.error('Update check failed:', err));
   }, 5000); // 5 second delay
 }
 
