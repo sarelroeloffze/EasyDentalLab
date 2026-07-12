@@ -87,7 +87,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with auto-updates enabled
 
 **Auto-updates status:**
-- ✅ **Published v2.2.0 to GitHub Releases** (July 12, 2026) — auto-updater is now active
+- ✅ **Published v2.3.0 to GitHub Releases** (July 12, 2026) — auto-updater is active
+- ✅ **v2.2.0 users will auto-update** to v2.3.0 on next app launch
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
