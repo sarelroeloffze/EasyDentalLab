@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.3";
+const APP_VERSION = "2.3.4";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6032,6 +6032,29 @@ function App() {
     return () => { _showBackupToast = null; };
   }, []);
 
+  // ── Auto-Update Status ───────────────────────────────────────────────────────
+  const [updateStatus, setUpdateStatus] = useState(null); // null | {status: "downloading"|"ready", version: "x.x.x"}
+
+  useEffect(() => {
+    if (!window.electronAPI) return; // Desktop only
+
+    // Listen for update events from main process
+    window.electronAPI.onUpdateAvailable((info) => {
+      console.log("Update available:", info.version);
+      setUpdateStatus({ status: "downloading", version: info.version });
+    });
+
+    window.electronAPI.onUpdateDownloaded((info) => {
+      console.log("Update downloaded:", info.version);
+      setUpdateStatus({ status: "ready", version: info.version });
+    });
+
+    window.electronAPI.onUpdateError((error) => {
+      console.error("Update error:", error.message);
+      setUpdateStatus(null); // Hide banner on error
+    });
+  }, []);
+
   // ── Multi-PC Sync: Reload data when folder sync completes ───────────────────
   useEffect(() => {
     const handleFolderSync = () => {
@@ -6437,6 +6460,53 @@ function App() {
                 Dismiss
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Auto-Update Banner */}
+        {updateStatus && (
+          <div style={{
+            background: updateStatus.status === "downloading" ? "#dbeafe" : "#d1fae5",
+            borderBottom: updateStatus.status === "downloading" ? "1px solid #60a5fa" : "1px solid #6ee7b7",
+            padding:"12px 24px",
+            display:"flex",
+            alignItems:"center",
+            gap:12,
+            justifyContent:"space-between"
+          }}>
+            <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
+              <SvgIcon path={ICO.info} size={20} color={updateStatus.status === "downloading" ? "#1e40af" : "#065f46"}/>
+              <div>
+                <div style={{fontSize:13,fontWeight:600,color:updateStatus.status === "downloading" ? "#1e40af" : "#065f46"}}>
+                  {updateStatus.status === "downloading"
+                    ? `Downloading update to v${updateStatus.version}...`
+                    : `Update ready: v${updateStatus.version}`
+                  }
+                </div>
+                <div style={{fontSize:12,color:updateStatus.status === "downloading" ? "#3b82f6" : "#10b981"}}>
+                  {updateStatus.status === "downloading"
+                    ? "The update is downloading in the background. You can continue working."
+                    : "Click Restart Now to install the update and restart the app."
+                  }
+                </div>
+              </div>
+            </div>
+            {updateStatus.status === "ready" && (
+              <button
+                onClick={() => window.electronAPI.installUpdate()}
+                style={{
+                  background:"#059669",
+                  color:"white",
+                  border:"none",
+                  padding:"6px 14px",
+                  borderRadius:6,
+                  fontSize:12,
+                  fontWeight:600,
+                  cursor:"pointer"
+                }}>
+                Restart Now
+              </button>
+            )}
           </div>
         )}
 
