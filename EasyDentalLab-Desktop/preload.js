@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   scanForConflicts: () => ipcRenderer.invoke('scan-for-conflicts'),
   getFileTimestamp: (filename) => ipcRenderer.invoke('get-file-timestamp', filename),
   pickRestoreFile: () => ipcRenderer.invoke('pick-restore-file'),
+  // Diagnostic
+  onMainProcessReady: (callback) => ipcRenderer.on('main-process-ready', (e, info) => callback(info)),
   // Auto-updater
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (e, info) => callback(info)),
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (e, info) => callback(info)),

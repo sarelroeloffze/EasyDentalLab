@@ -290,6 +290,15 @@ function createWindow() {
 
   mainWindow.loadFile('renderer/index.html');
 
+  // Send test IPC message when page finishes loading
+  mainWindow.webContents.on('did-finish-load', () => {
+    console.log('Page loaded - sending test IPC message');
+    mainWindow.webContents.send('main-process-ready', {
+      message: 'Main process is alive and IPC is working!',
+      pid: process.pid
+    });
+  });
+
   // Open DevTools in development (disabled for production)
   // mainWindow.webContents.openDevTools();
 }
