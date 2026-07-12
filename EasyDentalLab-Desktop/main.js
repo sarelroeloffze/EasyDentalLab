@@ -216,6 +216,19 @@ ipcMain.on('install-update', () => {
   autoUpdater.quitAndInstall();
 });
 
+// IPC: Manual update check (for debugging)
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    console.log('Manual update check triggered from renderer');
+    const result = await autoUpdater.checkForUpdates();
+    console.log('Manual update check result:', result);
+    return { success: true, result };
+  } catch (error) {
+    console.error('Manual update check error:', error);
+    return { success: false, error: error.message };
+  }
+});
+
 // IPC: Open external URL (WhatsApp, email, download links)
 ipcMain.handle('open-external', async (event, url) => {
   // Validate URL before opening (security: only allow https, mailto, and wa.me)

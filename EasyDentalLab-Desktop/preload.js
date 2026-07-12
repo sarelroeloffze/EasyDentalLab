@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onUpdateAvailableManual: (callback) => ipcRenderer.on('update-available-manual', (e, info) => callback(info)),
   onUpdateError: (callback) => ipcRenderer.on('update-error', (e, error) => callback(error)),
   installUpdate: () => ipcRenderer.send('install-update'),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   // External URL opener
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   platform: process.platform // 'win32', 'darwin', 'linux'

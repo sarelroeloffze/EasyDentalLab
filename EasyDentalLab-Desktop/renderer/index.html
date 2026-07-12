@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.6";
+const APP_VERSION = "2.3.7";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6208,7 +6208,45 @@ function App() {
       case "invoices": return <Invoices data={data} setData={setDataAndSave}/>;
       case "directclaimed": return <DirectClaimed data={data} setData={setDataAndSave}/>;
       case "settings": return <Settings data={data} setData={setDataAndSave}/>;
-      case "help": return <div style={{maxWidth:720}}><h1 style={{fontSize:24,fontWeight:700,margin:"0 0 4px"}}>{t("nav_help")} &amp; User Guide</h1><p style={{fontSize:13,color:"#6b7280",margin:"0 0 20px"}}>Everything you need to know about using EasyDentalLab</p><HelpSection /></div>;
+      case "help": return (
+        <div style={{maxWidth:720}}>
+          <h1 style={{fontSize:24,fontWeight:700,margin:"0 0 4px"}}>{t("nav_help")} &amp; User Guide</h1>
+          <p style={{fontSize:13,color:"#6b7280",margin:"0 0 20px"}}>Everything you need to know about using EasyDentalLab</p>
+
+          {/* Debug: Manual update check button (desktop only) */}
+          {window.electronAPI && (
+            <div className="card" style={{marginBottom:20,padding:16,background:"#fef3c7",border:"1px solid #fbbf24"}}>
+              <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>🔧 Debug: Auto-Update Test</div>
+              <div style={{fontSize:12,color:"#92400e",marginBottom:12}}>
+                Version {APP_VERSION} • Click below to manually check for updates
+              </div>
+              <button
+                className="btn-primary"
+                onClick={async () => {
+                  console.log("🔘 Manual update check button clicked");
+                  try {
+                    const result = await window.electronAPI.checkForUpdates();
+                    console.log("🔘 Manual check result:", result);
+                    if (result.success) {
+                      alert("Update check triggered - watch console for results");
+                    } else {
+                      alert(`Update check failed: ${result.error}`);
+                    }
+                  } catch (error) {
+                    console.error("🔘 Manual check error:", error);
+                    alert(`Error: ${error.message}`);
+                  }
+                }}
+                style={{fontSize:13,padding:"8px 16px"}}
+              >
+                Check for Updates Now
+              </button>
+            </div>
+          )}
+
+          <HelpSection />
+        </div>
+      );
       default: return <Dashboard data={data}/>;
     }
   };
