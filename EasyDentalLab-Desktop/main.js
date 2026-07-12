@@ -158,9 +158,8 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload = true;     // Download silently in background
   autoUpdater.autoInstallOnAppQuit = true; // Install when user quits naturally
 
-  // Enable logging
+  // Enable logging (console only, no file transport)
   autoUpdater.logger = console;
-  autoUpdater.logger.transports.file.level = 'info';
 
   autoUpdater.on('checking-for-update', () => {
     console.log('Checking for updates...');
