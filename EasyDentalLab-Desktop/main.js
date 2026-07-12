@@ -291,7 +291,7 @@ app.on('ready', async () => {
   }
 
   createWindow();
-  setupAutoUpdater();
+  // setupAutoUpdater() now called from did-finish-load event
 });
 
 function createWindow() {
@@ -323,6 +323,14 @@ function createWindow() {
         mainWindow.webContents.send('main-process-log', { message, data });
       }
     };
+
+    // Start auto-updater AFTER page loads (so log relay is ready)
+    console.log('Starting auto-updater setup...');
+    mainWindow.webContents.send('main-process-log', {
+      message: '🔧 Starting setupAutoUpdater() now...',
+      data: ''
+    });
+    setupAutoUpdater();
   });
 
   // Open DevTools in development (disabled for production)
