@@ -222,7 +222,12 @@ ipcMain.handle('check-for-updates', async () => {
     console.log('Manual update check triggered from renderer');
     const result = await autoUpdater.checkForUpdates();
     console.log('Manual update check result:', result);
-    return { success: true, result };
+    // Extract only serializable data
+    return {
+      success: true,
+      updateAvailable: result ? result.updateInfo !== null : false,
+      version: result?.updateInfo?.version || 'unknown'
+    };
   } catch (error) {
     console.error('Manual update check error:', error);
     return { success: false, error: error.message };
