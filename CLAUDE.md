@@ -6,7 +6,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 - **After every code change**: update the relevant Help topic(s) in `HelpSection` to reflect the change.
 - **After every code change**: update this CLAUDE.md file — add/update the feature in the appropriate section, fix any line numbers that shifted, and add a row to the Bug Fixes / Features table if applicable.
-- These two rules apply automatically — the user does not need to ask each time.
+- **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
+- These three rules apply automatically — the user does not need to ask each time.
 
 ## 🎯 PROJECT STATUS (Updated 2026-06-06)
 
@@ -74,8 +75,11 @@ Portable single-file dental laboratory invoicing application for South African d
 
 **See:** `EasyDentalLab-Desktop/INSTALLERS-README.md` for installation instructions & troubleshooting
 
-### Next Phase: Production Deployment (Optional)
+### Next Phase: Production Deployment
 **Status:** 🎯 **READY FOR USERS** — App is fully functional
+
+**Required for auto-updates:**
+- [ ] **Publish v2.2.0 to GitHub Releases** (see "Publishing a new release" in Common Tasks) — auto-updater requires this
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -83,7 +87,6 @@ Portable single-file dental laboratory invoicing application for South African d
 - [ ] Get Windows code signing certificate (~$200/year) for SmartScreen bypass
 - [ ] Build x64 versions for Intel Macs and older Windows PCs
 - [ ] Arm license gate (replace placeholder public key in `renderer/index.html`)
-- [ ] Distribute via GitHub Releases or direct download
 
 ---
 
@@ -490,7 +493,7 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | UI fixes: version display + Afrikaans column | Fixed sidebar version display to show `APP_VERSION` instead of hardcoded "v1.0" (line ~5751). Added Afrikaans description column to Tariffs table (line ~3364) — was missing, making Afrikaans descriptions invisible/uneditable. Fixed 9722 tariff: English "Acrylic, per denture" / Afrikaans "Akriel, per gebit" (line ~601). |
 | **v2.2.0 Features & Fixes** | **Multi-PC sync, auto-updater, save-on-close, workflow improvements** |
 | Multi-PC sync (desktop only) | First-run restore wizard with file picker. Conflict detection scans for Dropbox conflicted copies on startup and shows yellow warning banner. Multi-PC setup guidance panel in AutoBackupCard with 3-PC workflow instructions. `initDataFromFile()` checks backup file timestamp vs localStorage on startup. `scanForConflicts()` IPC handler added. Desktop-only features (web version remains single-PC). |
-| Auto-updater (desktop only) | `electron-updater` integrated with GitHub Releases backend. `setupAutoUpdater()` in main.js configures silent background downloads. Three UI states: downloading (blue banner), ready to install (green banner with "Restart Now" button), manual download required (macOS unsigned — opens GitHub Releases URL). `autoDownload: true` and `autoInstallOnAppQuit: true`. Updates check on startup after 5-second delay. Desktop-only (web version has no auto-update). |
+| Auto-updater (desktop only) | `electron-updater` integrated with GitHub Releases backend. `setupAutoUpdater()` in main.js configures silent background downloads. Three UI states: downloading (blue banner), ready to install (green banner with "Restart Now" button), manual download required (macOS unsigned — opens GitHub Releases URL). `autoDownload: true` and `autoInstallOnAppQuit: true`. Updates check on startup after 5-second delay. **REQUIRES:** New versions MUST be published to GitHub Releases (see "Publishing a new release" in Common Tasks) — the app checks `github.com/sarelroeloffze/EasyDentalLab/releases` for updates. Desktop-only (web version has no auto-update). |
 | Save-on-close (desktop only) | `before-quit` handler in main.js calls `window._flushDataNow()` to force immediate backup flush before app exit. 2-second grace period to complete write. `autoBackupCSVs()` accepts `force` parameter to bypass debounce. Prevents data loss when quitting within 2-second auto-backup window. Desktop-only (web version uses `beforeunload` warning only). |
 | In-app support | `SUPPORT_WHATSAPP` and `SUPPORT_EMAIL` constants added. `openExternalUrl()` helper with URL scheme validation (https/mailto only). `SupportCard` component in Settings with WhatsApp and email buttons. Alert icon added to ICO object. `openExternal` IPC handler in desktop version. Both web and desktop versions. |
 | Code input auto-focus | `useEffect` hook in `InvoiceForm` and `EstimateForm` auto-focuses first code input on form open. Uses `setTimeout(100ms)` to wait for DOM render, then `querySelector('input[data-field="code"]')` to find and focus the input. Eliminates manual click to start data entry. Both web and desktop versions. |
@@ -667,3 +670,42 @@ Main Process (Node.js)
 - Add an entry to the `topics` array inside `HelpSection` (~line 2746)
 - Each topic: `{ id, icon, title, content: <JSX/> }`
 - Use the `H`, `P`, `UL`, `OL` shorthand components defined at the top of `HelpSection`
+
+### Publishing a new release (desktop app auto-updates)
+**CRITICAL:** Desktop apps check GitHub Releases for updates. Every code change to the desktop app MUST be published as a GitHub Release or users won't receive the update.
+
+**Steps:**
+1. **Update version number** in `EasyDentalLab-Desktop/package.json` (line 3: `"version": "X.X.X"`)
+2. **Rebuild installers**:
+   ```bash
+   cd EasyDentalLab-Desktop
+   npm run build  # Builds for current platform only
+   # OR for all platforms: npm run dist
+   ```
+3. **Create git tag and commit**:
+   ```bash
+   git add .
+   git commit -m "Release vX.X.X: [description of changes]"
+   git push
+   ```
+4. **Publish GitHub Release**:
+   ```bash
+   gh release create vX.X.X \
+     --repo sarelroeloffze/EasyDentalLab \
+     --title "EasyDentalLab vX.X.X" \
+     --notes "[Release notes - what changed]" \
+     "EasyDentalLab-Desktop/build/EasyDentalLab Setup X.X.X.exe" \
+     "EasyDentalLab-Desktop/build/EasyDentalLab-X.X.X-arm64.dmg" \
+     "EasyDentalLab-Desktop/build/EasyDentalLab-X.X.X-arm64.AppImage"
+   ```
+
+**What happens next:**
+- Windows/Linux users: App checks for updates on startup (5-second delay), downloads silently, installs on next quit
+- macOS users: App shows notification with GitHub download link (unsigned apps can't auto-install)
+
+**Testing auto-update:**
+- Build a new version with incremented version number
+- Publish to GitHub Releases
+- Open the old version of the app
+- Wait 5 seconds — blue "Downloading update" banner should appear
+- When download completes — green "Update ready" banner with "Restart Now" button
