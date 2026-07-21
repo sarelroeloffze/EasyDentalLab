@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-21)
 
-### Current Version: Desktop App v2.3.20 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.20 bypasses quit handlers during updates
+### Current Version: Desktop App v2.3.21 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.21 uses app.exit() instead of quitAndInstall()
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -92,12 +92,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Solution:** Added `isUpdating` flag to skip `before-quit` handler during updates; immediate `quitAndInstall()` call
   - **Result:** Instant quit during updates, no more "could not be closed" errors
 
-### Available Installers (v2.3.20)
+- ✅ **v2.3.21 Update** (July 21, 2026)
+  - **Auto-update approach changed:** Use `app.exit(0)` instead of `quitAndInstall()`
+  - **Root cause:** `quitAndInstall()` itself may be causing coordination issues with NSIS installer
+  - **Solution:** Changed to `app.exit(0)` — forceful immediate exit; let `autoInstallOnAppQuit: true` handle installation
+  - **Result:** Cleaner separation - app exits immediately, electron-updater handles install automatically
+
+### Available Installers (v2.3.21)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.20.exe` | 77 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.21.exe` | 77 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
@@ -113,10 +119,10 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.20 published to GitHub Releases** (July 21, 2026) — before-quit handler bypass implemented
+- ✅ **v2.3.21 published to GitHub Releases** (July 21, 2026) — switched to app.exit() approach
 - ✅ **Users on v2.3.16+ auto-update silently** — blue download banner → "Restart Now" → silent install
-- ✅ **Root causes fixed:** `logger.transports.file` crash, timing issues, oneClick installer, before-quit blocking
-- ✅ **Solution:** `isUpdating` flag skips before-quit handler, immediate quitAndInstall()
+- ✅ **Root causes fixed:** `logger.transports.file` crash, timing issues, oneClick installer, quitAndInstall coordination
+- ✅ **Solution:** `app.exit(0)` for immediate exit, `autoInstallOnAppQuit` handles installation
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -557,6 +563,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Auto-update fails with close error | **Bug:** When clicking "Restart Now" after update downloads, error "EasyDentalLab could not be closed" appears and install fails. **Root cause:** `window.close()` is too gentle and `setImmediate()` doesn't wait long enough for windows to close before installer runs. **Fix:** Changed to `window.destroy()` (forceful immediate close) + 500ms delay before `quitAndInstall()`. Main.js line ~249-263. Desktop only. |
 | **v2.3.20 Fix** | **Auto-update still blocked by before-quit handler** |
 | "Could not be closed" error persists | **Bug:** Even with v2.3.19, "could not be closed" error still appears during updates. **Root cause:** `before-quit` handler calls `event.preventDefault()` and waits 2 seconds to flush data, blocking the quit process during updates. **Fix:** Added `isUpdating` flag (line ~352) that's set before quit; `before-quit` handler checks flag and skips flush logic during updates. Removed 500ms delay, call `quitAndInstall()` immediately after destroying windows. Main.js lines ~249-263, ~351-372. Desktop only. |
+| **v2.3.21 Fix** | **Changed quit approach - use app.exit() instead** |
+| "Could not be closed" still appears | **Bug:** Even with v2.3.20, error persists. **Root cause:** `quitAndInstall()` itself may have coordination issues with NSIS installer. **Fix:** Completely changed approach: replaced `quitAndInstall()` with `app.exit(0)` (forceful immediate exit). With `autoInstallOnAppQuit: true` enabled (line ~159), electron-updater automatically handles installation when app exits. Cleaner separation of concerns. Main.js line ~249-263. Desktop only. |
 
 ## License System
 

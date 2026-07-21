@@ -248,7 +248,7 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - bypassing quit handlers...');
+  console.log('Installing update - forcing app exit...');
 
   // Set update flag to skip before-quit handler
   isUpdating = true;
@@ -259,9 +259,9 @@ ipcMain.on('install-update', () => {
     window.destroy(); // destroy() is immediate and forceful, close() can be prevented
   });
 
-  // Quit immediately without waiting for flush
-  console.log('Calling quitAndInstall immediately...');
-  autoUpdater.quitAndInstall(false, true);
+  // Force immediate exit - autoInstallOnAppQuit will handle installation
+  console.log('Calling app.exit(0) - autoInstallOnAppQuit will handle install...');
+  app.exit(0);
 });
 
 // IPC: Manual update check (for debugging)
