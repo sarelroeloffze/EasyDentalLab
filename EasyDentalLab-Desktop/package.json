@@ -1,6 +1,6 @@
 {
   "name": "easydentallab",
-  "version": "2.3.23",
+  "version": "2.3.24",
   "description": "Dental laboratory invoicing application for South Africa",
   "homepage": "https://github.com/sarelroeloffze/EasyDentalLab",
   "main": "main.js",
@@ -60,7 +60,8 @@
       "category": "Office"
     },
     "nsis": {
-      "oneClick": true,
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": false,
       "perMachine": false,
       "allowElevation": true,
       "createDesktopShortcut": true,
