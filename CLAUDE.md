@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-21)
 
-### Current Version: Desktop App v2.3.21 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.21 uses app.exit() instead of quitAndInstall()
+### Current Version: Desktop App v2.3.24 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE - INSTALLER ISSUE RESOLVED** — v2.3.24 uses regular NSIS installer (not oneClick)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -98,12 +98,24 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Solution:** Changed to `app.exit(0)` — forceful immediate exit; let `autoInstallOnAppQuit: true` handle installation
   - **Result:** Cleaner separation - app exits immediately, electron-updater handles install automatically
 
-### Available Installers (v2.3.21)
+- ✅ **v2.3.22-23 Updates** (July 21, 2026)
+  - **v2.3.22:** process.exit(0) + remove all event listeners (nuclear option)
+  - **v2.3.23:** Back to basics - just quitAndInstall(true, true)
+  - **Result:** Still showed "cannot be closed" error - quit code wasn't the issue
+
+- ✅ **v2.3.24 Update** (July 21, 2026) — **FINAL FIX**
+  - **Disabled oneClick installer:** Changed to regular NSIS with UI
+  - **Root cause identified:** oneClick installer has race condition with app quit; background process still running when installer checks
+  - **Solution:** `oneClick: false` - installer shows UI window, user clicks through, waits properly for app exit
+  - **Recovery:** Users stuck on old versions need complete cleanup (registry + files) then fresh install
+  - **Result:** Updates now show installer UI (not silent) but work reliably without "cannot be closed" errors
+
+### Available Installers (v2.3.24)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.21.exe` | 77 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.24.exe` | 77 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
@@ -119,10 +131,11 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.21 published to GitHub Releases** (July 21, 2026) — switched to app.exit() approach
-- ✅ **Users on v2.3.16+ auto-update silently** — blue download banner → "Restart Now" → silent install
-- ✅ **Root causes fixed:** `logger.transports.file` crash, timing issues, oneClick installer, quitAndInstall coordination
-- ✅ **Solution:** `app.exit(0)` for immediate exit, `autoInstallOnAppQuit` handles installation
+- ✅ **v2.3.24 published to GitHub Releases** (July 21, 2026) — oneClick installer disabled
+- ⚠️ **Users on v2.3.16-23 may be stuck** — need manual cleanup + fresh install of v2.3.24
+- ✅ **Users on v2.3.24+ auto-update reliably** — blue download banner → "Restart Now" → installer UI → click through
+- ✅ **Root cause fixed:** oneClick installer race condition; switched to regular NSIS with UI
+- ⚠️ **Trade-off:** Updates show installer UI (not silent), but work reliably
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -565,6 +578,10 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | "Could not be closed" error persists | **Bug:** Even with v2.3.19, "could not be closed" error still appears during updates. **Root cause:** `before-quit` handler calls `event.preventDefault()` and waits 2 seconds to flush data, blocking the quit process during updates. **Fix:** Added `isUpdating` flag (line ~352) that's set before quit; `before-quit` handler checks flag and skips flush logic during updates. Removed 500ms delay, call `quitAndInstall()` immediately after destroying windows. Main.js lines ~249-263, ~351-372. Desktop only. |
 | **v2.3.21 Fix** | **Changed quit approach - use app.exit() instead** |
 | "Could not be closed" still appears | **Bug:** Even with v2.3.20, error persists. **Root cause:** `quitAndInstall()` itself may have coordination issues with NSIS installer. **Fix:** Completely changed approach: replaced `quitAndInstall()` with `app.exit(0)` (forceful immediate exit). With `autoInstallOnAppQuit: true` enabled (line ~159), electron-updater automatically handles installation when app exits. Cleaner separation of concerns. Main.js line ~249-263. Desktop only. |
+| **v2.3.22-23 Fixes** | **Nuclear options - still failed** |
+| Error persists | **v2.3.22:** Changed to `process.exit(0)` + removed ALL event listeners. **v2.3.23:** Back to basics, just `quitAndInstall(true, true)`. Both still showed "cannot be closed" error. **Learning:** Problem is NOT with quit code - quit works fine. Issue is installer detecting background process still running. Desktop only. |
+| **v2.3.24 Fix** | **FINAL FIX - Disabled oneClick installer** |
+| "Cannot be closed" - root cause found | **Bug:** Error appears when INSTALLER runs (not when app quits). Message: "EasyDentalLab cannot be closed. Please close it manually and click Retry." Appears even with manual installer download. **Root cause:** oneClick installer has race condition - tries to run while background electron process is still shutting down. Even though app appears closed, process takes 1-2 seconds to fully exit. Installer checks immediately, sees "running", blocks installation. **Fix:** Disabled oneClick installer (`oneClick: false` in package.json line ~63). Regular NSIS installer shows UI and waits properly for app exit. **Trade-off:** Updates show installer UI (user clicks through), not fully silent anymore. **Recovery:** Users stuck on v2.3.16-23 need complete cleanup: delete all registry entries + folders, reboot, fresh install v2.3.24. **Why it persisted:** Manual registry deletion after failed updates created broken installation state, making fresh installs also fail. Main.js changes reverted to simple `quitAndInstall(true, true)`. Desktop only. |
 
 ## License System
 
