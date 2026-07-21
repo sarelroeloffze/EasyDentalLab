@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-21)
 
-### Current Version: Desktop App v2.3.24 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE - INSTALLER ISSUE RESOLVED** — v2.3.24 uses regular NSIS installer (not oneClick)
+### Current Version: Desktop App v2.3.25 + Web App v2.3.25 (Production-Ready)
+**Status:** ✅ **LIVE - TARIFFS.CSV IS NOW SOURCE OF TRUTH** — v2.3.25 auto-syncs tariffs from CSV on startup
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -110,14 +110,24 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Recovery:** Users stuck on old versions need complete cleanup (registry + files) then fresh install
   - **Result:** Updates now show installer UI (not silent) but work reliably without "cannot be closed" errors
 
-### Available Installers (v2.3.24)
+- ✅ **v2.3.25 Update** (July 21, 2026) — **TARIFFS.CSV SOURCE OF TRUTH**
+  - **Tariffs.csv auto-sync:** App now reads Tariffs.csv on startup and overrides all other tariff sources
+  - **Excel editing works:** Edit prices in Tariffs.csv (Excel), restart app → changes loaded automatically
+  - **Multi-PC sync fixed:** Edit on PC1 → Tariffs.csv syncs via Dropbox → PC2 auto-loads on startup
+  - **Embedded CSV updated:** Synced embedded tariff codes with current Tariffs.csv (341 codes)
+  - **New functions:** `readTariffsFromFolder()` reads CSV; `loadDataFromFolder()` overrides tariffs
+  - **Priority order:** Tariffs.csv (1st) → JSON backup (2nd) → localStorage (3rd) → embedded CSV (4th)
+  - **Both versions:** Web app (EasyDentalLab.html) and Desktop app identical behavior
+  - **Result:** Single source of truth for tariff prices; Excel edits work; multi-PC sync automatic
+
+### Available Installers (v2.3.25)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.24.exe` | 77 MB | x64 (Intel/AMD) |
-| **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
+| **Windows** | `EasyDentalLab.Setup.2.3.25.exe` | ~77 MB | x64 (Intel/AMD) |
+| **macOS** | `EasyDentalLab-2.3.25-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.3.25-arm64.AppImage` | ~101 MB | ARM64 |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -131,11 +141,11 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.24 published to GitHub Releases** (July 21, 2026) — oneClick installer disabled
-- ⚠️ **Users on v2.3.16-23 may be stuck** — need manual cleanup + fresh install of v2.3.24
+- ✅ **v2.3.25 ready for release** (July 21, 2026) — Tariffs.csv auto-sync feature
 - ✅ **Users on v2.3.24+ auto-update reliably** — blue download banner → "Restart Now" → installer UI → click through
 - ✅ **Root cause fixed:** oneClick installer race condition; switched to regular NSIS with UI
 - ⚠️ **Trade-off:** Updates show installer UI (not silent), but work reliably
+- ⚠️ **Users on v2.3.16-23 may be stuck** — need manual cleanup + fresh install
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -582,6 +592,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Error persists | **v2.3.22:** Changed to `process.exit(0)` + removed ALL event listeners. **v2.3.23:** Back to basics, just `quitAndInstall(true, true)`. Both still showed "cannot be closed" error. **Learning:** Problem is NOT with quit code - quit works fine. Issue is installer detecting background process still running. Desktop only. |
 | **v2.3.24 Fix** | **FINAL FIX - Disabled oneClick installer** |
 | "Cannot be closed" - root cause found | **Bug:** Error appears when INSTALLER runs (not when app quits). Message: "EasyDentalLab cannot be closed. Please close it manually and click Retry." Appears even with manual installer download. **Root cause:** oneClick installer has race condition - tries to run while background electron process is still shutting down. Even though app appears closed, process takes 1-2 seconds to fully exit. Installer checks immediately, sees "running", blocks installation. **Fix:** Disabled oneClick installer (`oneClick: false` in package.json line ~63). Regular NSIS installer shows UI and waits properly for app exit. **Trade-off:** Updates show installer UI (user clicks through), not fully silent anymore. **Recovery:** Users stuck on v2.3.16-23 need complete cleanup: delete all registry entries + folders, reboot, fresh install v2.3.24. **Why it persisted:** Manual registry deletion after failed updates created broken installation state, making fresh installs also fail. Main.js changes reverted to simple `quitAndInstall(true, true)`. Desktop only. |
+| **v2.3.25 Feature** | **Tariffs.csv is Source of Truth** |
+| Tariff sync architecture redesign | **Problem:** Embedded CSV was only used on first load; editing Tariffs.csv in Excel had no effect; multi-PC sync didn't work for tariff prices. **Solution:** Added `readTariffsFromFolder()` helper function that reads Tariffs.csv from backup folder. Modified `loadDataFromFolder()` to load tariffs from CSV and override all other sources (localStorage, JSON backup, embedded CSV). **Priority order:** Tariffs.csv (1st) → JSON backup (2nd) → localStorage (3rd) → embedded CSV (4th). **Result:** Edit prices in Excel → restart app → changes loaded automatically. Multi-PC sync: edit on PC1 → Tariffs.csv syncs via Dropbox → PC2 auto-loads on startup. Single source of truth for tariff codes/prices. Web app lines ~957-991, desktop app lines ~957-995. Both versions. |
 
 ## License System
 

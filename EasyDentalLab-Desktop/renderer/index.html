@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.24";
+const APP_VERSION = "2.3.25";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -332,372 +332,348 @@ const STORAGE_KEY = "easydentallab_data";
 // ============================================================
 
 const EMBEDDED_TARIFFS_CSV = `Code,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure
-*,,Star inlay,Ster inlegsel,215.89,199.6,Crown & Bridge,
-8000,9736,Implant Analogue S/S,Implant Analogue S/S,241.41,223.2,Implants,
-8001,9736,UCLA Hexed Sleeve,UCLA Hexed Sleeve,557.24,515.2,Implants,
-8002,9736,Abut Passive for eng,Abut Passive for eng,1287.21,1190.1,Implants,
-8003,9736,Brass Screw 2 Series Slotted,Brass Screw 2 Series Slotted,67.82,62.7,Implants,
-8004,9736,Gold Screw 2 Series Slot,Gold Screw 2 Series Slot,1038.33,960.0,Implants,
-8005,9736,Overd Ab 3mm  2.25 ball OAB3,Overd Ab 3mm  2.25 ball OAB3,1292.62,1195.1,Implants,
-8006,9736,Overdenture Abut 3mm OB3,Overdenture Abut 3mm OB3,1492.71,1380.1,Implants,
-8007,9736,Analogue for OAB LOAB1,Analogue for OAB LOAB1,211.67,195.7,Implants,
-8008,9736,Overdenture Ab Analog Brass AO2,Overdenture Ab Analog Brass AO2,211.67,195.7,Implants,
-8009,9736,Preci-Clix Female Yellow ZZ6A1231,Preci-Clix Female Yellow ZZ6A1231,59.06,54.6,Implants,
-8010,9736,Preci-Clix Female Red ZZ6A1233,Preci-Clix Female Red ZZ6A1233,59.49,55.0,Implants,
-8011,9736,Preci-Clix Housing ZZ6A1235,Preci-Clix Housing ZZ6A1235,194.9,180.2,Implants,
-8012,9736,Overdenture Plastic Clip PC2,Overdenture Plastic Clip PC2,101.67,94.0,Implants,
-8013,9736,Implant Analogue s/s LS12,Implant Analogue s/s LS12,211.67,195.7,Implants,
-8014,9736,UCLA N/Hex Sleeve SB5,UCLA N/Hex Sleeve SB5,487.15,450.4,Implants,
-8015,9736,Gold Screw 2 Series Slot GSS2,Gold Screw 2 Series Slot GSS2,911.25,842.5,Implants,
-8016,9736,Gold Screw 2 Series ZYG Slot GSSZ2,Gold Screw 2 Series ZYG Slot GSSZ2,911.25,842.5,Implants,
-8017,9736,Brass Screw 2 Series Slotted BSS2,Brass Screw 2 Series Slotted BSS2,59.49,55.0,Implants,
-8020,9736,Preci-Clip Std Rider IN (2/p),Preci-Clip Std Rider IN (2/p),603.86,558.3,Implants,
-8025,9736,Pick up Imp Coping,Pick up Imp Coping,555.18,513.3,Implants,
-8030,9736,ZR Custom Abutment - Passive Kit incl,ZR Custom Abutment - Passive Kit incl,3852.98,3562.3,Implants,
-8035,9736,Titanium Bar - Wrap Around,Titanium Bar - Wrap Around,18008.82,16650.2,Implants,
-8036,9736,Milled PMMA structure,Milled PMMA structure,4219.1,3900.8,Preparation,
-8037,9736,Preci Horix Bar 4 impl excl parts,Preci Horix Bar 4 impl excl parts,8138.48,7524.5,Implants,
-8050,9736,Abutment Ti BA,Abutment Ti BA,814.66,753.2,Implants,
-8051,9736,Screw Ti slotted 2 series,Screw Ti slotted 2 series,472.33,436.7,Implants,
-8054,9736,Nobel Impl replica cc NP,Nobel Impl replica cc NP,370.12,342.2,Material,
-8055,9736,Nobel Uni base cc NP 1.5,Nobel Uni base cc NP 1.5,2173.15,2009.2,Material,
-8056,9736,Nobel Lab Screw CC NP,Nobel Lab Screw CC NP,96.69,89.4,Material,
-8060,9736,Ti temp cylinder,Ti temp cylinder,552.05,510.4,Material,
-8065,9736,Southern Implant components,,7269.74,6721.3,Material,
-9301,9301,Yellow stone model,Geelgips model,52.4,48.5,Models,
-9303,9303,Superhard stone model,Steengips model,74.7,69.1,Models,
-9305,9305,Study model,Studiemodel,138.0,127.5,Models,
-9307,9307,Casting of gnathostatic study model,Giet van gnatostatiese studiemodel,179.5,165.9,Models,
-9309,9309,New trimmed base to supplied model,Nuwe afgewerkte basis vir model verskaf,63.4,58.6,Models,
-9311,9311,Trimming of supplied model,Slyp van model verskaf,38.9,36.0,Models,
-9312,9312,Gingival tissue mask per impression,Gingivale masker,per afdruk,298.5,276.0,Models,
-9313,9313,Duplicating model,Duplisering van model,160.1,148.0,Chrome Cobalt,
-9314,9314,Refractory model,"Vuurvaste model, per eenheid, per unit",145.6,138.4,Models,each
-9315,9315,Model with die,Model met stempel,218.4,201.9,Models,
-9317,9317,Sectional model for crown & bridge with die,Seksionele model vir kroon & brug met stempel,193.7,179.1,Models,
-9319,9319,Additional die,Addisionele stempel,50.0,46.3,Models,
-9320,9320,Pindex or indexed model tray per die,Pindex of geindekseerde modelhouer,per stempel,50.0,46.3,Models,
-9321,9321,Occlusion block,Rekordblok,190.9,176.5,Prosthetics,
-9323,9323,Occlusion block on baseplate,Rekordblok op basisplaat,240.5,222.4,Preparation,
-9325,9325,Additional model-DELETED,Addisionele model-DELETED,26.5,24.5,Models,
-9327,9327,Infection control per impression,Infeksiebeheer per afdruk,35.8,33.1,Material,
-9329,9329,Fit and supply of disposable articulator,Verskaf en plaas wegdoenbare artikulator,93.7,86.7,Preparation,
-9330,9330,Delivery charge per completed procedure,Afleweringskoste per voltooide prosedure,99.4,91.9,Preparation,
-9331,9331,Full upper & lower denture,Vol bo-& onderkunsgebit,2563.9,2370.4,Prosthetics,
-9333,9333,Full upper or lower denture,Vol bo- of ondergebit,1500.2,1387.0,Prosthetics,
-9335,9335,Set-up & waxing: Full upper & lower denture,Monteer & opwas: Volle bo- & onderkunsgebit,884.0,817.3,Prosthetics,
-9337,9337,Set up and waxing of full upper or lower denture,Monteer en opwas van volle bo- of onderkunsgebit,591.3,546.7,Prosthetics,
-9339,9339,Waxing & finishing: Full upper & lower denture,Opwas & voltooi: Vol bo- & onder kunsgebit,1572.1,1453.5,Prosthetics,
-9341,9341,Waxing & finishing: Full upper or lower denture,Opwas & voltooi: Vol bo- of onder kunsgebit,878.9,812.6,Prosthetics,
-9343,9343,Fee for dentures on fully adjustable articulator,HANAU fooi,2503.4,2314.6,Prosthetics,
-9345,9345,Additional fee per tooth socketed,Bykomende gelde per tand gesok,35.8,33.1,Prosthetics,
-9346,9346,Additional fee per tooth not socketed,Bykomende gelde per tand nie gesok,19.5,18.0,Prosthetics,
-9347,9347,Additional fee: From 3rd retry (Hour),Bykomende gelde: Vanaf 3de herinpassing (Uur),569.4,526.5,Prosthetics,
-9351,9351,One tooth denture,Eentandgebit,688.1,636.2,Prosthetics,
-9352,9352,Two-tooth denture,Tweetandgebit,732.2,677.0,Prosthetics,
-9353,9353,Three-tooth denture,Drietandgebit,784.6,725.4,Prosthetics,
-9354,9354,Four-tooth denture,Viertandgebit,829.4,766.8,Prosthetics,
-9355,9355,Five-tooth denture,Vyftandgebit,895.3,827.7,Prosthetics,
-9356,9356,Six tooth denture,Sestandgebit,1069.3,988.7,Prosthetics,
-9357,9357,Seven-tooth denture,Sewetandgebit,1271.2,1175.3,Prosthetics,
-9358,9358,Eight-tooth denture,Agttandgebit,1348.3,1246.5,Prosthetics,
-9359,9359,Denture with nine or more teeth,Gebit met nege of meer tande,1381.4,1277.2,Prosthetics,
-9360,9360,Ten-tooth denture,Tientandgebit,0.0,0.0,Prosthetics,
-9360PLUS,9360,Denture with ten or more teeth,Kunsgebit met tien of meer tande,0.0,0.0,Prosthetics,
-9361,9361,Set-up & waxing: One-tooth denture,Monteer & opwas: eentandkunsgebit,196.3,181.5,Prosthetics,
-9362,9362,Set-up & waxing: Two-tooth denture,Monteer & opwas: Tweetandkunsgebit,237.2,219.3,Prosthetics,
-9363,9363,Set-up & waxing: Three-tooth denture,Monteer & opwas: Drietandkunsgebit,270.9,250.5,Prosthetics,
-9364,9364,Set-up & waxing: Four-tooth denture,Monteer & opwas: Viertandkunsgebit,315.1,291.4,Prosthetics,
-9365,9365,Set-up & waxing of five-tooth denture,Monteer & opwas vyftand kunsgebit,348.2,322.0,Prosthetics,
-9366,9366,Set-up & waxing: Six-tooth denture,Monteer & opwas: Sestandkunsgebit,411.4,380.3,Prosthetics,
-9367,9367,Set-up & waxing: Seven-tooth denture,Monteer & opwas: Sewetandkunsgebit,453.1,418.9,Prosthetics,
-9368,9368,Set-up & waxing: Eight-tooth denture,Monteer & opwas: Agttandkunsgebit,486.4,449.7,Prosthetics,
-9369,9369,Nine-tooth denture,Negetandgebit,519.5,480.3,Prosthetics,
-9371,9371,Waxing & finishing: One-tooth denture,Opwas & voltooi: Eentandkunsgebit,538.5,497.9,Prosthetics,
-9372,9372,Waxing & finishing: Two-tooth denture,Opwas & voltooi: Tweetandkunsgebit,549.5,508.1,Prosthetics,
-9373,9373,Waxing & finsihing: Three-tooth denture,Opwas & voltooi: Drietandkunsgebit,558.3,516.2,Prosthetics,
-9374,9374,Waxing & finishing: Four-tooth denture,Opwas & voltooi: Viertandkunsgebit,569.4,526.5,Prosthetics,
-9375,9375,Waxing & finishing: Five-tooth denture,Opwas & voltooi: Vyftandkunsgebit,591.3,546.7,Prosthetics,
-9376,9376,Waxing & finishing: Six-tooth denture,Opwas & voltooi: Sestandkunsgebit,613.4,567.1,Prosthetics,
-9377,9377,Waxing & finishing: Seven-tooth denture,Opwas & voltooi: Sewetandkunsgebit,765.2,707.5,Prosthetics,
-9378,9378,Waxing & finishing: Eight-tooth denture,Opwas & voltooi: Agttandkunsgebit,796.2,736.2,Prosthetics,
-9379,9379,Waxing & finishing: Nine-tooth denture,Opwas & voltooi: Negetandkunsgebit,840.1,776.7,Prosthetics,
-9380,9380,Code deleted,Code deleted,0.0,0.0,Prosthetics,
-9381,9381,Code deleted,Kode bestaan nie meer nie,0.0,0.0,Prosthetics,
-9382,9382,Code deleted,Kode bestaan nie meer,0.0,0.0,Material,
-9383,9383,Add. fee for tooth colour material,"Bykomende geld - voltooiing in tandkleurmateriaal, per tooth",122.8,116.7,Prosthetics,each
-9385,9385,Duplicate model,Duplikaat model,251.4,232.4,Prosthetics,
-9391,9391,Repair of one fracture,Reparasie van een fraktuur,436.4,403.5,Repairs,
-9391O,9391,Repair orthodontic appliance,Reparasie van ortodontiese toestel,436.4,291.3,Orthodontic,
-9391P,9391,Addition of one tooth/clasp to denture,Byvoeg van een tand/klammer op kunsgebit,436.4,291.3,Repairs,
-9393,9393,Charge for additional fracture/ tooth or clasp,Gelde vir addisionele fraktuur/tand of klammer,135.3,125.0,Repairs,
-9395,9395,Additional fee for wire strengthener,Bykomende gelde vir draadversterker,154.6,142.9,Prosthetics,
-9396,9396,Code deleted,Code deleted,0.0,0.0,Repairs,
-9397,9397,Additional fee for pre-formed strengthener,Bykomende gelde vir versterker,165.9,153.4,Prosthetics,
-9398,9398,Mesh strengthener in repair procedure,Gaasversterking in reparasieprosedure,262.8,243.0,Repairs,
-9399,9399,Code deleted,Code deleted,0.0,0.0,Repairs,
-9401,9401,Clear palate,Deurskynende verhemelte,193.7,179.1,Prosthetics,
-9403,9403,Dox grinding of upper and lower dentures,'Dox' inslyping van volle bo- en onder kunsgebit,245.6,227.1,Prosthetics,
-9404,9404,Code deleted,Code deleted,0.0,0.0,Prosthetics,
-9405,9405,Inlay in artificial tooth - one surface,Inlegsel in kunstand-1vlak,422.15,390.3,Prosthetics,
-9406,9406,Inlay to artificial tooth - multi surface,Inlegsel in kunstand - multi-oppervlak,540.8,500.0,Prosthetics,
-9407,9407,Heka base,Heka-basis,580.1,536.4,Prosthetics,
-9409,9409,Frego frame,Frego-raam,251.4,232.4,Prosthetics,
-9410,9410,Bleaching tray,Bleaching tray,278.4,257.4,Prosthetics,
-9411,9411,Template per upper or lower denture,Gidsplaat per bo- en onderkunsgebit,693.4,641.1,Prosthetics,
-9413,9413,Reline of single denture,Herbassering van enkele kunsgebit,873.1,807.2,Prosthetics,
-9415,9415,Remodel of single denture,Hermodellering van enkele kunsgebit,1342.9,1241.6,Prosthetics,
-9417,9417,Soft base reline per denture,Sagtebasis herbassering van enkele gebit,2205.0,2038.7,Prosthetics,
-9419,9419,Soft base to new denture,"Sagtebasis vir nuwe kunsgebit, per denture",2038.7,1937.9,Prosthetics,each
-9421,9421,Gum tinting per denture,Tandvleis kleuring,per kunsgebit,407.87,377.1,Prosthetics,
-9423,9423,Lingual or palatal bar,Linguale- of palatale stang,328.5,303.7,Prosthetics,
-9425,9425,Cleaning and repolishingof old denture,Skoonmaak en poleer van ou kunsgebit,267.7,247.5,Repairs,
-9427,9427,Mesh strengthener,Gaasversterker,229.6,212.3,Prosthetics,
-9429,9429,Theatre / Consultation out of lab per hour or part,Theatre / Consultation out of lab per hour or part,569.4,526.5,Chrome Cobalt,
-9431,9431,Special tray,"Spesiale akriel afdruklepel, acrylic",199.2,189.4,Models,each
-9432,9432,Special tray light cure each,Special tray light cure each,234.7,217.0,Prosthetics,
-9433,9433,Special tray,"Spesiale basisplaat materiaal afdruklepel, base plate material",204.1,194.0,Prosthetics,each
-9435,9435,Single arm clasp to partial denture,Eenarmklammer in gedeeltelike gebit,113.2,104.7,Prosthetics,
-9437,9437,Double arm clasp to partial denture,Tweearmklammer in gedeeltelike gebit,196.3,181.5,Prosthetics,
-9439,9439,Single arm clasp with rest to partial denture,Eenarmklammer met rus in gedeeltelike gebit,254.5,235.3,Prosthetics,
-9441,9441,Double arm clasp with rest to partial denture,Tweearmklammer met rus in gedeeltelike gebit,342.3,316.5,Prosthetics,
-9443,9443,Roach/Ball clasp to partial denture,Roach/bal klammer in gedeeltelike gebit,147.0,135.9,Prosthetics,
-9445,9445,Provision of rest only to partial denture,Okklusale rus in gedeeltelike gebit,147.0,135.9,Prosthetics,
-9447,9447,Cast clasp,Gegote klammer,514.0,475.2,Prosthetics,
-9448,9448,Model of impression: Occlusion block or wax try-in,Model vir afdruk: Binne rekordblok of wasinpassing,93.7,86.7,Prosthetics,
-9450,9450,Surcharge: Completion of CrCo/Au prosthesis,Heffing: Voltooi van prostese op CrCo/Au raamwerk,196.3,181.5,Prosthetics,
-9451,9451,Metal base for full upper / lower,Metaalbasis vir vol bo / onder,1760.0,1627.3,Chrome Cobalt,
-9453,9453,Basic charge,Basiese koste,1539.3,1423.1,Chrome Cobalt,
-9455,9455,One arm clasp,Eenarmklammer,63.4,58.6,Chrome Cobalt,
-9457,9457,Roach clasp,Roach klammer,107.6,99.5,Chrome Cobalt,
-9459,9459,Additonal chargefor each rest,Add fooi vir rus,57.7,53.4,Chrome Cobalt,
-9461,9461,Continuous clasp,"Aaneen, klammer per tand, per tooth",58.6,55.7,Chrome Cobalt,each
-9463,9463,Lingual bar,"Linguale stang, per tand, per tooth passed",137.8,131.0,Chrome Cobalt,each
-9465,9465,Palatal bar,Palatale stang,237.2,219.3,Chrome Cobalt,
-9467,9467,Onlay (CrCo),Oplegsel (CrCo),632.7,584.9,Chrome Cobalt,
-9469,9469,Saddle with finishline,Saalvlak met afwerklyn,105.1,97.2,Chrome Cobalt,
-9471,9471,Saddle without finishline,Saalvlak sonder afwerklyn,60.9,56.3,Chrome Cobalt,
-9473,9473,Horseshoe saddle,Perdeskoen saalvlak,105.1,97.2,Chrome Cobalt,
-9475,9475,Fitting of tooth for metal backing,Montering van tand per metaalrugstuk,71.7,66.3,Chrome Cobalt,
-9477,9477,Goldplating per denture,Goudplatering per gebit,0.0,0.0,Chrome Cobalt,
-9479,9479,Fitting of distal-extension hinge,Montering van een distale skarnier,213.1,197.0,Chrome Cobalt,
-9480,9480,Add. fee: Per milled edge tooth,Add. fee: Per milled edge tooth,185.1,171.1,Chrome Cobalt,
-9481,9481,Soldering joint,Soldeerlas,259.9,240.3,Chrome Cobalt,
-9483,9483,Soldering of retention,Soldering van retensie,315.1,291.4,Chrome Cobalt,
-9485,9485,Soldering of each additional retention,Elke addisionele soldering van retensie,96.7,89.4,Chrome Cobalt,
-9487,9487,Welding joint,Sweislas,317.6,293.7,Chrome Cobalt,
-9489,9489,Fitting of swing lock,Plasing van swaaislot,259.9,240.3,Chrome Cobalt,
-9491,9491,Cast backing,Gegote rugstuk,254.5,235.3,Chrome Cobalt,
-9493,9493,Steel's backing / Pontic cast,Steele's-rugstuk / Gegote foptand,276.5,255.7,Chrome Cobalt,
-9495,9495,Basic fee: Repair or addition to CrCo with model,Basiese koste: Herstel of byvoeging CrCo met model,400.4,370.2,Chrome Cobalt,
-9497,9497,Fabrication of new section,Vervaardig nuwe deel,455.9,421.5,Chrome Cobalt,
-9501,9501,Ceromer crown or pontic,Ceromer kroon of foptand,1749.0,1617.1,Crown & Bridge,
-9501p,,Ceromer crown or pontic,Ceromer kroon of foptand,1262.33,1167.1,Crown & Bridge,
-9502,9502,Ceramic coping/pontic,Keramiek vingerhoed/pontic,1411.9,1305.4,Crown & Bridge,
-9503,9503,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9505,9505,VMK crown or pontic,VMK kroon of foptand,2310.1,2135.8,Crown & Bridge,
-9505PONTIC,9505,VMK pontic,VMK foptand,0.0,0.0,Crown & Bridge,
-9505p,,VMK crown or pontic,VMK kroon of foptand,1667.18,1541.4,Crown & Bridge,
-9506,9506,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9507,9507,Additional charge per soldering joint,Bykomende gelde per soldeerlas,472.4,436.8,Crown & Bridge,
-9508,9501,Porcelain crown on Zr,Porcelain crown on Zr,1749.0,1945.2,Crown & Bridge,
-9509,9501,Porcelain crown on Emax,Porcelain crown on Emax,1749.0,1945.2,Crown & Bridge,
-9511,9511,Inlay in VMK crown,Inlegsel in VMK kroon,768.69,710.7,Crown & Bridge,
-9512,9512,Ceromer veneer/inlay/onlay/bridge retainer,Ceromer inlegsel/oplegsel/fineer,1793.0,1657.8,Crown & Bridge,
-9512p,,Ceromer veneer/inlay/onlay/bridge retainer,Ceromer fineer/inlegsel/oplegsel,1293.92,1196.3,Crown & Bridge,
-9513,9513,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9515,9515,Porcelain margin,Porseleinrand,154.6,142.9,Crown & Bridge,
-9518,9518,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9519,9519,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9520,9520,Articulation on condile articulator per unit,Artikulasie op kondule artikulator per unit,74.7,69.1,Material,
-9521,9521,Full metal crown/ MOD / 3/4 Crown,Volle metaaldopkroon/ MOD/ 3/4 Kroon,1428.6,1320.8,Crown & Bridge,
-9521p,,Full metal crown/MOD/3/4 crown,Volle metaal dopkroon/MOD/3/4 kroon,1031.09,953.3,Crown & Bridge,
-9523,9523,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9524,9524,Indirect composite resin inlay,Indirekte komposiet hars inlegsel,387.2,358.0,Crown & Bridge,
-9525,9525,Class IV,"Klas IV, MO inlegsel, MO inlay",1088.3,1034.5,Crown & Bridge,each
-9525p,,"Class IV,Klas IV, MO inlegsel, MO inlay",785.5,809.04,748.0,
-9526,9526,Add. fee for one piece casting of crown on post,Byk. gelde vir een-stuk gietsel van kroon op stif,359.4,332.2,Crown & Bridge,
-9527SER,9527,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9529,9529,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9531,9531,Pin-ledge inlay,Penlegsel,1334.8,1234.1,Crown & Bridge,
-9533,9533,Metal pontic,Metaal foptand,1055.2,975.6,Crown & Bridge,
-9535,9535,Coping cast,Gegote vingerhoed,989.3,914.7,Crown & Bridge,
-9537,9537,Precicion lock and rest cast,"Gegote slotaanhegting, insl. vervaardigde parte, inc. preformed parts",1297.5,1233.4,Crown & Bridge,each
-9538,9538,Lock and rest cast,Gegote slot en okklusale rus,671.3,620.6,Crown & Bridge,
-9539,9539,Rest,Rus,400.4,370.2,Crown & Bridge,
-9541,9541,Metal inlay or post,"Metaal inlegsel of stif, direk gegiet, cast direct",393.3,373.9,Crown & Bridge,each
-9543,9543,Gold soldering joint,Goue soldeerlas,422.8,390.9,Crown & Bridge,
-9545,9545,Post,Kernstif,704.5,651.3,Crown & Bridge,
-9545A,9545,Ceromer post,Ceromer stif,704.5,470.2,Crown & Bridge,
-9545p,,Post,Kernstif,508.57,470.2,Crown & Bridge,
-9546,9546,Multiple post,Meervoudige stif,1166.2,1078.2,Crown & Bridge,
-9547,9547,Manufacture cast post to existing crown,Vevaardiging van kernstif vir bestaande kroon,920.2,850.8,Crown & Bridge,
-9549,9549,C.S.P. attachment (Steiger),K.S.P.-aanhegting (Steiger),3105.6,2871.3,Crown & Bridge,
-9550,9550,Milling milled edge per unit,Milling milled edge per unit,989.3,914.7,Crown & Bridge,
-9551,9551,Telescope crown,Teleskopiese kroon,2437.3,2253.5,Crown & Bridge,
-9553,9553,Composite acrylic veneer crown,"Komposiet akrielfineerkroon, indirek, indirect",1801.1,1712.1,Crown & Bridge,each
-9557,9557,Composite acrylic jacket crown,"Komposiet akriel dopkroon, indirek, indirect",1272.4,1209.5,Crown & Bridge,each
-9559,9559,Composite acrylic veneer post crown,Komposiet akriel fineer stifkroon,1925.9,1780.6,Crown & Bridge,
-9560,9560,Indirect composite resin veneer,Indirekte komposiet hars fineer,815.3,753.8,Crown & Bridge,
-9561,9561,Composite acrylic jacket crown,"Komposiet akriel dopkroon, direk, direct",868.6,825.7,Crown & Bridge,each
-9562,9562,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,
-9563,9563,Temporary acrylic crown,Tydelike akriel kroon,671.3,620.6,Crown & Bridge,
-9564,9564,Heat formed template,Hitte gevormde gidsplaat,337.4,311.9,Crown & Bridge,
-9565,9565,Composite acrylic facing replaced,Komposiet akriel gesigstuk vervang,782.4,723.4,Crown & Bridge,
-9566,9566,Porcelain/Ceromer facing replaced,Porselein/Ceromer-vlak vervang,1417.5,1310.6,Crown & Bridge,
-9569,9569,Waxing/building of crown to existing denture,Opwas/bou van kroon vir betsaande kunsgebit,552.6,510.9,Crown & Bridge,
-9569Cement,9569,Cementation and sandblasting,Cementation and sandblasting,552.6,510.9,Preparation,
-9570,9570,Fee for remake calculated per hour,Gelde vir werkstuk oorgemaak berken per uur,569.4,526.5,Crown & Bridge,
-9571,9571,Basic charge - including acrylic base,Basiese koste - akrielbasis ingesluit,699.0,646.3,Orthodontic,
-9572,9572,Charge for appliance which contains no acrylic,Koste vir apparate wat nie akriel bevat nie,337.4,311.9,Orthodontic,
-9573,9573,Fitting first expantion screw,Montering van eerste stelskroef,132.9,122.8,Orthodontic,
-9575,9575,Subsequent expansion screws per screw,Daaropvolgende stelskroewe per sroef,113.2,104.7,Material,
-9576,9576,Additional fee for full aclusal bite plate,Additional fee for full aclusal bite plate,392.4,362.8,Orthodontic,
-9577,9577,Additional fee for biteplate anterior,Bykomende gelde vir bytplaat- anterior,132.9,122.8,Material,
-9578,9578,Add fee: Bite plate posterior,Bykomende gelde vir bytplaat posterior,132.9,122.8,Orthodontic,
-9579,9579,Additional fees for fitting tongue gaurd,Bykomende gelde vir tongskerm,165.9,153.4,Orthodontic,
-9581,9581,Additional fee for flat or inclined plane,Bykomende gelde vir plat- of skuinsvlak,102.3,94.6,Orthodontic,
-9583,9583,Adams crib,Adamsklammer,121.8,112.6,Orthodontic,
-9585,9585,Additional fee for Jackson Crib,Bykomende gelde vir Jacksonklammer,127.1,117.5,Orthodontic,
-9587,9587,Additional fee for ball clasp,Bykomende gelde vir balklammer,144.1,133.2,Orthodontic,
-9589,9589,One arm clasp,Eenarmklammer,110.7,102.3,Orthodontic,
-9591,9591,Additional fee for double arm clasp,Bykomende gelde vir tweearmklammer,193.7,179.1,Orthodontic,
-9593,9593,Single loop finger spring,Enkel-lus vingerveer,90.9,84.1,Orthodontic,
-9595,9595,Double loop finger spring,Dubbel-lus vingerveer,107.6,99.5,Orthodontic,
-9597,9597,Buccal retraction spring,Bukkale retraksieveer,80.3,74.3,Orthodontic,
-9599,9599,Fitting of apron spring,Montering van voorskootveer,207.7,192.0,Orthodontic,
-9603,9603,Fitting of coffin spring,Montering van 'coffin'-veer,198.8,183.8,Orthodontic,
-9605,9605,Fitting of Quad Helix,Montering van 'Quad Helix),220.8,204.1,Orthodontic,
-9607,9607,Fitting of flapper or 'T'-spring,Montering van flap- of T-veer,165.9,153.4,Orthodontic,
-9609,9609,Fitting of springs with tubing,Montering van alle vere met buis,185.1,171.1,Orthodontic,
-9611,9611,Labial arch,Labiale boog,105.1,97.2,Orthodontic,
-9613,9613,Fitting of buccal arch,Montering van bukkale boog,124.5,115.1,Orthodontic,
-9615,9615,Fitting of Roberts retractor,Montering van Roberts retraktor,231.9,214.4,Orthodontic,
-9617,9617,Fitting of Invisible retainer,Montering van Invisible retainer,306.8,283.7,Orthodontic,
-9619,9619,Twinwire arch,Tweelingboog,290.3,268.4,Orthodontic,
-9620,9620,Additional fee Lip bumper,Additional fee Lip bumper,121.8,112.6,Orthodontic,
-9621,9621,Fitting of extra-oral arch,Montering van buitemondse boog,276.5,255.7,Orthodontic,
-9622,9622,Fitting of space maintainer arch,Montering van spasiebehouerboog,121.8,112.6,Orthodontic,
-9623,9623,Spot-welding joint,Puntgesweisde las,55.4,51.2,Orthodontic,
-9625,9625,Soldering joint,Solderingslas,87.8,81.2,Orthodontic,
-9627,9627,Invested soldering joint,Inbed soldeerlas,245.6,227.1,Orthodontic,
-9629,9629,Hook for elastic traction,Hakkie vir elastiese traksie,80.3,74.3,Orthodontic,
-9631,9631,Mouthprotector,Mondbeskermer,518.63,479.5,Orthodontic,
-9633,9633,Oral screen,Mondskerm,638.7,590.1,Orthodontic,
-9635,9635,Andersen or Norwegian appliance,Andersen of Noorweegse toestel,1141.4,1055.3,Orthodontic,
-9637,9637,Tooth positioner,Tandposisioneerder,1315.5,1216.2,Orthodontic,
-9639,9639,Gunning splint,Gunning spalk,1751.8,1619.7,Orthodontic,
-9641,9641,Frankel appliance,Frankel toestel,1691.0,1563.4,Orthodontic,
-9643,9643,Chin cap,Kenkap,561.0,518.7,Orthodontic,
-9645,9645,Bionator,Bionator,1144.0,1057.7,Orthodontic,
-9646,9646,Diagnostic set-up,Diagnostiese opstelling,1100.0,1017.0,Orthodontic,
-9647,9647,Snoring Appliance,Snoring Appliance,1037.69,959.4,Orthodontic,
-9651,9651,Pinched band with welded attachment,Knypband met gesweisde aanhegting,337.4,311.4,Orthodontic,
-9653,9653,Pinched band with attachment,Knypband met aanhegting,442.1,408.0,Orthodontic,
-9662,9662,Additional fee: Remake per hour,Bykomende gelde: Oormaak per uur,569.4,525.6,Orthodontic,
-9700,9700,Diatorics: Single set posterior/anterior (6/8),Kunstande: Enkelstel anterior of posterior (6/8),291.49,269.5,Material,
-9700PA,9700,Phonares Ivoclar Anterior,Phonares Ivoclar Ant5erior,1248.38,1154.2,Material,
-9700PP,9700,Phonares Ivoclar Posterior,Phonares Ivoclar Posterior,982.31,908.2,Preparation,
-9702,9702,Diatorics: Single anterior,Kunstande: Enkel anterior,98.97,91.5,Material,
-9704,9704,Diatroics: Single posterior,Kunstande: Enkel posterior,98.97,91.5,Material,
-9706,9706,Cost of bleaching tray material,Koste van bleik lepel materiaal,36.45,33.7,Material,
-9707,9706,Essex,Essex,36.45,33.7,Material,
-9720,9720,Soft base material,"Sagtebasis materiaal, per gebit, per denture",975.1,928.5,Material,each
-9722,9722,"Acrylic, per denture","Akriel, per gebit",110.3,105.0,Material,each
-9722p,9722,Thermoplastic,Thermoplastic,773.99,715.6,Material,
-9723,9723,Ultraflex,Ultraflex,759.93,702.6,Material,
-9724,9724,Precision attcahment,Presisie aanhegting,0.0,0.0,,
-9726,9726,Preformed clasp,Voorafvervaardigde klammer,106.43,98.4,Prosthetics,
-9728,9728,Lingual/Palatal bar,Linguale/Palatale stang,298.74,276.2,Chrome Cobalt,
-9729,9729,Cost of Mesh strengthener,Koste van Gaasversterker,232.11,214.6,Material,
-9729BIG,9729,Cost of Mesh strengthener,Koste van Gaasversterker,357.58,330.6,Material,
-9730,9730,Pre-fabricated burn-out component,Voorafvervaardigde uitbrand komponente,40.78,37.7,Material,
-9732,9732,Attachment components,Aanhegtingskomponente,0.0,0.0,,
-9734,9734,"Dolder bar and clips,Dolderstaaf en knippies, per gram of per knippie, per gram or per clip",0.0,0.0,,
-9736,9736,Cost of implant components,Koste van implantaat komponente,0.0,0.0,Chrome Cobalt,
-9738,9738,Preformed strengthener,Voorafvervaardigde versterker,0.0,0.0,Chrome Cobalt,
-9739,9739,Additional charge goldplating,Additional charge goldplating,0.0,0.0,Material,
-9740,9740,Gold wire,Gouddraad,0.0,0.0,,
-9741,9741,CrCo casting alloy,CrCo legering,174.68,161.5,Chrome Cobalt,
-9742,9742,Specialised CrCo casting alloy,Gespesialiseerde CrCo legering,127.2,117.6,Chrome Cobalt,
-9744,9744,Precious casting alloy,Edel gietlegering,789.13,729.6,Metal,
-9746,9746,Semi-precious casting alloy,Halfedel gietlegering,262.29,242.5,Crown & Bridge,
-9748,9748,Non-precious casting alloy,Onedel gietlegering,246.93,228.3,Material,
-9748p,,Non-precious castin alloy,Onedel gietlegering,184.63,170.7,Material,
-9752,9752,Platinum foil,Platinumfoelie,0.0,0.0,,
-9754,9754,Gold solder,Goudsoldeersel,0.0,0.0,,
-9756,9756,Silver solder,Silwersoldeersel,155.1,143.4,Chrome Cobalt,
-9757,9757,Ceromer material- per unit,Ceromer materiaal-per eenheid,303.17,280.3,Material,
-9757p,,Ceromer material- per unit,Ceromer materiaal- per eenheid,226.38,209.3,Material,
-9758,9758,Fiber re-enforced material-per unit,Vesel versterkte materiaal-per eenheid,218.59,202.1,Material,
-9758P,9758,Fibre re-enforced post,Fibre post,190.14,175.8,Material,
-9758p,,Fiber re-enforced material-per unit,Vesel versterkte materiaal per eenheid,163.1,150.8,Material,
-9759,9759,See code 9758,Sien kode 9758,187.87,173.7,Material,
-9760,9760,Composite restoration material,Komposiet restorasie materiaal,99.29,91.8,Material,
-9761,9761,Ceramic material,Ceramic material,804.28,743.6,Material,
-9762,9762,Anterior orthodontic attachment,Anterior ortodontiese aanhegting,0.0,0.0,,
-9763,9763,Orthodontic material,Orthodontic material,84.47,78.1,Material,
-9764,9764,Posterior orthodontic attachment,Posterior ortodontiese aanhegting,166.03,153.5,Chrome Cobalt,
-9765,9765,Preformed components,Preformed components,656.42,606.9,Material,
-9766,9766,Cost of expansion screw,Koste van ekspansieskroef,217.08,200.7,Orthodontic,
-9766Leave,9766,Cost Leave Spring,Cost Leave Spring,951.81,880.0,Preparation,
-9767,9767,Soldering material,Soldering material,64.68,59.8,Material,
-9768,9768,Buccle tube,Bukale buisie,0.0,0.0,,
-9770,9770,J-Hook,J-haak,0.0,0.0,,
-9771,9766,Bertoni 3-D 2-way independent Screw,Bertoni 3-D 2-way independent Screw,656.42,606.9,Orthodontic,
-9772,9772,Lingual buttons,Linguale knopies,0.0,0.0,,
-9774,9774,Invisible retainer material,Onsigbare behouer materiaal,78.2,72.3,Chrome Cobalt,
-9775,9775,Retainer Case,Ortho houer,34.72,32.1,Material,
-9776,9776,Mouth protector material,Mondbeskermer materiaal,438.59,405.5,Orthodontic,
-9777,9777,Snoring appl erkodent material,Snork erkodent Materiaal,868.63,803.1,Material,
-9778,9778,TMA arch wire,TMA-boogdraad,0.0,0.0,,
-9779,9779,Durasoft material,Durasoft materiaal,330.32,305.4,Material,
-9780,9780,Position and finish burn-out attachment,Plaas en voltooi volledige uitbrand aanhegting,870.2,803.1,Chrome Cobalt,
-9782,9782,Position and solder complete precision attachment,Plaas en soldeer volledige presisie aanhegting,726.7,670.8,Chrome Cobalt,
-9783,9783,Implant stent per unit,Implant stent per unit,671.3,619.5,Material,
-9784,9784,Alignment of dolder bar and clips,Belyning van dolderstaaf en knippies,917.3,846.7,Chrome Cobalt,
-9785,9784,Alignment of clips on Implants,Belyning van clips op Implantate,917.3,846.7,Preparation,
-9786,9786,Waxing and finishing of implant abutment: C & B,Opwas en voltooi van implantaatanker: K & B,395.2,364.7,Chrome Cobalt,
-9787,9787,Waxing; milling and finishing of custom abutment,Waxing; milling and finishing of custom abutment,770.7,711.4,Material,
-9788,9788,Implant superstructure,"Implantaat raamwerk, insluitend onderdele, including placing of parts",3889.6,3703.7,Implants,each
-9789,9789,Finishing prosthesis on implant structure per arch,Finishing prosthesis on implant structure per arch,1539.3,1420.7,Material,
-9790,9736,Implant Analogue for BA S/S,Implant Analogue for BA S/S,260.88,241.2,Implants,
-9791,9736,Hex Gold Cyl for BA Imp,Hex Gold Cyl for BA Imp,2606.33,2409.7,Implants,
-9792,9736,Gold Screw 3 series Slot,Gold Screw 3 series Slot,1120.21,1035.7,Implants,
-9793,9736,Brass Screw 3 series Slotted,Brass Screw 3 series Slotted,72.79,67.3,Implants,
-9795,9736,Overdenture Clip,Overdenture Clip,171.54,158.6,Implants,
-9796,9736,Overdenture Ab Analog Brass,Overdenture Ab Analog Brass,312.91,289.3,Material,
-9797,9736,Bicon Ti Abutment,Bicon Ti Abutment,5030.08,4650.6,Implants,
-AVE,AVE,Average cost (9453-9493),Gemiddelde koste (9453-9493),1712.39,1583.2,Chrome Cobalt,
-Agreement,,Agreement for installments,Afbetalings ooreenkoms,0.0,0.0,Financial,
-Extra,,Extra metal,,0.0,0.0,Material,
-FG,,Full gold,Full gold,539.18,498.5,Material,
-FREE,,FREE,,0.0,0.0,Free form,
-L,,L-shaped/slit gold in denture,L/slit vorm goud in kunstand,398.89,368.8,Material,
-NC,,No charge,Geen koste,0.0,0.0,Financial,
-OT,,Unpaid cheque,Onbetaalde tjek,0.0,0.0,Financial,
-RD,,RD Cheque,Tjek verwys trekker,215.89,199.6,Financial,
-S,S,Gold Slit,Goue Slit,398.89,368.8,Material,
-U,,U-shaped gold in denture,U vorm goud in gebit,398.89,368.8,Crown & Bridge,
-artgl-c,,Ceromer Crown,Ceromer kroon,1424.79,1317.3,Crown & Bridge,
-bc,,Ball clasp,Balklammer,104.16,96.3,Material,
-bt,,Bleachingtray,Bleikings lepel,200.1,185.0,Material,
-cash,,Cash work done,Kontant werk gedoen,0.0,0.0,Financial,
-cc,,C-clasp,C-klammer,81.44,75.3,Material,
-crco,,Chrome,CRCo,1608.34,1487.0,Chrome Cobalt,
-ff,,Full upper and lower denture,Vol bo en onder gebit,2720.87,2515.6,Prosthetics,
-fu,,Full upper denture,Vol bo gebit,1517.59,1403.1,Prosthetics,
-gd,,Gold on denture,Goud op gebit,431.45,398.9,Crown & Bridge,
-go,,Gold onlay,Goue Oplegsel,366.66,339.0,Material,
-gp,,Gold Pontic,Goue foptand,539.18,498.5,Material,
-kb,,Anterior colour assesment by technician,Anterior kleurbepaling deur tegnikus,129.47,119.7,Material,
-levy,,20% Levy on overdue account,20% Heffing op agterstallige rekening,0.0,0.0,Financial,
-ng,,Nightgaurd,Bytplaat,560.27,518.0,Orthodontic,
-penalty,,20% Penalty for late payment on cash account,20% Heffing vir laat betaling,0.0,0.0,Financial,
-softb,,Softbase,Sagtebasis,2009.39,1857.8,Prosthetics,
-t,,Teeth,Tande,47.37,43.8,Material,
-tk,,Temporary crown,Tydelike kroon,484.23,447.7,Crown & Bridge,`;
-
+8000,9736,Implant Analogue S/S,Implant Analogue S/S,241.41,223.2,Implants,each
+8001,9736,UCLA Hexed Sleeve,UCLA Hexed Sleeve,557.24,515.2,Implants,each
+8002,9736,Abut Passive for eng,Abut Passive for eng,1287.21,1190.1,Implants,each
+8003,9736,Brass Screw 2 Series Slotted,Brass Screw 2 Series Slotted,67.82,62.7,Implants,each
+8004,9736,Gold Screw 2 Series Slot,Gold Screw 2 Series Slot,1038.33,960.0,Implants,each
+8005,9736,Overd Ab 3mm  2.25 ball OAB3,Overd Ab 3mm  2.25 ball OAB3,1292.62,1195.1,Implants,each
+8006,9736,Overdenture Abut 3mm OB3,Overdenture Abut 3mm OB3,1492.71,1380.1,Implants,each
+8007,9736,Analogue for OAB LOAB1,Analogue for OAB LOAB1,211.67,195.7,Implants,each
+8008,9736,Overdenture Ab Analog Brass AO2,Overdenture Ab Analog Brass AO2,211.67,195.7,Implants,each
+8009,9736,Preci-Clix Female Yellow ZZ6A1231,Preci-Clix Female Yellow ZZ6A1231,59.06,54.6,Implants,each
+8010,9736,Preci-Clix Female Red ZZ6A1233,Preci-Clix Female Red ZZ6A1233,59.49,55.0,Implants,each
+8011,9736,Preci-Clix Housing ZZ6A1235,Preci-Clix Housing ZZ6A1235,194.9,180.2,Implants,each
+8012,9736,Overdenture Plastic Clip PC2,Overdenture Plastic Clip PC2,101.67,94.0,Implants,each
+8013,9736,Implant Analogue s/s LS12,Implant Analogue s/s LS12,211.67,195.7,Implants,each
+8014,9736,UCLA N/Hex Sleeve SB5,UCLA N/Hex Sleeve SB5,487.15,450.4,Implants,each
+8015,9736,Gold Screw 2 Series Slot GSS2,Gold Screw 2 Series Slot GSS2,911.24,842.5,Implants,each
+8016,9736,Gold Screw 2 Series ZYG Slot GSSZ2,Gold Screw 2 Series ZYG Slot GSSZ2,911.24,842.5,Implants,each
+8017,9736,Brass Screw 2 Series Slotted BSS2,Brass Screw 2 Series Slotted BSS2,59.49,55.0,Implants,each
+8020,9736,Preci-Clip Std Rider IN (2/p),Preci-Clip Std Rider IN (2/p),603.86,558.3,Implants,each
+8025,9736,Pick up Imp Coping,Pick up Imp Coping,555.18,513.3,Implants,each
+8030,9736,ZR Custom Abutment - Passive Kit incl,ZR Custom Abutment - Passive Kit incl,3852.97,3562.3,Implants,each
+8035,9736,Titanium Bar - Wrap Around,Titanium Bar - Wrap Around,18008.79,16650.2,Implants,each
+8036,9736,Milled PMMA structure,Milled PMMA structure,4219.09,3900.8,Preparation,each
+8037,9736,Preci Horix Bar 4 impl excl parts,Preci Horix Bar 4 impl excl parts,8138.47,7524.5,Implants,each
+8050,9736,Abutment Ti BA,Abutment Ti BA,814.66,753.2,Implants,each
+8051,9736,Screw Ti slotted 2 series,Screw Ti slotted 2 series,472.33,436.7,Implants,each
+8054,9736,Nobel Impl replica cc NP,Nobel Impl replica cc NP,370.12,342.2,Material,each
+8055,9736,Nobel Uni base cc NP 1.5,Nobel Uni base cc NP 1.5,2173.14,2009.2,Material,each
+8056,9736,Nobel Lab Screw CC NP,Nobel Lab Screw CC NP,96.69,89.4,Material,each
+8060,9736,Ti temp cylinder,Ti temp cylinder,552.05,510.4,Material,each
+8065,9736,Southern Implant components,,7269.73,6721.3,Material,each
+9301,9301,Yellow stone model,Geelgips model,52.4,48.5,Models,each
+9303,9303,Superhard stone model,Steengips model,74.7,69.1,Models,each
+9305,9305,Study model,Studiemodel,138.0,127.5,Models,each
+9307,9307,Casting of gnathostatic study model,Giet van gnatostatiese studiemodel,179.5,165.9,Models,each
+9309,9309,New trimmed base to supplied model,Nuwe afgewerkte basis vir model verskaf,63.4,58.6,Models,each
+9311,9311,Trimming of supplied model,Slyp van model verskaf,38.9,36.0,Models,each
+9312,9312,Gingival tissue mask per impression,Gingivale masker,298.5,276.0,Models,each
+9313,9313,Duplicating model,Duplisering van model,160.1,148.0,Chrome Cobalt,each
+9314,9314,"Refractory model, per unit",145.6,157.5,145.6,Models,each
+9315,9315,Model with die,Model met stempel,218.4,201.9,Models,each
+9317,9317,Sectional model for crown & bridge with die,Seksionele model vir kroon & brug met stempel,193.7,179.1,Models,each
+9319,9319,Additional die,Addisionele stempel,50.0,46.3,Models,each
+9320,9320,Pindex or indexed model tray per die,Pindex of geindekseerde modelhouer,50.0,46.3,Models,each
+9321,9321,Occlusion block,Rekordblok,190.9,176.5,Prosthetics,each
+9323,9323,Occlusion block on baseplate,Rekordblok op basisplaat,240.5,222.4,Preparation,each
+9325,9325,Additional model-DELETED,Addisionele model-DELETED,26.5,24.5,Models,each
+9327,9327,Infection control per impression,Infeksiebeheer per afdruk,35.8,33.1,Material,each
+9329,9329,Fit and supply of disposable articulator,Verskaf en plaas wegdoenbare artikulator,93.7,86.7,Preparation,each
+9330,9330,Delivery charge per completed procedure,Afleweringskoste per voltooide prosedure,99.4,91.9,Preparation,each
+9331,9331,Full upper & lower denture,Vol bo-& onderkunsgebit,2563.9,2370.4,Prosthetics,each
+9333,9333,Full upper or lower denture,Vol bo- of ondergebit,1500.2,1387.0,Prosthetics,each
+9335,9335,Set-up & waxing: Full upper & lower denture,Monteer & opwas: Volle bo- & onderkunsgebit,884.0,817.3,Prosthetics,each
+9337,9337,Set up and waxing of full upper or lower denture,Monteer en opwas van volle bo- of onderkunsgebit,591.3,546.7,Prosthetics,each
+9339,9339,Waxing & finishing: Full upper & lower denture,Opwas & voltooi: Vol bo- & onder kunsgebit,1572.1,1453.5,Prosthetics,each
+9341,9341,Waxing & finishing: Full upper or lower denture,Opwas & voltooi: Vol bo- of onder kunsgebit,878.9,812.6,Prosthetics,each
+9343,9343,Fee for dentures on fully adjustable articulator,HANAU fooi,2503.4,2314.6,Prosthetics,each
+9345,9345,Additional fee per tooth socketed,Bykomende gelde per tand gesok,35.8,33.1,Prosthetics,each
+9346,9346,Additional fee per tooth not socketed,Bykomende gelde per tand nie gesok,19.5,18.0,Prosthetics,each
+9347,9347,Additional fee: From 3rd retry (Hour),Bykomende gelde: Vanaf 3de herinpassing (Uur),569.4,526.5,Prosthetics,each
+9351,9351,One tooth denture,Eentandgebit,688.1,636.2,Prosthetics,each
+9352,9352,Two-tooth denture,Tweetandgebit,732.2,677.0,Prosthetics,each
+9353,9353,Three-tooth denture,Drietandgebit,784.6,725.4,Prosthetics,each
+9354,9354,Four-tooth denture,Viertandgebit,829.4,766.8,Prosthetics,each
+9355,9355,Five-tooth denture,Vyftandgebit,895.3,827.7,Prosthetics,each
+9356,9356,Six tooth denture,Sestandgebit,1069.3,988.7,Prosthetics,each
+9357,9357,Seven-tooth denture,Sewetandgebit,1271.2,1175.3,Prosthetics,each
+9358,9358,Eight-tooth denture,Agttandgebit,1348.3,1246.5,Prosthetics,each
+9359,9359,Denture with nine or more teeth,Gebit met nege of meer tande,1381.4,1277.2,Prosthetics,each
+9360,9360,Ten-tooth denture,Tientandgebit,0.0,0.0,Prosthetics,each
+9360PLUS,9360,Denture with ten or more teeth,Kunsgebit met tien of meer tande,0.0,0.0,Prosthetics,each
+9361,9361,Set-up & waxing: One-tooth denture,Monteer & opwas: eentandkunsgebit,196.3,181.5,Prosthetics,each
+9362,9362,Set-up & waxing: Two-tooth denture,Monteer & opwas: Tweetandkunsgebit,237.2,219.3,Prosthetics,each
+9363,9363,Set-up & waxing: Three-tooth denture,Monteer & opwas: Drietandkunsgebit,270.9,250.5,Prosthetics,each
+9364,9364,Set-up & waxing: Four-tooth denture,Monteer & opwas: Viertandkunsgebit,315.1,291.4,Prosthetics,each
+9365,9365,Set-up & waxing of five-tooth denture,Monteer & opwas vyftand kunsgebit,348.2,322.0,Prosthetics,each
+9366,9366,Set-up & waxing: Six-tooth denture,Monteer & opwas: Sestandkunsgebit,411.4,380.3,Prosthetics,each
+9367,9367,Set-up & waxing: Seven-tooth denture,Monteer & opwas: Sewetandkunsgebit,453.1,418.9,Prosthetics,each
+9368,9368,Set-up & waxing: Eight-tooth denture,Monteer & opwas: Agttandkunsgebit,486.4,449.7,Prosthetics,each
+9369,9369,Nine-tooth denture,Negetandgebit,519.5,480.3,Prosthetics,each
+9371,9371,Waxing & finishing: One-tooth denture,Opwas & voltooi: Eentandkunsgebit,538.5,497.9,Prosthetics,each
+9372,9372,Waxing & finishing: Two-tooth denture,Opwas & voltooi: Tweetandkunsgebit,549.5,508.1,Prosthetics,each
+9373,9373,Waxing & finsihing: Three-tooth denture,Opwas & voltooi: Drietandkunsgebit,558.3,516.2,Prosthetics,each
+9374,9374,Waxing & finishing: Four-tooth denture,Opwas & voltooi: Viertandkunsgebit,569.4,526.5,Prosthetics,each
+9375,9375,Waxing & finishing: Five-tooth denture,Opwas & voltooi: Vyftandkunsgebit,591.3,546.7,Prosthetics,each
+9376,9376,Waxing & finishing: Six-tooth denture,Opwas & voltooi: Sestandkunsgebit,613.4,567.1,Prosthetics,each
+9377,9377,Waxing & finishing: Seven-tooth denture,Opwas & voltooi: Sewetandkunsgebit,765.2,707.5,Prosthetics,each
+9378,9378,Waxing & finishing: Eight-tooth denture,Opwas & voltooi: Agttandkunsgebit,796.2,736.2,Prosthetics,each
+9379,9379,Waxing & finishing: Nine-tooth denture,Opwas & voltooi: Negetandkunsgebit,840.1,776.7,Prosthetics,each
+9380,9380,Code deleted,Code deleted,0.0,0.0,Prosthetics,each
+9381,9381,Code deleted,Kode bestaan nie meer nie,0.0,0.0,Prosthetics,each
+9382,9382,Code deleted,Kode bestaan nie meer,0.0,0.0,Material,each
+9383,9383,"Add. fee for tooth colour material, per tooth",122.8,132.9,122.8,Prosthetics,each
+9385,9385,Duplicate model,Duplikaat model,251.4,232.4,Prosthetics,each
+9391,9391,Repair of one fracture,Reparasie van een fraktuur,436.4,403.5,Repairs,each
+9391O,9391,Repair orthodontic appliance,Reparasie van ortodontiese toestel,436.4,291.3,Orthodontic,each
+9391P,9391,Addition of one tooth/clasp to denture,Byvoeg van een tand/klammer op kunsgebit,436.4,291.3,Repairs,each
+9393,9393,Charge for additional fracture/ tooth or clasp,Gelde vir addisionele fraktuur/tand of klammer,135.3,125.0,Repairs,each
+9395,9395,Additional fee for wire strengthener,Bykomende gelde vir draadversterker,154.6,142.9,Prosthetics,each
+9396,9396,Code deleted,Code deleted,0.0,0.0,Repairs,each
+9397,9397,Additional fee for pre-formed strengthener,Bykomende gelde vir versterker,165.9,153.4,Prosthetics,each
+9398,9398,Mesh strengthener in repair procedure,Gaasversterking in reparasieprosedure,262.8,243.0,Repairs,each
+9399,9399,Code deleted,Code deleted,0.0,0.0,Repairs,each
+9401,9401,Clear palate,Deurskynende verhemelte,193.7,179.1,Prosthetics,each
+9403,9403,Dox grinding of upper and lower dentures,'Dox' inslyping van volle bo- en onder kunsgebit,245.6,227.1,Prosthetics,each
+9404,9404,Code deleted,Code deleted,0.0,0.0,Prosthetics,each
+9405,9405,Inlay in artificial tooth - one surface,Inlegsel in kunstand-1vlak,422.15,390.3,Prosthetics,each
+9406,9406,Inlay to artificial tooth - multi surface,Inlegsel in kunstand - multi-oppervlak,540.8,500.0,Prosthetics,each
+9407,9407,Heka base,Heka-basis,580.1,536.4,Prosthetics,each
+9409,9409,Frego frame,Frego-raam,251.4,232.4,Prosthetics,each
+9410,9410,Bleaching tray,Bleaching tray,278.4,257.4,Prosthetics,each
+9411,9411,Template per upper or lower denture,Gidsplaat per bo- en onderkunsgebit,693.4,641.1,Prosthetics,each
+9413,9413,Reline of single denture,Herbassering van enkele kunsgebit,873.1,807.2,Prosthetics,each
+9415,9415,Remodel of single denture,Hermodellering van enkele kunsgebit,1342.9,1241.6,Prosthetics,each
+9417,9417,Soft base reline per denture,Sagtebasis herbassering van enkele gebit,2205.0,2038.7,Prosthetics,each
+9419,9419,"Soft base to new denture, per denture",2038.7,2205.0,2038.7,Prosthetics,each
+9421,9421,Gum tinting per denture,Tandvleis kleuring,407.87,377.1,Prosthetics,each
+9423,9423,Lingual or palatal bar,Linguale- of palatale stang,328.5,303.7,Prosthetics,each
+9425,9425,Cleaning and repolishingof old denture,Skoonmaak en poleer van ou kunsgebit,267.7,247.5,Repairs,each
+9427,9427,Mesh strengthener,Gaasversterker,229.6,212.3,Prosthetics,each
+9429,9429,Theatre / Consultation out of lab per hour or part,Theatre / Consultation out of lab per hour or part,569.4,526.5,Chrome Cobalt,each
+9431,9431,"Special tray, acrylic",199.2,215.5,199.2,Models,each
+9432,9432,Special tray light cure each,Special tray light cure each,234.7,217.0,Prosthetics,each
+9433,9433,"Special tray, base plate material",204.1,220.8,204.1,Prosthetics,each
+9435,9435,Single arm clasp to partial denture,Eenarmklammer in gedeeltelike gebit,113.2,104.7,Prosthetics,each
+9437,9437,Double arm clasp to partial denture,Tweearmklammer in gedeeltelike gebit,196.3,181.5,Prosthetics,each
+9439,9439,Single arm clasp with rest to partial denture,Eenarmklammer met rus in gedeeltelike gebit,254.5,235.3,Prosthetics,each
+9441,9441,Double arm clasp with rest to partial denture,Tweearmklammer met rus in gedeeltelike gebit,342.3,316.5,Prosthetics,each
+9443,9443,Roach/Ball clasp to partial denture,Roach/bal klammer in gedeeltelike gebit,147.0,135.9,Prosthetics,each
+9445,9445,Provision of rest only to partial denture,Okklusale rus in gedeeltelike gebit,147.0,135.9,Prosthetics,each
+9447,9447,Cast clasp,Gegote klammer,514.0,475.2,Prosthetics,each
+9448,9448,Model of impression: Occlusion block or wax try-in,Model vir afdruk: Binne rekordblok of wasinpassing,93.7,86.7,Prosthetics,each
+9450,9450,Surcharge: Completion of CrCo/Au prosthesis,Heffing: Voltooi van prostese op CrCo/Au raamwerk,196.3,181.5,Prosthetics,each
+9451,9451,Metal base for full upper / lower,Metaalbasis vir vol bo / onder,1760.0,1627.3,Chrome Cobalt,each
+9453,9453,Basic charge,Basiese koste,1539.3,1423.1,Chrome Cobalt,each
+9455,9455,One arm clasp,Eenarmklammer,63.4,58.6,Chrome Cobalt,each
+9457,9457,Roach clasp,Roach klammer,107.6,99.5,Chrome Cobalt,each
+9459,9459,Additonal chargefor each rest,Add fooi vir rus,57.7,53.4,Chrome Cobalt,each
+9461,9461,"Continuous clasp,per tooth",58.6,63.4,58.6,Chrome Cobalt,each
+9463,9463,"Lingual bar, per tooth passed",137.8,149.1,137.8,Chrome Cobalt,each
+9465,9465,Palatal bar,Palatale stang,237.2,219.3,Chrome Cobalt,each
+9467,9467,Onlay (CrCo),Oplegsel (CrCo),632.7,584.9,Chrome Cobalt,each
+9469,9469,Saddle with finishline,Saalvlak met afwerklyn,105.1,97.2,Chrome Cobalt,each
+9471,9471,Saddle without finishline,Saalvlak sonder afwerklyn,60.9,56.3,Chrome Cobalt,each
+9473,9473,Horseshoe saddle,Perdeskoen saalvlak,105.1,97.2,Chrome Cobalt,each
+9475,9475,Fitting of tooth for metal backing,Montering van tand per metaalrugstuk,71.7,66.3,Chrome Cobalt,each
+9477,9477,Goldplating per denture,Goudplatering per gebit,0.0,0.0,Chrome Cobalt,each
+9479,9479,Fitting of distal-extension hinge,Montering van een distale skarnier,213.1,197.0,Chrome Cobalt,each
+9480,9480,Add. fee: Per milled edge tooth,Add. fee: Per milled edge tooth,185.1,171.1,Chrome Cobalt,each
+9481,9481,Soldering joint,Soldeerlas,259.9,240.3,Chrome Cobalt,each
+9483,9483,Soldering of retention,Soldering van retensie,315.1,291.4,Chrome Cobalt,each
+9485,9485,Soldering of each additional retention,Elke addisionele soldering van retensie,96.7,89.4,Chrome Cobalt,each
+9487,9487,Welding joint,Sweislas,317.6,293.7,Chrome Cobalt,each
+9489,9489,Fitting of swing lock,Plasing van swaaislot,259.9,240.3,Chrome Cobalt,each
+9491,9491,Cast backing,Gegote rugstuk,254.5,235.3,Chrome Cobalt,each
+9493,9493,Steel's backing / Pontic cast,Steele's-rugstuk / Gegote foptand,276.5,255.7,Chrome Cobalt,each
+9495,9495,Basic fee: Repair or addition to CrCo with model,Basiese koste: Herstel of byvoeging CrCo met model,400.4,370.2,Chrome Cobalt,each
+9497,9497,Fabrication of new section,Vervaardig nuwe deel,455.9,421.5,Chrome Cobalt,each
+9501,9501,Ceromer crown or pontic,Ceromer kroon of foptand,1749.0,1617.1,Crown & Bridge,each
+9501p,9501p,Ceromer crown or pontic,Ceromer kroon of foptand,1262.33,1167.1,Crown & Bridge,each
+9502,9502,Ceramic coping/pontic,Keramiek vingerhoed/pontic,1411.9,1305.4,Crown & Bridge,each
+9503,9503,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9505,9505,VMK crown or pontic,VMK kroon of foptand,2310.1,2135.8,Crown & Bridge,each
+9505PONTIC,9505,VMK pontic,VMK foptand,2310.1,0.0,Crown & Bridge,each
+9505p,9505p,VMK crown or pontic,VMK kroon of foptand,1667.17,1541.4,Crown & Bridge,each
+9506,9506,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9507,9507,Additional charge per soldering joint,Bykomende gelde per soldeerlas,472.4,436.8,Crown & Bridge,each
+9508,9501,Porcelain crown on Zr,Porcelain crown on Zr,1749.0,1945.2,Crown & Bridge,each
+9509,9501,Porcelain crown on Emax,Porcelain crown on Emax,1749.0,1945.2,Crown & Bridge,each
+9511,9511,Inlay in VMK crown,Inlegsel in VMK kroon,768.69,710.7,Crown & Bridge,each
+9512,9512,Ceromer veneer/inlay/onlay/bridge retainer,Ceromer inlegsel/oplegsel/fineer,1793.0,1657.8,Crown & Bridge,each
+9512p,9512p,Ceromer veneer/inlay/onlay/bridge retainer,Ceromer fineer/inlegsel/oplegsel,1293.91,1196.3,Crown & Bridge,each
+9513,9513,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9515,9515,Porcelain margin,Porseleinrand,154.6,142.9,Crown & Bridge,each
+9518,9518,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9519,9519,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9520,9520,Articulation on condile articulator per unit,Artikulasie op kondule artikulator per unit,74.7,69.1,Material,each
+9521,9521,Full metal crown/ MOD / 3/4 Crown,Volle metaaldopkroon/ MOD/ 3/4 Kroon,1428.6,1320.8,Crown & Bridge,each
+9521p,9521p,Full metal crown/MOD/3/4 crown,Volle metaal dopkroon/MOD/3/4 kroon,1031.09,953.3,Crown & Bridge,each
+9523,9523,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9524,9524,Indirect composite resin inlay,Indirekte komposiet hars inlegsel,387.2,358.0,Crown & Bridge,each
+9525,9525,"Class IV, MO inlay",1088.3,1177.1,1088.3,Crown & Bridge,each
+9525p,9525p,"Class IV, MO inlay",785.5,849.59,785.5,Crown & Bridge,each
+9526,9526,Add. fee for one piece casting of crown on post,Byk. gelde vir een-stuk gietsel van kroon op stif,359.4,332.2,Crown & Bridge,each
+9527SER,9527,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9529,9529,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9531,9531,Pin-ledge inlay,Penlegsel,1334.8,1234.1,Crown & Bridge,each
+9533,9533,Metal pontic,Metaal foptand,1055.2,975.6,Crown & Bridge,each
+9535,9535,Coping cast,Gegote vingerhoed,989.3,914.7,Crown & Bridge,each
+9537,9537,"Precicion lock and rest cast, inc. preformed parts",1297.5,1403.4,1297.5,Crown & Bridge,each
+9538,9538,Lock and rest cast,Gegote slot en okklusale rus,671.3,620.6,Crown & Bridge,each
+9539,9539,Rest,Rus,400.4,370.2,Crown & Bridge,each
+9541,9541,"Metal inlay or post, cast direct",393.3,425.4,393.3,Crown & Bridge,each
+9543,9543,Gold soldering joint,Goue soldeerlas,422.8,390.9,Crown & Bridge,each
+9545,9545,Post,Kernstif,704.5,651.3,Crown & Bridge,each
+9545A,9545,Ceromer post,Ceromer stif,704.5,470.2,Crown & Bridge,each
+9545p,9545p,Post,Kernstif,508.57,470.2,Crown & Bridge,each
+9546,9546,Multiple post,Meervoudige stif,1166.2,1078.2,Crown & Bridge,each
+9547,9547,Manufacture cast post to existing crown,Vevaardiging van kernstif vir bestaande kroon,920.2,850.8,Crown & Bridge,each
+9549,9549,C.S.P. attachment (Steiger),K.S.P.-aanhegting (Steiger),3105.6,2871.3,Crown & Bridge,each
+9550,9550,Milling milled edge per unit,Milling milled edge per unit,989.3,914.7,Crown & Bridge,each
+9551,9551,Telescope crown,Teleskopiese kroon,2437.3,2253.5,Crown & Bridge,each
+9553,9553,"Composite acrylic veneer crown, indirect",1801.1,1948.0,1801.1,Crown & Bridge,each
+9557,9557,"Composite acrylic jacket crown, indirect",1272.4,1376.2,1272.4,Crown & Bridge,each
+9559,9559,Composite acrylic veneer post crown,Komposiet akriel fineer stifkroon,1925.9,1780.6,Crown & Bridge,each
+9560,9560,Indirect composite resin veneer,Indirekte komposiet hars fineer,815.3,753.8,Crown & Bridge,each
+9561,9561,"Composite acrylic jacket crown, direct",868.6,939.5,868.6,Crown & Bridge,each
+9562,9562,Code deleted,Code deleted,0.0,0.0,Crown & Bridge,each
+9563,9563,Temporary acrylic crown,Tydelike akriel kroon,671.3,620.6,Crown & Bridge,each
+9564,9564,Heat formed template,Hitte gevormde gidsplaat,337.4,311.9,Crown & Bridge,each
+9565,9565,Composite acrylic facing replaced,Komposiet akriel gesigstuk vervang,782.4,723.4,Crown & Bridge,each
+9566,9566,Porcelain/Ceromer facing replaced,Porselein/Ceromer-vlak vervang,1417.5,1310.6,Crown & Bridge,each
+9569,9569,Waxing/building of crown to existing denture,Opwas/bou van kroon vir betsaande kunsgebit,552.6,510.9,Crown & Bridge,each
+9569Cement,9569,Cementation and sandblasting,Cementation and sandblasting,552.6,510.9,Preparation,each
+9570,9570,Fee for remake calculated per hour,Gelde vir werkstuk oorgemaak berken per uur,569.4,526.5,Crown & Bridge,each
+9571,9571,Basic charge - including acrylic base,Basiese koste - akrielbasis ingesluit,699.0,646.3,Orthodontic,each
+9572,9572,Charge for appliance which contains no acrylic,Koste vir apparate wat nie akriel bevat nie,337.4,311.9,Orthodontic,each
+9573,9573,Fitting first expantion screw,Montering van eerste stelskroef,132.9,122.8,Orthodontic,each
+9575,9575,Subsequent expansion screws per screw,Daaropvolgende stelskroewe per sroef,113.2,104.7,Material,each
+9576,9576,Additional fee for full aclusal bite plate,Additional fee for full aclusal bite plate,392.4,362.8,Orthodontic,each
+9577,9577,Additional fee for biteplate anterior,Bykomende gelde vir bytplaat- anterior,132.9,122.8,Material,each
+9578,9578,Add fee: Bite plate posterior,Bykomende gelde vir bytplaat posterior,132.9,122.8,Orthodontic,each
+9579,9579,Additional fees for fitting tongue gaurd,Bykomende gelde vir tongskerm,165.9,153.4,Orthodontic,each
+9581,9581,Additional fee for flat or inclined plane,Bykomende gelde vir plat- of skuinsvlak,102.3,94.6,Orthodontic,each
+9583,9583,Adams crib,Adamsklammer,121.8,112.6,Orthodontic,each
+9585,9585,Additional fee for Jackson Crib,Bykomende gelde vir Jacksonklammer,127.1,117.5,Orthodontic,each
+9587,9587,Additional fee for ball clasp,Bykomende gelde vir balklammer,144.1,133.2,Orthodontic,each
+9589,9589,One arm clasp,Eenarmklammer,110.7,102.3,Orthodontic,each
+9591,9591,Additional fee for double arm clasp,Bykomende gelde vir tweearmklammer,193.7,179.1,Orthodontic,each
+9593,9593,Single loop finger spring,Enkel-lus vingerveer,90.9,84.1,Orthodontic,each
+9595,9595,Double loop finger spring,Dubbel-lus vingerveer,107.6,99.5,Orthodontic,each
+9597,9597,Buccal retraction spring,Bukkale retraksieveer,80.3,74.3,Orthodontic,each
+9599,9599,Fitting of apron spring,Montering van voorskootveer,207.7,192.0,Orthodontic,each
+9603,9603,Fitting of coffin spring,Montering van 'coffin'-veer,198.8,183.8,Orthodontic,each
+9605,9605,Fitting of Quad Helix,Montering van 'Quad Helix),220.8,204.1,Orthodontic,each
+9607,9607,Fitting of flapper or 'T'-spring,Montering van flap- of T-veer,165.9,153.4,Orthodontic,each
+9609,9609,Fitting of springs with tubing,Montering van alle vere met buis,185.1,171.1,Orthodontic,each
+9611,9611,Labial arch,Labiale boog,105.1,97.2,Orthodontic,each
+9613,9613,Fitting of buccal arch,Montering van bukkale boog,124.5,115.1,Orthodontic,each
+9615,9615,Fitting of Roberts retractor,Montering van Roberts retraktor,231.9,214.4,Orthodontic,each
+9617,9617,Fitting of Invisible retainer,Montering van Invisible retainer,306.8,283.7,Orthodontic,each
+9619,9619,Twinwire arch,Tweelingboog,290.3,268.4,Orthodontic,each
+9620,9620,Additional fee Lip bumper,Additional fee Lip bumper,121.8,112.6,Orthodontic,each
+9621,9621,Fitting of extra-oral arch,Montering van buitemondse boog,276.5,255.7,Orthodontic,each
+9622,9622,Fitting of space maintainer arch,Montering van spasiebehouerboog,121.8,112.6,Orthodontic,each
+9623,9623,Spot-welding joint,Puntgesweisde las,55.4,51.2,Orthodontic,each
+9625,9625,Soldering joint,Solderingslas,87.8,81.2,Orthodontic,each
+9627,9627,Invested soldering joint,Inbed soldeerlas,245.6,227.1,Orthodontic,each
+9629,9629,Hook for elastic traction,Hakkie vir elastiese traksie,80.3,74.3,Orthodontic,each
+9631,9631,Mouthprotector,Mondbeskermer,518.63,479.5,Orthodontic,each
+9633,9633,Oral screen,Mondskerm,638.7,590.1,Orthodontic,each
+9635,9635,Andersen or Norwegian appliance,Andersen of Noorweegse toestel,1141.4,1055.3,Orthodontic,each
+9637,9637,Tooth positioner,Tandposisioneerder,1315.5,1216.2,Orthodontic,each
+9639,9639,Gunning splint,Gunning spalk,1751.8,1619.7,Orthodontic,each
+9641,9641,Frankel appliance,Frankel toestel,1691.0,1563.4,Orthodontic,each
+9643,9643,Chin cap,Kenkap,561.0,518.7,Orthodontic,each
+9645,9645,Bionator,Bionator,1144.0,1057.7,Orthodontic,each
+9646,9646,Diagnostic set-up,Diagnostiese opstelling,1100.0,1017.0,Orthodontic,each
+9647,9647,Snoring Appliance,Snoring Appliance,1037.68,959.4,Orthodontic,each
+9651,9651,Pinched band with welded attachment,Knypband met gesweisde aanhegting,337.4,311.4,Orthodontic,each
+9653,9653,Pinched band with attachment,Knypband met aanhegting,442.1,408.0,Orthodontic,each
+9662,9662,Additional fee: Remake per hour,Bykomende gelde: Oormaak per uur,569.4,525.6,Orthodontic,each
+9700,9700,Diatorics: Single set posterior/anterior (6/8),Kunstande: Enkelstel anterior of posterior (6/8),291.49,269.5,Material,each
+9700PA,9700,Phonares Ivoclar Anterior,Phonares Ivoclar Ant5erior,1248.38,1154.2,Material,each
+9700PP,9700,Phonares Ivoclar Posterior,Phonares Ivoclar Posterior,982.31,908.2,Preparation,each
+9702,9702,Diatorics: Single anterior,Kunstande: Enkel anterior,98.97,91.5,Material,each
+9704,9704,Diatroics: Single posterior,Kunstande: Enkel posterior,98.97,91.5,Material,each
+9706,9706,Cost of bleaching tray material,Koste van bleik lepel materiaal,36.45,33.7,Material,each
+9707,9706,Essex,Essex,36.45,33.7,Material,each
+9720,9720,"Soft base material, per denture",975.1,1054.66,975.1,Prosthetics,each
+9722,9722,"Acrylic, per denture",110.3,119.3,110.3,Chrome Cobalt,each
+9722p,9722,Thermoplastic,Thermoplastic,773.99,715.6,Material,each
+9723,9723,Ultraflex,Ultraflex,759.93,702.6,Material,each
+9724,9724,Precision attcahment,Presisie aanhegting,0.0,0.0,,each
+9726,9726,Preformed clasp,Voorafvervaardigde klammer,106.43,98.4,Prosthetics,each
+9728,9728,Lingual/Palatal bar,Linguale/Palatale stang,298.74,276.2,Chrome Cobalt,each
+9729,9729,Cost of Mesh strengthener,Koste van Gaasversterker,232.11,214.6,Material,each
+9729BIG,9729,Cost of Mesh strengthener,Koste van Gaasversterker,357.58,330.6,Material,each
+9730,9730,Pre-fabricated burn-out component,Voorafvervaardigde uitbrand komponente,40.78,37.7,Material,each
+9732,9732,Attachment components,Aanhegtingskomponente,0.0,0.0,,each
+9734,9734,"Dolder bar and clips, per gram or per clip",0.0,0.0,0.0,,each
+9736,9736,Cost of implant components,Koste van implantaat komponente,0.0,0.0,Chrome Cobalt,each
+9738,9738,Preformed strengthener,Voorafvervaardigde versterker,0.0,0.0,Chrome Cobalt,each
+9739,9739,Additional charge goldplating,Additional charge goldplating,0.0,0.0,Material,each
+9740,9740,Gold wire,Gouddraad,0.0,0.0,,each
+9741,9741,CrCo casting alloy,CrCo legering,174.68,161.5,Chrome Cobalt,each
+9742,9742,Specialised CrCo casting alloy,Gespesialiseerde CrCo legering,127.2,117.6,Chrome Cobalt,each
+9744,9744,Precious casting alloy,Edel gietlegering,789.13,729.6,Metal,each
+9746,9746,Semi-precious casting alloy,Halfedel gietlegering,262.29,242.5,Crown & Bridge,each
+9748,9748,Non-precious casting alloy,Onedel gietlegering,246.93,228.3,Material,each
+9748p,9748p,Non-precious castin alloy,Onedel gietlegering,184.63,170.7,Material,each
+9752,9752,Platinum foil,Platinumfoelie,0.0,0.0,,each
+9754,9754,Gold solder,Goudsoldeersel,0.0,0.0,,each
+9756,9756,Silver solder,Silwersoldeersel,155.1,143.4,Chrome Cobalt,each
+9757,9757,Ceromer material- per unit,Ceromer materiaal-per eenheid,303.17,280.3,Material,each
+9757p,9757p,Ceromer material- per unit,Ceromer materiaal- per eenheid,226.38,209.3,Material,each
+9758,9758,Fiber re-enforced material-per unit,Vesel versterkte materiaal-per eenheid,218.59,202.1,Material,each
+9758P,9758,Fibre re-enforced post,Fibre post,190.14,175.8,Material,each
+9758p,9758p,Fiber re-enforced material-per unit,Vesel versterkte materiaal per eenheid,163.1,150.8,Material,each
+9759,9759,See code 9758,Sien kode 9758,187.87,173.7,Material,each
+9760,9760,Composite restoration material,Komposiet restorasie materiaal,99.29,91.8,Material,each
+9761,9761,Ceramic material,Ceramic material,804.27,743.6,Material,each
+9762,9762,Anterior orthodontic attachment,Anterior ortodontiese aanhegting,0.0,0.0,,each
+9763,9763,Orthodontic material,Orthodontic material,84.47,78.1,Material,each
+9764,9764,Posterior orthodontic attachment,Posterior ortodontiese aanhegting,166.03,153.5,Chrome Cobalt,each
+9765,9765,Preformed components,Preformed components,656.42,606.9,Material,each
+9766,9766,Cost of expansion screw,Koste van ekspansieskroef,217.08,200.7,Orthodontic,each
+9766Leave,9766,Cost Leave Spring,Cost Leave Spring,951.8,880.0,Preparation,each
+9767,9767,Soldering material,Soldering material,64.68,59.8,Material,each
+9768,9768,Buccle tube,Bukale buisie,0.0,0.0,,each
+9770,9770,J-Hook,J-haak,0.0,0.0,,each
+9771,9766,Bertoni 3-D 2-way independent Screw,Bertoni 3-D 2-way independent Screw,656.42,606.9,Orthodontic,each
+9772,9772,Lingual buttons,Linguale knopies,0.0,0.0,,each
+9774,9774,Invisible retainer material,Onsigbare behouer materiaal,78.2,72.3,Chrome Cobalt,each
+9775,9775,Retainer Case,Ortho houer,34.72,32.1,Material,each
+9776,9776,Mouth protector material,Mondbeskermer materiaal,438.59,405.5,Orthodontic,each
+9777,9777,Snoring appl erkodent material,Snork erkodent Materiaal,868.63,803.1,Material,each
+9778,9778,TMA arch wire,TMA-boogdraad,0.0,0.0,,each
+9779,9779,Durasoft material,Durasoft materiaal,330.32,305.4,Material,each
+9780,9780,Position and finish burn-out attachment,Plaas en voltooi volledige uitbrand aanhegting,870.2,803.1,Chrome Cobalt,each
+9782,9782,Position and solder complete precision attachment,Plaas en soldeer volledige presisie aanhegting,726.7,670.8,Chrome Cobalt,each
+9783,9783,Implant stent per unit,Implant stent per unit,671.3,619.5,Material,each
+9784,9784,Alignment of dolder bar and clips,Belyning van dolderstaaf en knippies,917.3,846.7,Chrome Cobalt,each
+9785,9784,Alignment of clips on Implants,Belyning van clips op Implantate,917.3,846.7,Preparation,each
+9786,9786,Waxing and finishing of implant abutment: C & B,Opwas en voltooi van implantaatanker: K & B,395.2,364.7,Chrome Cobalt,each
+9787,9787,Waxing; milling and finishing of custom abutment,Waxing; milling and finishing of custom abutment,770.7,711.4,Material,each
+9788,9788,"Implant superstructure, including placing of parts",3889.6,4214.2,3889.6,Chrome Cobalt,each
+9789,9789,Finishing prosthesis on implant structure per arch,Finishing prosthesis on implant structure per arch,1539.3,1420.7,Material,each
+9790,9736,Implant Analogue for BA S/S,Implant Analogue for BA S/S,260.88,241.2,Implants,each
+9791,9736,Hex Gold Cyl for BA Imp,Hex Gold Cyl for BA Imp,2606.32,2409.7,Implants,each
+9792,9736,Gold Screw 3 series Slot,Gold Screw 3 series Slot,1120.21,1035.7,Implants,each
+9793,9736,Brass Screw 3 series Slotted,Brass Screw 3 series Slotted,72.79,67.3,Implants,each
+9795,9736,Overdenture Clip,Overdenture Clip,171.54,158.6,Implants,each
+9796,9736,Overdenture Ab Analog Brass,Overdenture Ab Analog Brass,312.91,289.3,Material,each
+9797,9736,Bicon Ti Abutment,Bicon Ti Abutment,5030.07,4650.6,Implants,each
+Agreement,Agreement,Agreement for installments,Afbetalings ooreenkoms,0.0,0.0,Financial,each
+Extra,Extra,Extra metal,,0.0,0.0,Material,each
+FREE,FREE,FREE,,0.0,0.0,Free form,each
+RD,RD,RD Cheque,Tjek verwys trekker,215.89,199.6,Financial,each
+S,S,Gold Slit,Goue Slit,398.89,368.8,Material,each
+cash,cash,Cash work done,Kontant werk gedoen,0.0,0.0,Financial,each
+`;
 const EMBEDDED_CLIENTS_CSV = `Name,Practice,Email,Phone,WhatsApp,Address,Webpage,Notes,ReferringPCNS
 Dr Van Vuuren en Weber,,,,,,,,,`;
 
@@ -977,6 +953,18 @@ let _backupDebounce = null;
 let _showBackupToast = null; // Set by App component
 let _backupPending = false; // Tracks if backup is scheduled but not yet completed
 
+// Helper: read Tariffs.csv from folder (desktop version)
+const readTariffsFromFolder = async () => {
+  try {
+    const result = await window.electronAPI.readBackupFile("Tariffs.csv");
+    if (result.success && result.content) {
+      const parsed = parseTariffCSV(result.content);
+      return parsed; // { tariffs: [...], categories: [...] }
+    }
+  } catch (e) { return null; }
+  return null;
+};
+
 // Try to restore the saved directory handle from IndexedDB on load
 // Load data from backup folder files (makes folder the source of truth for multi-PC sync)
 const loadDataFromFolder = async () => {
@@ -987,6 +975,15 @@ const loadDataFromFolder = async () => {
     const jsonResult = await window.electronAPI.readBackupFile("EasyDentalLab-backup.json");
     if (jsonResult.success && jsonResult.content) {
       const folderData = JSON.parse(jsonResult.content);
+
+      // Also read Tariffs.csv — it's the source of truth for tariff codes/prices
+      const tariffsData = await readTariffsFromFolder();
+      if (tariffsData && tariffsData.tariffs.length > 0) {
+        folderData.tariffs = tariffsData.tariffs;
+        folderData.categories = tariffsData.categories;
+        console.log("✅ Loaded tariffs from Tariffs.csv (source of truth)");
+      }
+
       console.log("✅ Loaded data from backup folder:", _backupFolderPath);
       return folderData;
     }
