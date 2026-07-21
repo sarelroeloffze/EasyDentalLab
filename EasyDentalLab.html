@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.17";
+const APP_VERSION = "2.3.18";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1360,11 +1360,25 @@ const ICO = {
 // ============================================================
 
 const Modal = ({ open, onClose, title, wide, children }) => {
+  const windowJustFocused = useRef(false);
+
+  // Track window focus to prevent accidental overlay clicks when window regains focus
+  useEffect(() => {
+    const handleFocus = () => {
+      windowJustFocused.current = true;
+      setTimeout(() => { windowJustFocused.current = false; }, 300);
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
   if (!open) return null;
   return (
     <div className="modal-overlay" onClick={e => {
-      // Only close if clicking directly on overlay background
-      if (e.target.classList.contains('modal-overlay')) onClose();
+      // Only close if clicking directly on overlay background AND window wasn't just focused
+      if (e.target.classList.contains('modal-overlay') && !windowJustFocused.current) {
+        onClose();
+      }
     }}>
       <div className={"modal-content " + (wide ? "w-full max-w-4xl" : "w-full max-w-lg")} style={{margin:"0 16px"}} onClick={e => e.stopPropagation()}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)",position:"sticky",top:0,background:"var(--c-surface)",borderRadius:"12px 12px 0 0",zIndex:10}}>

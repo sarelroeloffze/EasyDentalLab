@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-07-12)
+## 🎯 PROJECT STATUS (Updated 2026-07-21)
 
-### Current Version: Desktop App v2.3.17 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.17 published, auto-updater fully functional
+### Current Version: Desktop App v2.3.18 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.18 fixes Windows focus bug
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -74,12 +74,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Diagnostic logging:** Main process logs relay to renderer console for debugging
   - **Result:** Auto-update now fully functional — blue download banner → green "Restart Now" → silent install → relaunch
 
-### Available Installers (v2.3.17)
+- ✅ **v2.3.18 Update** (July 21, 2026)
+  - **Windows focus bug fix:** Forms no longer close when clicking away and back (ALT+TAB to check prices)
+  - **Root cause:** Windows treats click-to-activate as both focus AND click event; overlay click triggered close
+  - **Solution:** 300ms grace period after window gains focus before overlay clicks close modals
+  - **Result:** Estimate/invoice forms stay open when switching between apps
+
+### Available Installers (v2.3.18)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.17.exe` | 77 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.18.exe` | 77 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
@@ -95,10 +101,10 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.17 published to GitHub Releases** (July 12, 2026) — auto-updater fully functional
+- ✅ **v2.3.18 published to GitHub Releases** (July 21, 2026) — Windows focus bug fixed
 - ✅ **Users on v2.3.16+ auto-update silently** — blue download banner → "Restart Now" → silent install
 - ✅ **Root cause fixed:** `logger.transports.file` crash, timing issues, oneClick installer
-- ✅ **Verified working:** v2.3.16 → v2.3.17 tested successfully
+- ✅ **Verified working:** v2.3.16 → v2.3.17 → v2.3.18 auto-update chain tested
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -533,6 +539,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Force quit before auto-update | `quitAndInstall()` wasn't closing windows cleanly, leaving background Electron processes running, which blocked the installer. **Fix:** Added force-close logic in `install-update` IPC handler: close all windows with `removeAllListeners('close')`, then `setImmediate(() => autoUpdater.quitAndInstall(false, true))` to ensure windows close before quit. Main.js line ~250-262. Desktop only. |
 | Main process log relay | No way to see main process console.log output in renderer DevTools, making auto-updater debugging impossible. **Fix:** Added `global.sendLogToRenderer()` helper in `did-finish-load` that sends IPC events with log messages. Renderer listens via `onMainProcessLog` and displays with `[MAIN]` prefix. Main.js line ~297-301, preload.js line ~17, renderer line ~5781-5783. Desktop only (debug feature). |
 | IPC connectivity test | Added `main-process-ready` event sent immediately on `did-finish-load` to verify IPC is working. Renderer logs "🚀 MAIN PROCESS IPC TEST" with PID when received. Used to diagnose that IPC was functional but auto-updater was crashing. Main.js line ~293-296, preload.js line ~17, renderer line ~5776-5778. Desktop only (debug feature). |
+| **v2.3.18 Fix** | **Modal closes when clicking away — Windows focus bug** |
+| Form disappears on ALT+TAB | **Bug:** When working on estimate/invoice form and clicking to another program (to check prices), the form closes when clicking back to app. **Root cause:** Windows treats click-to-activate as both activating window AND processing click event. If click lands on modal overlay, it triggers close. **Fix:** Added `windowJustFocused` ref + focus listener in Modal component. Overlay clicks ignored for 300ms after window gains focus. Lines ~1346-1378 (desktop renderer), ~1362-1392 (web app). Both versions. |
 
 ## License System
 
