@@ -248,26 +248,16 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - nuclear option - killing process...');
+  console.log('Installing update - simple approach - just quitAndInstall...');
 
-  // Set update flag to skip before-quit handler
+  // Set update flag to skip before-quit data flush (we want instant quit)
   isUpdating = true;
-  isQuitting = true; // Also set isQuitting to bypass any other handlers
 
-  // Remove ALL event listeners to prevent anything from blocking
-  app.removeAllListeners('before-quit');
-  app.removeAllListeners('will-quit');
-  app.removeAllListeners('window-all-closed');
-
-  // Destroy all windows immediately (more forceful than close)
-  BrowserWindow.getAllWindows().forEach(window => {
-    window.removeAllListeners();
-    window.destroy(); // destroy() is immediate and forceful, close() can be prevented
-  });
-
-  // Nuclear option: kill the process immediately
-  console.log('Calling process.exit(0) - killing process NOW...');
-  process.exit(0);
+  // Just call quitAndInstall with silent mode - let electron-updater handle everything
+  // isSilent = true: closes all windows without asking
+  // isForceRunAfter = true: runs app after installation
+  console.log('Calling autoUpdater.quitAndInstall(true, true)...');
+  autoUpdater.quitAndInstall(true, true);
 });
 
 // IPC: Manual update check (for debugging)
