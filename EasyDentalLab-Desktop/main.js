@@ -248,18 +248,19 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - force quitting all windows...');
+  console.log('Installing update - force destroying all windows...');
 
-  // Close all windows immediately
+  // Destroy all windows immediately (more forceful than close)
   BrowserWindow.getAllWindows().forEach(window => {
     window.removeAllListeners('close');
-    window.close();
+    window.destroy(); // destroy() is immediate and forceful, close() can be prevented
   });
 
-  // Force quit and install (setImmediate ensures windows close first)
-  setImmediate(() => {
+  // Wait 500ms to ensure windows are fully destroyed before calling quitAndInstall
+  setTimeout(() => {
+    console.log('Calling quitAndInstall...');
     autoUpdater.quitAndInstall(false, true);
-  });
+  }, 500);
 });
 
 // IPC: Manual update check (for debugging)
