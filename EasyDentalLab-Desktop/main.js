@@ -248,20 +248,26 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - forcing app exit...');
+  console.log('Installing update - nuclear option - killing process...');
 
   // Set update flag to skip before-quit handler
   isUpdating = true;
+  isQuitting = true; // Also set isQuitting to bypass any other handlers
+
+  // Remove ALL event listeners to prevent anything from blocking
+  app.removeAllListeners('before-quit');
+  app.removeAllListeners('will-quit');
+  app.removeAllListeners('window-all-closed');
 
   // Destroy all windows immediately (more forceful than close)
   BrowserWindow.getAllWindows().forEach(window => {
-    window.removeAllListeners('close');
+    window.removeAllListeners();
     window.destroy(); // destroy() is immediate and forceful, close() can be prevented
   });
 
-  // Force immediate exit - autoInstallOnAppQuit will handle installation
-  console.log('Calling app.exit(0) - autoInstallOnAppQuit will handle install...');
-  app.exit(0);
+  // Nuclear option: kill the process immediately
+  console.log('Calling process.exit(0) - killing process NOW...');
+  process.exit(0);
 });
 
 // IPC: Manual update check (for debugging)
