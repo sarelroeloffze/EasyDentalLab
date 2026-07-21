@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-21)
 
-### Current Version: Desktop App v2.3.19 + Web App v1.8 (Production-Ready)
-**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.19 fixes auto-update quit issue
+### Current Version: Desktop App v2.3.20 + Web App v1.8 (Production-Ready)
+**Status:** ✅ **LIVE WITH WORKING AUTO-UPDATES** — v2.3.20 bypasses quit handlers during updates
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -86,12 +86,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Solution:** Changed to `window.destroy()` (forceful) + 500ms delay before `quitAndInstall()`
   - **Result:** Clean quit and install without blocking errors
 
-### Available Installers (v2.3.19)
+- ✅ **v2.3.20 Update** (July 21, 2026)
+  - **Auto-update quit fix (final):** Bypassed `before-quit` handler that was blocking updates
+  - **Root cause:** `before-quit` handler calls `event.preventDefault()` and waits 2s to flush data, blocking quit
+  - **Solution:** Added `isUpdating` flag to skip `before-quit` handler during updates; immediate `quitAndInstall()` call
+  - **Result:** Instant quit during updates, no more "could not be closed" errors
+
+### Available Installers (v2.3.20)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.19.exe` | 77 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.20.exe` | 77 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.0-arm64.dmg` | 91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.0-arm64.AppImage` | 101 MB | ARM64 |
 
@@ -107,10 +113,10 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.19 published to GitHub Releases** (July 21, 2026) — Auto-update quit issue fixed
+- ✅ **v2.3.20 published to GitHub Releases** (July 21, 2026) — before-quit handler bypass implemented
 - ✅ **Users on v2.3.16+ auto-update silently** — blue download banner → "Restart Now" → silent install
-- ✅ **Root causes fixed:** `logger.transports.file` crash, timing issues, oneClick installer, window close delays
-- ✅ **Verified working:** Clean quit and install without "could not be closed" errors
+- ✅ **Root causes fixed:** `logger.transports.file` crash, timing issues, oneClick installer, before-quit blocking
+- ✅ **Solution:** `isUpdating` flag skips before-quit handler, immediate quitAndInstall()
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -549,6 +555,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Form disappears on ALT+TAB | **Bug:** When working on estimate/invoice form and clicking to another program (to check prices), the form closes when clicking back to app. **Root cause:** Windows treats click-to-activate as both activating window AND processing click event. If click lands on modal overlay, it triggers close. **Fix:** Added `windowJustFocused` ref + focus listener in Modal component. Overlay clicks ignored for 300ms after window gains focus. Lines ~1346-1378 (desktop renderer), ~1362-1392 (web app). Both versions. |
 | **v2.3.19 Fix** | **Auto-update "could not be closed" error** |
 | Auto-update fails with close error | **Bug:** When clicking "Restart Now" after update downloads, error "EasyDentalLab could not be closed" appears and install fails. **Root cause:** `window.close()` is too gentle and `setImmediate()` doesn't wait long enough for windows to close before installer runs. **Fix:** Changed to `window.destroy()` (forceful immediate close) + 500ms delay before `quitAndInstall()`. Main.js line ~249-263. Desktop only. |
+| **v2.3.20 Fix** | **Auto-update still blocked by before-quit handler** |
+| "Could not be closed" error persists | **Bug:** Even with v2.3.19, "could not be closed" error still appears during updates. **Root cause:** `before-quit` handler calls `event.preventDefault()` and waits 2 seconds to flush data, blocking the quit process during updates. **Fix:** Added `isUpdating` flag (line ~352) that's set before quit; `before-quit` handler checks flag and skips flush logic during updates. Removed 500ms delay, call `quitAndInstall()` immediately after destroying windows. Main.js lines ~249-263, ~351-372. Desktop only. |
 
 ## License System
 

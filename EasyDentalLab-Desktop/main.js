@@ -248,7 +248,10 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - force destroying all windows...');
+  console.log('Installing update - bypassing quit handlers...');
+
+  // Set update flag to skip before-quit handler
+  isUpdating = true;
 
   // Destroy all windows immediately (more forceful than close)
   BrowserWindow.getAllWindows().forEach(window => {
@@ -256,11 +259,9 @@ ipcMain.on('install-update', () => {
     window.destroy(); // destroy() is immediate and forceful, close() can be prevented
   });
 
-  // Wait 500ms to ensure windows are fully destroyed before calling quitAndInstall
-  setTimeout(() => {
-    console.log('Calling quitAndInstall...');
-    autoUpdater.quitAndInstall(false, true);
-  }, 500);
+  // Quit immediately without waiting for flush
+  console.log('Calling quitAndInstall immediately...');
+  autoUpdater.quitAndInstall(false, true);
 });
 
 // IPC: Manual update check (for debugging)
@@ -349,8 +350,15 @@ function createWindow() {
 }
 
 let isQuitting = false;
+let isUpdating = false; // Flag to skip before-quit handler during updates
 
 app.on('before-quit', async (event) => {
+  // Skip flush logic during updates - need immediate quit for installer
+  if (isUpdating) {
+    console.log('Skipping before-quit handler (update in progress)');
+    return;
+  }
+
   if (isQuitting) return; // Prevent re-entry
   event.preventDefault();
   isQuitting = true;
