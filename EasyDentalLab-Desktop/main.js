@@ -248,16 +248,32 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - simple approach - just quitAndInstall...');
+  console.log('Installing update - forcing complete termination before installer runs...');
 
   // Set update flag to skip before-quit data flush (we want instant quit)
   isUpdating = true;
 
-  // Just call quitAndInstall with silent mode - let electron-updater handle everything
-  // isSilent = true: closes all windows without asking
-  // isForceRunAfter = true: runs app after installation
-  console.log('Calling autoUpdater.quitAndInstall(true, true)...');
-  autoUpdater.quitAndInstall(true, true);
+  // Strategy: Force-close everything, wait, then exit completely
+  // This ensures the process is DEAD before NSIS installer tries to uninstall old files
+  console.log('Force-destroying all windows...');
+  const windows = BrowserWindow.getAllWindows();
+  windows.forEach(win => {
+    try {
+      win.removeAllListeners('close');
+      win.destroy();
+    } catch (e) {
+      console.error('Error destroying window:', e);
+    }
+  });
+
+  // Wait 1.5 seconds for windows to fully close and process to clean up
+  console.log('Waiting 1.5s for complete shutdown...');
+  setTimeout(() => {
+    console.log('Exiting app - installer will run after process terminates...');
+    // Use app.exit() instead of quitAndInstall()
+    // With autoInstallOnAppQuit: true, installer runs AFTER process is fully dead
+    app.exit(0);
+  }, 1500);
 });
 
 // IPC: Manual update check (for debugging)
