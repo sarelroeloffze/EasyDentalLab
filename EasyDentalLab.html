@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.31";
+const APP_VERSION = "2.3.32";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -865,9 +865,11 @@ const loadData = () => {
       const merged = { ...INITIAL_DATA, ...parsed };
 
       // Check for app version upgrade
+      // Note: Since v2.3.25, Tariffs.csv is the source of truth when backup folder is connected
+      // Only show upgrade notification if no backup folder (embedded CSV is still the source)
       const savedVersion = parsed.appVersion || "1.0.0";
       const isUpgrade = savedVersion !== APP_VERSION;
-      if (isUpgrade) {
+      if (isUpgrade && !_backupDirHandle) {
         merged._tariffUpdateAvailable = true;
         merged._oldVersion = savedVersion;
       }
