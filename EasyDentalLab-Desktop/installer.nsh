@@ -19,6 +19,11 @@
   ; Nothing needed - preInit handles everything
 !macroend
 
+!macro customInstall
+  ; Launch the app after installation completes
+  Exec '"$INSTDIR\${APP_EXECUTABLE_FILENAME}"'
+!macroend
+
 !macro customUnInit
   ; Standard uninstall - kill processes first
   nsExec::Exec 'taskkill /F /IM EasyDentalLab.exe /T'
