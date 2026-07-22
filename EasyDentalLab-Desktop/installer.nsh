@@ -1,43 +1,30 @@
-; Custom NSIS script to handle running processes during update/install
-; Uses aggressive termination with multiple retries and longer delays
+; Custom NSIS script - kill processes BEFORE NSIS checks for old installation
+; This runs at the VERY START of the installer
+
+!macro preInit
+  ; This runs BEFORE NSIS checks for existing installation
+  ; Kill all processes immediately so old uninstaller can succeed
+
+  nsExec::Exec 'taskkill /F /IM EasyDentalLab.exe /T'
+  Sleep 1000
+  nsExec::Exec 'taskkill /F /IM EasyDentalLab.exe /T'
+  Sleep 1000
+  nsExec::Exec 'taskkill /F /IM electron.exe /T'
+  Sleep 3000
+!macroend
 
 !macro customInit
-  ; Kill EasyDentalLab processes - try multiple times to ensure they're dead
-  nsExec::ExecToStack 'taskkill /F /IM EasyDentalLab.exe /T'
-  Pop $0
-  Pop $1
+  ; Additional kill at customInit (runs after preInit)
+  nsExec::Exec 'taskkill /F /IM EasyDentalLab.exe /T'
   Sleep 1000
-
-  ; Second attempt in case first didn't catch everything
-  nsExec::ExecToStack 'taskkill /F /IM EasyDentalLab.exe /T'
-  Pop $0
-  Pop $1
-  Sleep 1000
-
-  ; Also kill any electron.exe processes (in case app is still shutting down)
-  nsExec::ExecToStack 'taskkill /F /IM electron.exe /T'
-  Pop $0
-  Pop $1
-
-  ; Wait 5 full seconds for Windows to release ALL file handles
-  Sleep 5000
+  nsExec::Exec 'taskkill /F /IM electron.exe /T'
+  Sleep 3000
 !macroend
 
 !macro customUnInit
-  ; Same aggressive termination for uninstall
-  nsExec::ExecToStack 'taskkill /F /IM EasyDentalLab.exe /T'
-  Pop $0
-  Pop $1
+  ; Kill before uninstall
+  nsExec::Exec 'taskkill /F /IM EasyDentalLab.exe /T'
   Sleep 1000
-
-  nsExec::ExecToStack 'taskkill /F /IM EasyDentalLab.exe /T'
-  Pop $0
-  Pop $1
-  Sleep 1000
-
-  nsExec::ExecToStack 'taskkill /F /IM electron.exe /T'
-  Pop $0
-  Pop $1
-
-  Sleep 5000
+  nsExec::Exec 'taskkill /F /IM electron.exe /T'
+  Sleep 3000
 !macroend

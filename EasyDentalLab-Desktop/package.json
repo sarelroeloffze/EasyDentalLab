@@ -1,6 +1,6 @@
 {
   "name": "easydentallab",
-  "version": "2.3.28",
+  "version": "2.3.29",
   "description": "Dental laboratory invoicing application for South Africa",
   "homepage": "https://github.com/sarelroeloffze/EasyDentalLab",
   "main": "main.js",
@@ -69,8 +69,7 @@
       "runAfterFinish": true,
       "deleteAppDataOnUninstall": false,
       "warningsAsErrors": false,
-      "include": "installer.nsh",
-      "differentialPackage": false
+      "include": "installer.nsh"
     }
   },
   "dependencies": {
