@@ -248,13 +248,12 @@ function setupAutoUpdater() {
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")
 ipcMain.on('install-update', () => {
-  console.log('Installing update - forcing complete termination before installer runs...');
+  console.log('Installing update - maximum delay strategy to ensure file handles release...');
 
   // Set update flag to skip before-quit data flush (we want instant quit)
   isUpdating = true;
 
-  // Strategy: Force-close everything, wait, then exit completely
-  // This ensures the process is DEAD before NSIS installer tries to uninstall old files
+  // Strategy: Destroy windows, wait 5 seconds for Windows to release ALL file handles, then quit
   console.log('Force-destroying all windows...');
   const windows = BrowserWindow.getAllWindows();
   windows.forEach(win => {
@@ -266,14 +265,15 @@ ipcMain.on('install-update', () => {
     }
   });
 
-  // Wait 1.5 seconds for windows to fully close and process to clean up
-  console.log('Waiting 1.5s for complete shutdown...');
+  // Wait 5 FULL SECONDS for Windows to release file handles
+  // File locking can persist briefly even after process exit
+  console.log('Waiting 5s for file handles to release...');
   setTimeout(() => {
-    console.log('Exiting app - installer will run after process terminates...');
-    // Use app.exit() instead of quitAndInstall()
-    // With autoInstallOnAppQuit: true, installer runs AFTER process is fully dead
-    app.exit(0);
-  }, 1500);
+    console.log('Calling app.quit() - installer will run via autoInstallOnAppQuit...');
+    // Use app.quit() (graceful) instead of app.exit() (forceful)
+    // autoInstallOnAppQuit: true will launch installer after quit completes
+    app.quit();
+  }, 5000);
 });
 
 // IPC: Manual update check (for debugging)
