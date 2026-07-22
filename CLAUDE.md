@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-07-21)
+## 🎯 PROJECT STATUS (Updated 2026-07-22)
 
-### Current Version: Desktop App v2.3.26 + Web App v2.3.26 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FILE LOCKING FIXED** — v2.3.26 fixes installer failure "failed to uninstall old application files"
+### Current Version: Desktop App v2.3.35 + Web App v2.3.35 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.31 fixed installer failure, v2.3.34 added auto-restart, v2.3.35 cleaned up UI
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -120,23 +120,46 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Both versions:** Web app (EasyDentalLab.html) and Desktop app identical behavior
   - **Result:** Single source of truth for tariff prices; Excel edits work; multi-PC sync automatic
 
-- ✅ **v2.3.26 Update** (July 21, 2026) — **AUTO-UPDATE INSTALLER FAILURE FIXED**
-  - **Critical bug fixed:** Installer error "failed to uninstall old application files. please try running the installer again"
-  - **Root cause:** NSIS installer tries to uninstall while app process still terminating; Windows file locking prevents deletion
-  - **Previous approach:** `quitAndInstall(true, true)` didn't provide enough time for complete process termination
-  - **Fix:** Force-destroy all windows → wait 1.5 seconds → `app.exit(0)` for immediate termination → `autoInstallOnAppQuit: true` launches installer AFTER process is fully dead
-  - **Code changes:** Modified `install-update` IPC handler in main.js (lines 249-272); changed from `quitAndInstall()` to `app.exit()` with delay
-  - **Result:** Auto-update now works reliably without file locking errors; users can update without manual intervention
-  - Desktop only (web version has no auto-update)
+- ✅ **v2.3.26-30 Updates** (July 21-22, 2026) — **MULTIPLE AUTO-UPDATE FIX ATTEMPTS**
+  - **v2.3.26:** Force window destruction + 1.5s delay + app.exit(0) — FAILED
+  - **v2.3.27:** Increased to 5s delay, multiple kill retries, also kill electron.exe — FAILED
+  - **v2.3.28:** Added NSIS-level process killing (customInit macro) — FAILED
+  - **v2.3.29:** Used preInit macro (runs before NSIS checks anything) — FAILED
+  - **v2.3.30:** Switched to oneClick=true installer (no uninstall, just overwrite) — FAILED
+  - **Problem:** All attempts still showed "failed to uninstall old application files"
 
-### Available Installers (v2.3.26)
+- ✅ **v2.3.31 Update** (July 22, 2026) — **NUCLEAR FIX - FINALLY WORKED**
+  - **Solution:** Manual directory deletion before NSIS starts: `rmdir /S /Q %LOCALAPPDATA%\Programs\easydentallab`
+  - **Strategy:** Kill processes → manually delete entire installation directory → install fresh into empty directory
+  - **Result:** ✅ AUTO-UPDATE WORKS — no uninstall = no uninstall error
+  - Desktop only
+
+- ✅ **v2.3.32-33 Updates** (July 22, 2026) — **UPGRADE NOTIFICATION REMOVAL**
+  - **v2.3.32:** Tried conditional notification (only show if no backup folder) — FAILED (timing issue)
+  - **v2.3.33:** Removed upgrade notification entirely — since v2.3.25, Tariffs.csv loads automatically
+  - **Result:** No more yellow "New tariff data available" banner on upgrades
+  - Both versions
+
+- ✅ **v2.3.34 Update** (July 22, 2026) — **AUTO-RESTART AFTER UPDATE**
+  - **Problem:** v2.3.31-33 updated successfully but didn't restart app automatically
+  - **Fix:** Added customInstall NSIS macro that launches app after installation
+  - **Result:** Complete auto-update flow — click Restart Now → update → app relaunches automatically
+  - Desktop only
+
+- ✅ **v2.3.35 Update** (July 22, 2026) — **UI CLEANUP**
+  - **Removed:** Debug "Check for Updates Now" button from Help section
+  - **Reason:** Auto-update works reliably, checks automatically on startup, button was developer-only
+  - **Result:** Cleaner Help section for end users
+  - Desktop only
+
+### Available Installers (v2.3.35)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.26.exe` | ~77 MB | x64 (Intel/AMD) |
-| **macOS** | `EasyDentalLab-2.3.26-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.3.26-arm64.AppImage` | ~101 MB | ARM64 |
+| **Windows** | `EasyDentalLab.Setup.2.3.35.exe` | ~77 MB | x64 (Intel/AMD) |
+| **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -150,11 +173,12 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.26 published** (July 21, 2026) — Fixes installer file locking error ("failed to uninstall old application files")
-- ✅ **Users on v2.3.24+ can now auto-update** — blue download banner → "Restart Now" → installer runs cleanly after app exits
-- ✅ **File locking fixed:** Changed from `quitAndInstall()` to force window destruction + 1.5s delay + `app.exit(0)`
-- ✅ **Process separation:** `autoInstallOnAppQuit: true` ensures installer only runs after process is completely dead
-- ⚠️ **Users on v2.3.16-23 may be stuck** — need manual cleanup + fresh install to v2.3.26
+- ✅ **v2.3.35 published** (July 22, 2026) — Auto-update fully functional with complete UX
+- ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
+- ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
+- ✅ **Complete flow:** Blue download banner → "Restart Now" → update installs → app relaunches automatically
+- ✅ **No more yellow banners:** Upgrade notification removed (v2.3.33) — Tariffs.csv loads automatically
+- ⚠️ **Users on v2.3.16-30 may need manual cleanup** — multiple failed update attempts may have left broken state
 
 **Optional improvements:**
 - [ ] Replace placeholder icons with branded dental icons
@@ -603,8 +627,16 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | "Cannot be closed" - root cause found | **Bug:** Error appears when INSTALLER runs (not when app quits). Message: "EasyDentalLab cannot be closed. Please close it manually and click Retry." Appears even with manual installer download. **Root cause:** oneClick installer has race condition - tries to run while background electron process is still shutting down. Even though app appears closed, process takes 1-2 seconds to fully exit. Installer checks immediately, sees "running", blocks installation. **Fix:** Disabled oneClick installer (`oneClick: false` in package.json line ~63). Regular NSIS installer shows UI and waits properly for app exit. **Trade-off:** Updates show installer UI (user clicks through), not fully silent anymore. **Recovery:** Users stuck on v2.3.16-23 need complete cleanup: delete all registry entries + folders, reboot, fresh install v2.3.24. **Why it persisted:** Manual registry deletion after failed updates created broken installation state, making fresh installs also fail. Main.js changes reverted to simple `quitAndInstall(true, true)`. Desktop only. |
 | **v2.3.25 Feature** | **Tariffs.csv is Source of Truth** |
 | Tariff sync architecture redesign | **Problem:** Embedded CSV was only used on first load; editing Tariffs.csv in Excel had no effect; multi-PC sync didn't work for tariff prices. **Solution:** Added `readTariffsFromFolder()` helper function that reads Tariffs.csv from backup folder. Modified `loadDataFromFolder()` to load tariffs from CSV and override all other sources (localStorage, JSON backup, embedded CSV). **Priority order:** Tariffs.csv (1st) → JSON backup (2nd) → localStorage (3rd) → embedded CSV (4th). **Result:** Edit prices in Excel → restart app → changes loaded automatically. Multi-PC sync: edit on PC1 → Tariffs.csv syncs via Dropbox → PC2 auto-loads on startup. Single source of truth for tariff codes/prices. Web app lines ~957-991, desktop app lines ~957-995. Both versions. |
-| **v2.3.26 Fix** | **Auto-Update Installer File Locking Fixed** |
-| Installer fails with "failed to uninstall old application files" | **Bug:** Auto-update downloads successfully, user clicks "Restart Now", NSIS installer shows error "failed to uninstall old application files. please try running the installer again". User frustrated: "we just went through this - i cant do this with every update". **Root cause:** `quitAndInstall(true, true)` doesn't provide enough time for app process to fully terminate before installer tries to uninstall old files. Windows file locking prevents deletion while process still shutting down. **Fix:** Modified `install-update` IPC handler (main.js lines 249-272): force-destroy all windows with `BrowserWindow.getAllWindows().forEach(win => win.destroy())`, wait 1.5 seconds, then call `app.exit(0)` for immediate termination. With `autoInstallOnAppQuit: true` (line 159), installer launches AFTER process is completely dead. **Result:** File locks released before installer runs; auto-update now works without manual intervention. Desktop only. |
+| **v2.3.26-30 Attempts** | **Auto-Update Installer Failure - Multiple Failed Attempts** |
+| Installer error persisted through 5 versions | **Bug:** "failed to uninstall old application files" error persisted despite multiple approaches. **v2.3.26:** app.exit(0) with 1.5s delay. **v2.3.27:** 5s delay + multiple kill retries. **v2.3.28:** NSIS customInit macro with taskkill. **v2.3.29:** preInit macro (runs before NSIS checks). **v2.3.30:** oneClick=true (overwrite without uninstall). **All failed** with same error. **Root cause:** NSIS uninstaller itself was the problem, not the quit strategy. Desktop only. |
+| **v2.3.31 Fix** | **Auto-Update Installer - NUCLEAR SOLUTION WORKED** |
+| Manual directory deletion before install | **Solution:** Bypass NSIS uninstaller entirely. NSIS preInit macro now runs `rmdir /S /Q %LOCALAPPDATA%\Programs\easydentallab` to manually delete entire installation directory BEFORE NSIS starts installing. **Strategy:** Kill processes → delete directory → install fresh into empty location. **Result:** ✅ Auto-update finally works. No old files = no uninstall = no uninstall error. User confirmed: "it worked". Desktop only. |
+| **v2.3.32-33 Fixes** | **Upgrade Notification Removal** |
+| Yellow banner showed on every update | **v2.3.32 attempt:** Conditional notification (only show if no backup folder). **Failed:** `_backupFolderPath` not set yet when upgrade check runs. **v2.3.33 solution:** Removed upgrade notification system entirely. Since v2.3.25, Tariffs.csv is source of truth and loads automatically on startup, making notification redundant. **Result:** No more yellow "New tariff data available" banners. Both versions. |
+| **v2.3.34 Fix** | **Auto-Restart After Update** |
+| App didn't restart after update | **Bug:** v2.3.31-33 updated successfully but user had to manually restart app. **Root cause:** oneClick installer's runAfterFinish not working. **Fix:** Added customInstall NSIS macro that explicitly launches app after installation: `Exec "$INSTDIR\${APP_EXECUTABLE_FILENAME}"`. **Result:** Complete auto-update experience - click Restart Now → update → app relaunches automatically. Desktop only. |
+| **v2.3.35 Cleanup** | **Remove Debug Button** |
+| Debug auto-update button in Help section | **Removed:** "Debug: Auto-Update Test - Check for Updates Now" button. **Reason:** Auto-update works reliably and checks automatically on startup. Button was developer-only feature that could confuse dental lab users. **Result:** Cleaner Help section UI. Desktop only. |
 
 ## License System
 
