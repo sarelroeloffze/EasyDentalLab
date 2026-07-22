@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.34";
+const APP_VERSION = "2.3.35";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -6242,35 +6242,6 @@ function App() {
           <p style={{fontSize:13,color:"#6b7280",margin:"0 0 20px"}}>Everything you need to know about using EasyDentalLab</p>
 
           {/* Debug: Manual update check button (desktop only) */}
-          {window.electronAPI && (
-            <div className="card" style={{marginBottom:20,padding:16,background:"#fef3c7",border:"1px solid #fbbf24"}}>
-              <div style={{fontSize:13,fontWeight:600,marginBottom:8}}>🔧 Debug: Auto-Update Test</div>
-              <div style={{fontSize:12,color:"#92400e",marginBottom:12}}>
-                Version {APP_VERSION} • Click below to manually check for updates
-              </div>
-              <button
-                className="btn-primary"
-                onClick={async () => {
-                  console.log("🔘 Manual update check button clicked");
-                  try {
-                    const result = await window.electronAPI.checkForUpdates();
-                    console.log("🔘 Manual check result:", result);
-                    if (result.success) {
-                      alert("Update check triggered - watch console for results");
-                    } else {
-                      alert(`Update check failed: ${result.error}`);
-                    }
-                  } catch (error) {
-                    console.error("🔘 Manual check error:", error);
-                    alert(`Error: ${error.message}`);
-                  }
-                }}
-                style={{fontSize:13,padding:"8px 16px"}}
-              >
-                Check for Updates Now
-              </button>
-            </div>
-          )}
 
           <HelpSection />
         </div>
