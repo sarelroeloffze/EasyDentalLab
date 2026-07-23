@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.36";
+const APP_VERSION = "2.3.37";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1372,6 +1372,47 @@ const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
         <div style={{padding:"16px 24px"}}>{children}</div>
       </div>
     </div>
+  );
+};
+
+// ============================================================
+// SORTABLE COLUMN HEADER
+// ============================================================
+
+const SortableColumnHeader = ({ label, field, sortConfig, onSort, align = "left" }) => {
+  const isActive = sortConfig.field === field;
+  const direction = isActive ? sortConfig.direction : null;
+
+  const getIcon = () => {
+    if (!isActive) return "↕";
+    return direction === "asc" ? "↑" : "↓";
+  };
+
+  const iconColor = isActive ? "#2563eb" : "#9ca3af";
+  const fontWeight = isActive ? "600" : "400";
+
+  return (
+    <th
+      onClick={() => onSort(field)}
+      style={{
+        padding: "10px 12px",
+        fontSize: 12,
+        fontWeight: 600,
+        color: "#6b7280",
+        textAlign: align,
+        cursor: "pointer",
+        userSelect: "none",
+        background: isActive ? "#eff6ff" : "transparent",
+        transition: "background 0.15s",
+      }}
+      onMouseEnter={e => { if (!isActive) e.target.style.background = "#f3f4f6"; }}
+      onMouseLeave={e => { if (!isActive) e.target.style.background = "transparent"; }}
+    >
+      <div style={{display:"flex",alignItems:"center",justifyContent:align==="right"?"flex-end":"flex-start",gap:4}}>
+        <span style={{fontWeight}}>{label}</span>
+        <span style={{color:iconColor,fontSize:14,fontWeight:isActive?"700":"400",opacity:isActive?1:0.5}}>{getIcon()}</span>
+      </div>
+    </th>
   );
 };
 
@@ -3021,6 +3062,20 @@ const Clients = ({ data, setData }) => {
   const [expandedPayments, setExpandedPayments] = useState(new Set());
   const csvRef = useRef(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ field: 'name', direction: 'asc' });
+
+  const handleSort = (field) => {
+    let direction = 'asc';
+    if (sortConfig.field === field) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc';
+      } else {
+        setSortConfig({ field: 'name', direction: 'asc' });
+        return;
+      }
+    }
+    setSortConfig({ field, direction });
+  };
 
   const layout = {...(INITIAL_DATA.profile.layout), ...(data.profile.layout || {})};
   const stmtMethod = layout.statementSendMethod || "both";
@@ -3119,8 +3174,35 @@ const Clients = ({ data, setData }) => {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return data.clients.filter(c => !c.archived && (c.name?.toLowerCase().includes(q) || c.practice?.toLowerCase().includes(q)));
-  }, [data.clients, search]);
+    let result = data.clients.filter(c => !c.archived && (c.name?.toLowerCase().includes(q) || c.practice?.toLowerCase().includes(q)));
+
+    // Apply sorting
+    result.sort((a, b) => {
+      const field = sortConfig.field;
+      const dir = sortConfig.direction === 'asc' ? 1 : -1;
+
+      if (field === 'name') {
+        return dir * (a.name||"").localeCompare(b.name||"");
+      } else if (field === 'practice') {
+        return dir * (a.practice||"").localeCompare(b.practice||"");
+      } else if (field === 'phone') {
+        return dir * (a.phone||"").localeCompare(b.phone||"");
+      } else if (field === 'email') {
+        return dir * (a.email||"").localeCompare(b.email||"");
+      } else if (field === 'outstanding') {
+        const aAging = getClientAging(a.id, data.invoices, data.payments||[]);
+        const bAging = getClientAging(b.id, data.invoices, data.payments||[]);
+        return dir * (aAging.total - bAging.total);
+      } else if (field === 'credit') {
+        const aCredit = getClientCredit(a.id, data.payments||[]);
+        const bCredit = getClientCredit(b.id, data.payments||[]);
+        return dir * (aCredit - bCredit);
+      }
+      return 0;
+    });
+
+    return result;
+  }, [data.clients, data.invoices, data.payments, search, sortConfig]);
 
   const save = (client) => {
     setData(prev => {
@@ -3193,70 +3275,90 @@ const Clients = ({ data, setData }) => {
           <button className="btn btn-primary" onClick={()=>setShowForm(true)}><SvgIcon path={ICO.plus} size={16}/> {t("newClient")}</button>
         </div>
       ) : (
-        <div className="card">
-          {filtered.map((c,i) => {
-            const aging = getClientAging(c.id, data.invoices, data.payments||[]);
-            const credit = getClientCredit(c.id, data.payments||[]);
-            const clientPayments = [...(data.payments||[])].filter(p=>p.clientId===c.id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-            const isExpanded = expandedPayments.has(c.id);
-            return (
-              <div key={c.id} style={{padding:"10px 20px",borderBottom:i<filtered.length-1?"1px solid #f3f4f6":"none"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <div>
-                    <p style={{margin:0,fontSize:13,fontWeight:600}}>{c.name}{c.practice ? " — "+c.practice : ""}</p>
-                    <p style={{margin:"2px 0 0",fontSize:11,color:"#9ca3af"}}>{[c.email,c.phone].filter(Boolean).join(" | ")}</p>
-                  </div>
-                  <div style={{display:"flex",gap:4,alignItems:"center"}}>
-                    <button className="btn btn-secondary btn-sm" title="Record a payment received from this dentist" onClick={()=>{setPaymentClient(c);setEditingPayment(null);}} style={{fontSize:11,padding:"3px 8px",background:"#eff6ff",borderColor:"#93c5fd",color:"#1e40af",fontWeight:600}}>+ Payment</button>
-                    {aging.total > 0 && showPrint && <button className="btn btn-secondary btn-sm" title={stmtFormat==="pdf"?"Download statement as PDF":"Open statement for browser printing"} onClick={()=>handlePrintStatement(c.id)} style={{fontSize:11,padding:"3px 8px"}}><SvgIcon path={ICO.printer} size={13}/> {t("printStatement")}</button>}
-                    {aging.total > 0 && showWA && <button className="btn btn-secondary btn-sm" title="Send statement via WhatsApp — downloads PDF and opens WhatsApp" onClick={()=>whatsappStatement(c, data)} style={{fontSize:11,padding:"3px 8px",background:"#dcfce7",borderColor:"#86efac",color:"#166534"}}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/> Statement</button>}
-                    <button className="icon-btn" onClick={()=>{setEditing(c);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                    <button className="icon-btn" onClick={()=>archive(c.id)}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
-                  </div>
-                </div>
-                {credit > 0 && (
-                  <div style={{marginTop:4,padding:"3px 10px",background:"#dcfce7",borderRadius:4,border:"1px solid #86efac",fontSize:11,color:"#166534",display:"inline-block"}}>
-                    Credit: <strong>{fmt(credit)}</strong>
-                  </div>
-                )}
-                {aging.total > 0 && (
-                  <div style={{marginTop:6,padding:"5px 10px",background:"#fffbeb",borderRadius:6,border:"1px solid #fde68a",display:"flex",gap:16,alignItems:"center",flexWrap:"wrap",fontSize:11}}>
-                    <span style={{color:"#065f46"}}>{t("current")}: <strong>{fmt(aging.current)}</strong></span>
-                    <span style={{color:aging.thirtyDays>0?"#92400e":"#6b7280"}}>{t("days30")}: <strong>{fmt(aging.thirtyDays)}</strong></span>
-                    <span style={{color:aging.sixtyPlus>0?"#dc2626":"#6b7280"}}>{t("days60")}: <strong style={{color:aging.sixtyPlus>0?"#dc2626":"inherit"}}>{fmt(aging.sixtyPlus)}</strong></span>
-                    <span style={{marginLeft:"auto",fontWeight:700,color:"#1a5276"}}>{t("total")}: {fmt(aging.total)}</span>
-                  </div>
-                )}
-                {clientPayments.length > 0 && (
-                  <div style={{marginTop:6}}>
-                    <button style={{fontSize:11,color:"#6b7280",background:"none",border:"none",cursor:"pointer",padding:0}} onClick={()=>{const s=new Set(expandedPayments); isExpanded?s.delete(c.id):s.add(c.id); setExpandedPayments(s);}}>
-                      {isExpanded?"▲":"▼"} Payment history ({clientPayments.length})
-                    </button>
-                    {isExpanded && (
-                      <div style={{marginTop:4,border:"1px solid var(--c-border)",borderRadius:6,overflow:"hidden",fontSize:12}}>
-                        {clientPayments.map((pmt,pi) => (
-                          <div key={pmt.id} style={{padding:"6px 12px",borderBottom:pi<clientPayments.length-1?"1px solid var(--c-border2)":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+        <div className="card" style={{padding:0,overflow:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead style={{background:"var(--c-surface2)",borderBottom:"2px solid var(--c-border)"}}>
+              <tr>
+                <SortableColumnHeader label="Name" field="name" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="Practice" field="practice" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="Phone" field="phone" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="Email" field="email" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="Outstanding" field="outstanding" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                <SortableColumnHeader label="Credit" field="credit" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                <th style={{padding:"10px 16px",textAlign:"right",color:"var(--c-text2)",fontSize:12,fontWeight:600}}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((c,i) => {
+                const aging = getClientAging(c.id, data.invoices, data.payments||[]);
+                const credit = getClientCredit(c.id, data.payments||[]);
+                const clientPayments = [...(data.payments||[])].filter(p=>p.clientId===c.id).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+                const isExpanded = expandedPayments.has(c.id);
+                return (
+                  <React.Fragment key={c.id}>
+                    <tr style={{borderBottom:"1px solid var(--c-border2)",transition:"background 0.15s ease"}}>
+                      <td style={{padding:"10px 16px",fontWeight:600}}>{c.name}</td>
+                      <td style={{padding:"10px 16px",color:"var(--c-text2)"}}>{c.practice || "—"}</td>
+                      <td style={{padding:"10px 16px",color:"var(--c-text2)",fontSize:12}}>{c.phone || "—"}</td>
+                      <td style={{padding:"10px 16px",color:"var(--c-text2)",fontSize:12}}>{c.email || "—"}</td>
+                      <td style={{padding:"10px 16px",textAlign:"right",fontWeight:aging.total>0?600:400,color:aging.total>0?"#dc2626":"var(--c-text3)"}}>{aging.total>0 ? fmt(aging.total) : "—"}</td>
+                      <td style={{padding:"10px 16px",textAlign:"right",fontWeight:credit>0?600:400,color:credit>0?"#059669":"var(--c-text3)"}}>{credit>0 ? fmt(credit) : "—"}</td>
+                      <td style={{padding:"10px 16px",textAlign:"right"}}>
+                        <div style={{display:"flex",gap:4,alignItems:"center",justifyContent:"flex-end"}} onClick={e=>e.stopPropagation()}>
+                          <button className="btn btn-secondary btn-sm" title="Record a payment received from this dentist" onClick={()=>{setPaymentClient(c);setEditingPayment(null);}} style={{fontSize:11,padding:"3px 8px",background:"#eff6ff",borderColor:"#93c5fd",color:"#1e40af",fontWeight:600}}>+ Payment</button>
+                          {aging.total > 0 && showPrint && <button className="btn btn-secondary btn-sm" title={stmtFormat==="pdf"?"Download statement as PDF":"Open statement for browser printing"} onClick={()=>handlePrintStatement(c.id)} style={{fontSize:11,padding:"3px 8px"}}><SvgIcon path={ICO.printer} size={13}/> {t("printStatement")}</button>}
+                          {aging.total > 0 && showWA && <button className="btn btn-secondary btn-sm" title="Send statement via WhatsApp — downloads PDF and opens WhatsApp" onClick={()=>whatsappStatement(c, data)} style={{fontSize:11,padding:"3px 8px",background:"#dcfce7",borderColor:"#86efac",color:"#166534"}}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/> Statement</button>}
+                          <button className="icon-btn" onClick={()=>{setEditing(c);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" onClick={()=>archive(c.id)}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                        </div>
+                      </td>
+                    </tr>
+                    {(aging.total > 0 || clientPayments.length > 0) && (
+                      <tr style={{borderBottom:"1px solid var(--c-border2)",background:"var(--c-surface)"}}>
+                        <td colSpan="7" style={{padding:"8px 16px"}}>
+                          {aging.total > 0 && (
+                            <div style={{marginBottom:clientPayments.length>0?8:0,padding:"5px 10px",background:"#fffbeb",borderRadius:6,border:"1px solid #fde68a",display:"flex",gap:16,alignItems:"center",flexWrap:"wrap",fontSize:11}}>
+                              <span style={{color:"#065f46"}}>{t("current")}: <strong>{fmt(aging.current)}</strong></span>
+                              <span style={{color:aging.thirtyDays>0?"#92400e":"#6b7280"}}>{t("days30")}: <strong>{fmt(aging.thirtyDays)}</strong></span>
+                              <span style={{color:aging.sixtyPlus>0?"#dc2626":"#6b7280"}}>{t("days60")}: <strong style={{color:aging.sixtyPlus>0?"#dc2626":"inherit"}}>{fmt(aging.sixtyPlus)}</strong></span>
+                              <span style={{marginLeft:"auto",fontWeight:700,color:"#1a5276"}}>{t("total")}: {fmt(aging.total)}</span>
+                            </div>
+                          )}
+                          {clientPayments.length > 0 && (
                             <div>
-                              <span style={{fontWeight:600,color:"#059669"}}>{fmt(pmt.amount)}</span>
-                              <span style={{color:"var(--c-text3)",marginLeft:8}}>{fmtDate(pmt.date)}</span>
-                              {pmt.reference && <span style={{color:"var(--c-text4)",marginLeft:8}}>{pmt.reference}</span>}
-                              <span style={{color:"var(--c-text4)",marginLeft:8,textTransform:"uppercase",fontSize:10}}>{pmt.method}</span>
-                              {pmt.unallocated > 0 && <span style={{color:"#059669",marginLeft:8,fontStyle:"italic"}}>Credit: {fmt(pmt.unallocated)}</span>}
+                              <button style={{fontSize:11,color:"#6b7280",background:"none",border:"none",cursor:"pointer",padding:0}} onClick={()=>{const s=new Set(expandedPayments); isExpanded?s.delete(c.id):s.add(c.id); setExpandedPayments(s);}}>
+                                {isExpanded?"▲":"▼"} Payment history ({clientPayments.length})
+                              </button>
+                              {isExpanded && (
+                                <div style={{marginTop:4,border:"1px solid var(--c-border)",borderRadius:6,overflow:"hidden",fontSize:12}}>
+                                  {clientPayments.map((pmt,pi) => (
+                                    <div key={pmt.id} style={{padding:"6px 12px",borderBottom:pi<clientPayments.length-1?"1px solid var(--c-border2)":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                                      <div>
+                                        <span style={{fontWeight:600,color:"#059669"}}>{fmt(pmt.amount)}</span>
+                                        <span style={{color:"var(--c-text3)",marginLeft:8}}>{fmtDate(pmt.date)}</span>
+                                        {pmt.reference && <span style={{color:"var(--c-text4)",marginLeft:8}}>{pmt.reference}</span>}
+                                        <span style={{color:"var(--c-text4)",marginLeft:8,textTransform:"uppercase",fontSize:10}}>{pmt.method}</span>
+                                        {pmt.unallocated > 0 && <span style={{color:"#059669",marginLeft:8,fontStyle:"italic"}}>Credit: {fmt(pmt.unallocated)}</span>}
+                                      </div>
+                                      <div style={{display:"flex",gap:4}}>
+                                        <button className="icon-btn" title="Edit this payment" onClick={()=>{setPaymentClient(c);setEditingPayment(pmt);}}><SvgIcon path={ICO.edit} size={13} color="#6b7280"/></button>
+                                        <button className="icon-btn" title="Re-print receipt" onClick={()=>printReceipt(pmt, c, data)}><SvgIcon path={ICO.printer} size={13} color="#6b7280"/></button>
+                                        <button className="icon-btn" title="Send receipt via WhatsApp" onClick={()=>whatsappReceipt(pmt, c, data)}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/></button>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            <div style={{display:"flex",gap:4}}>
-                              <button className="icon-btn" title="Edit this payment" onClick={()=>{setPaymentClient(c);setEditingPayment(pmt);}}><SvgIcon path={ICO.edit} size={13} color="#6b7280"/></button>
-                              <button className="icon-btn" title="Re-print receipt" onClick={()=>printReceipt(pmt, c, data)}><SvgIcon path={ICO.printer} size={13} color="#6b7280"/></button>
-                              <button className="icon-btn" title="Send receipt via WhatsApp" onClick={()=>whatsappReceipt(pmt, c, data)}><SvgIcon path={ICO.whatsapp} size={13} color="#25D366" filled/></button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
+                          )}
+                        </td>
+                      </tr>
                     )}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -3384,6 +3486,7 @@ const Tariffs = ({ data, setData }) => {
   const pctRef = useRef(null);
   const scopeRef = useRef(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ field: 'code', direction: 'asc' });
 
   const PCT_PRESETS = ["1","2","3","4","5","8","10","12","15","20"];
   const SCOPE_OPTIONS = [
@@ -3400,6 +3503,16 @@ const Tariffs = ({ data, setData }) => {
     if (pctOpen || scopeOpen) document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, [pctOpen, scopeOpen]);
+
+  const handleSort = (field) => {
+    setSortConfig(prev => {
+      if (prev.field === field) {
+        if (prev.direction === 'asc') return { field, direction: 'desc' };
+        return { field: 'code', direction: 'asc' };
+      }
+      return { field, direction: 'asc' };
+    });
+  };
 
   const applyIncrease = () => {
     const pct = parseFloat(pctValue);
@@ -3420,8 +3533,24 @@ const Tariffs = ({ data, setData }) => {
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return data.tariffs.filter(t => (t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q)) && (!filterCat || t.category===filterCat));
-  }, [data.tariffs, search, filterCat]);
+    let result = data.tariffs.filter(t => (t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q)) && (!filterCat || t.category===filterCat));
+
+    if (sortConfig.field && sortConfig.direction !== 'default') {
+      result.sort((a, b) => {
+        const field = sortConfig.field;
+        const dir = sortConfig.direction === 'asc' ? 1 : -1;
+        if (field === 'code') return dir * (a.code||"").localeCompare(b.code||"", undefined, { numeric: true });
+        else if (field === 'tariffCode') return dir * ((a.tariffCode||a.code)||"").localeCompare((b.tariffCode||b.code)||"", undefined, { numeric: true });
+        else if (field === 'description') return dir * (a.description||"").localeCompare(b.description||"");
+        else if (field === 'descriptionAFR') return dir * (a.descriptionAFR||"").localeCompare(b.descriptionAFR||"");
+        else if (field === 'category') return dir * (a.category||"").localeCompare(b.category||"");
+        else if (field === 'price') return dir * ((parseFloat(a.price)||0) - (parseFloat(b.price)||0));
+        return 0;
+      });
+    }
+
+    return result;
+  }, [data.tariffs, search, filterCat, sortConfig]);
 
   const save = (tariff) => {
     setData(prev => {
@@ -3569,12 +3698,12 @@ const Tariffs = ({ data, setData }) => {
         <div className="card" style={{overflow:"hidden"}}>
           <table style={{width:"100%",borderCollapse:"collapse"}}>
             <thead><tr style={{background:"#f9fafb",borderBottom:"1px solid #e5e7eb"}}>
-              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("userCode")}</th>
-              <th style={{padding:"10px 12px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("tariffCode")}</th>
-              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("description")}</th>
-              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("descriptionAFR")}</th>
-              <th style={{padding:"10px 16px",textAlign:"left",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("category")}</th>
-              <th style={{padding:"10px 16px",textAlign:"right",fontSize:11,fontWeight:600,color:"#6b7280",textTransform:"uppercase"}}>{t("price")}</th>
+              <SortableColumnHeader label={t("userCode")} field="code" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableColumnHeader label={t("tariffCode")} field="tariffCode" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableColumnHeader label={t("description")} field="description" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableColumnHeader label={t("descriptionAFR")} field="descriptionAFR" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableColumnHeader label={t("category")} field="category" sortConfig={sortConfig} onSort={handleSort} />
+              <SortableColumnHeader label={t("price")} field="price" sortConfig={sortConfig} onSort={handleSort} align="right" />
               <th style={{width:70}}></th>
             </tr></thead>
             <tbody>
@@ -3744,11 +3873,41 @@ const Macros = ({ data, setData }) => {
   const [showForm, setShowForm] = useState(false);
   const csvRef = useRef(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ field: 'name', direction: 'asc' });
+
+  const handleSort = (field) => {
+    setSortConfig(prev => {
+      if (prev.field === field) {
+        if (prev.direction === 'asc') return { field, direction: 'desc' };
+        return { field: 'name', direction: 'asc' };
+      }
+      return { field, direction: 'asc' };
+    });
+  };
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return data.macros.filter(m => m.name?.toLowerCase().includes(q)).sort((a,b) => (a.name||"").localeCompare(b.name||""));
-  }, [data.macros, search]);
+    let result = data.macros.filter(m => m.name?.toLowerCase().includes(q));
+
+    if (sortConfig.field && sortConfig.direction !== 'default') {
+      result.sort((a, b) => {
+        const field = sortConfig.field;
+        const dir = sortConfig.direction === 'asc' ? 1 : -1;
+        if (field === 'name') return dir * (a.name||"").localeCompare(b.name||"");
+        else if (field === 'codeCount') return dir * (a.codes.length - b.codes.length);
+        else if (field === 'totalPrice') {
+          const calcPrice = (m) => m.codes.reduce((s, c) => {
+            const t = data.tariffs.find(t => t.code === c.code);
+            return s + (t ? t.price * (c.qty || 1) : 0);
+          }, 0);
+          return dir * (calcPrice(a) - calcPrice(b));
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [data.macros, data.tariffs, search, sortConfig]);
 
   const save = (macro) => {
     setData(prev => {
@@ -3821,32 +3980,42 @@ const Macros = ({ data, setData }) => {
           </div>
         </div>
       ) : (
-        <div className="card">
-          {filtered.map((m, i) => {
-            const totalPrice = m.codes.reduce((s, c) => {
-              const t = data.tariffs.find(t => t.code === c.code);
-              return s + (t ? t.price * (c.qty || 1) : 0);
-            }, 0);
-            return (
-              <div key={m.id} style={{ padding: "12px 20px", borderBottom: i < filtered.length - 1 ? "1px solid #f3f4f6" : "none" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1f2937" }}>{m.name}</p>
-                    <p style={{ margin: "3px 0 0", fontSize: 12, color: "#6b7280" }}>
-                      {m.codes.length} code{m.codes.length !== 1 ? 's' : ''}: {m.codes.map(c => c.code + (c.qty > 1 ? ' x' + c.qty : '')).join(', ')}
-                    </p>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#5b21b6" }}>{fmt(totalPrice)}</span>
-                    <div style={{ display: "flex", gap: 2 }}>
-                      <button className="icon-btn" title="Edit this macro — change name, add/remove codes, adjust quantities" onClick={() => { setEditing(m); setShowForm(true) }}><SvgIcon path={ICO.edit} size={15} color="#6b7280" /></button>
-                      <button className="icon-btn" title="Delete this macro permanently" onClick={() => { if (confirm("Delete this macro?")) setData(prev => ({ ...prev, macros: prev.macros.filter(x => x.id !== m.id) })) }}><SvgIcon path={ICO.trash} size={15} color="#ef4444" /></button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="card" style={{padding:0,overflow:"auto"}}>
+          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+            <thead style={{background:"var(--c-surface2)",borderBottom:"2px solid var(--c-border)"}}>
+              <tr>
+                <SortableColumnHeader label="Macro Name" field="name" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="Tariff Codes" field="codes" sortConfig={sortConfig} onSort={handleSort} />
+                <SortableColumnHeader label="# Codes" field="codeCount" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                <SortableColumnHeader label="Total Price" field="totalPrice" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                <th style={{padding:"10px 16px",textAlign:"right",color:"var(--c-text2)",fontSize:12,fontWeight:600}}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((m, i) => {
+                const totalPrice = m.codes.reduce((s, c) => {
+                  const t = data.tariffs.find(t => t.code === c.code);
+                  return s + (t ? t.price * (c.qty || 1) : 0);
+                }, 0);
+                return (
+                  <tr key={m.id} style={{borderBottom:"1px solid var(--c-border2)",transition:"background 0.15s ease"}}>
+                    <td style={{padding:"10px 16px",fontWeight:700}}>{m.name}</td>
+                    <td style={{padding:"10px 16px",color:"var(--c-text2)",fontSize:12,fontFamily:"monospace"}}>
+                      {m.codes.map(c => c.code + (c.qty > 1 ? ' x' + c.qty : '')).join(', ')}
+                    </td>
+                    <td style={{padding:"10px 16px",textAlign:"right",color:"var(--c-text2)"}}>{m.codes.length}</td>
+                    <td style={{padding:"10px 16px",textAlign:"right",fontWeight:700,color:"#5b21b6"}}>{fmt(totalPrice)}</td>
+                    <td style={{padding:"10px 16px",textAlign:"right"}}>
+                      <div style={{display:"flex",gap:2,alignItems:"center",justifyContent:"flex-end"}} onClick={e=>e.stopPropagation()}>
+                        <button className="icon-btn" title="Edit this macro — change name, add/remove codes, adjust quantities" onClick={() => { setEditing(m); setShowForm(true) }}><SvgIcon path={ICO.edit} size={15} color="#6b7280" /></button>
+                        <button className="icon-btn" title="Delete this macro permanently" onClick={() => { if (confirm("Delete this macro?")) setData(prev => ({ ...prev, macros: prev.macros.filter(x => x.id !== m.id) })) }}><SvgIcon path={ICO.trash} size={15} color="#ef4444" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -4208,11 +4377,51 @@ const Estimates = ({ data, setData, setPage }) => {
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyingEstimate, setCopyingEstimate] = useState(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ field: 'number', direction: 'desc' });
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const handleSort = (field) => {
+    let direction = 'asc';
+    if (sortConfig.field === field) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc';
+      } else {
+        setSortConfig({ field: 'number', direction: 'desc' });
+        return;
+      }
+    }
+    setSortConfig({ field, direction });
+  };
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
-    return [...data.estimates].filter(e => e.clientName?.toLowerCase().includes(q) || String(e.number).includes(q)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  }, [data.estimates, search]);
+    let filtered = [...data.estimates].filter(e => e.clientName?.toLowerCase().includes(q) || String(e.number).includes(q));
+
+    filtered.sort((a, b) => {
+      const field = sortConfig.field;
+      const dir = sortConfig.direction === 'asc' ? 1 : -1;
+
+      if (field === 'number') {
+        return dir * (a.number - b.number);
+      } else if (field === 'date') {
+        return dir * (a.date||"").localeCompare(b.date||"");
+      } else if (field === 'customer') {
+        return dir * (a.clientName||"").localeCompare(b.clientName||"");
+      } else if (field === 'patient') {
+        const aName = `${a.patientSurname||""} ${a.patientName||""}`.trim();
+        const bName = `${b.patientSurname||""} ${b.patientName||""}`.trim();
+        return dir * aName.localeCompare(bName);
+      } else if (field === 'total') {
+        return dir * ((a.total||0) - (b.total||0));
+      } else if (field === 'status') {
+        const statusOrder = { 'draft': 1, 'invoiced': 2 };
+        return dir * ((statusOrder[a.status]||0) - (statusOrder[b.status]||0));
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [data.estimates, search, sortConfig]);
 
   const save = (form) => {
     const client = data.clients.find(c => c.id===form.clientId);
@@ -4354,34 +4563,103 @@ const Estimates = ({ data, setData, setPage }) => {
           <button className="btn btn-primary" title="Create a new estimate for a client" onClick={()=>setShowForm(true)}><SvgIcon path={ICO.plus} size={16}/> {t("newEstimate")}</button>
         </div>
       ) : (
-        <div className="card">
-          {sorted.map((e,i) => (
-            <div key={e.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}} onContextMenu={(evt)=>handleContextMenu(evt,e)}>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6}}>
-                  <span style={{fontSize:13,fontWeight:700}}>#{e.number}</span>
-                  <span className={"badge badge-"+(e.status==="invoiced"?"green":e.status==="draft"?"blue":"gray")}>{e.status||"draft"}</span>
-                </div>
-                <p style={{margin:"2px 0 0",fontSize:13,color:"#4b5563"}}>{e.clientName}</p>
-                {(e.patientName || e.patientSurname) && <p style={{margin:"1px 0 0",fontSize:12,color:"#6b7280"}}>Patient: {e.patientName} {e.patientSurname}</p>}
-                <p style={{margin:"1px 0 0",fontSize:11,color:"#9ca3af"}}>{fmtDate(e.date)}{e.validUntil ? " · Valid until "+fmtDate(e.validUntil) : ""} · {e.items?.length||0} items</p>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <span style={{fontSize:14,fontWeight:700}}>{fmt(e.total)}</span>
-                <div style={{display:"flex",gap:2}}>
-                  <button className="icon-btn" title="Print this estimate" onClick={()=>printDocument(e,data,"estimate")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Save this estimate as PDF (downloads immediately)" onClick={()=>savePDFDocument(e,data,"estimate")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
-                  <button className="icon-btn" title="Send this estimate via WhatsApp to the client" onClick={()=>whatsappDocument(e,data,"estimate")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
-                  {e.status!=="invoiced" && <button className="icon-btn" title="Convert this estimate into an invoice" onClick={()=>toInvoice(e)}><SvgIcon path={ICO.arrowRight} size={15} color="#059669"/></button>}
-                  <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(e)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
-                  <button className="icon-btn" title="Edit this estimate" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
-                </div>
+        <>
+          <div className="card" style={{padding:0,overflow:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead>
+                <tr style={{background:"#f9fafb",borderBottom:"2px solid #e5e7eb"}}>
+                  <SortableColumnHeader label="Estimate #" field="number" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Date" field="date" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Customer" field="customer" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Patient" field="patient" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Total" field="total" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                  <SortableColumnHeader label="Status" field="status" sortConfig={sortConfig} onSort={handleSort} />
+                  <th style={{padding:"10px 12px",fontSize:12,fontWeight:600,color:"#6b7280",textAlign:"right",width:260}}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((e) => {
+                  const isSelected = selectedRow?.id === e.id;
+                  return (
+                    <tr
+                      key={e.id}
+                      onClick={() => setSelectedRow(isSelected ? null : e)}
+                      onContextMenu={(evt)=>handleContextMenu(evt,e)}
+                      style={{
+                        background: isSelected ? "#dbeafe" : "transparent",
+                        borderLeft: isSelected ? "3px solid #2563eb" : "3px solid transparent",
+                        borderBottom: "1px solid #f3f4f6",
+                        cursor: "pointer",
+                        transition: "background 0.15s"
+                      }}
+                      onMouseEnter={evt => { if (!isSelected) evt.currentTarget.style.background = "#f9fafb"; }}
+                      onMouseLeave={evt => { if (!isSelected) evt.currentTarget.style.background = "transparent"; }}
+                    >
+                      <td style={{padding:"10px 12px",fontSize:13,fontWeight:700}}>#{e.number}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{fmtDate(e.date)}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{e.clientName}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{e.patientSurname} {e.patientName}</td>
+                      <td style={{padding:"10px 12px",fontSize:13,fontWeight:700,textAlign:"right"}}>{fmt(e.total)}</td>
+                      <td style={{padding:"10px 12px"}}>
+                        <span className={"badge badge-"+(e.status==="invoiced"?"green":"blue")}>{e.status||"draft"}</span>
+                      </td>
+                      <td style={{padding:"10px 12px"}} onClick={evt => evt.stopPropagation()}>
+                        <div style={{display:"flex",gap:2,justifyContent:"flex-end"}}>
+                          <button className="icon-btn" title="Print" onClick={()=>printDocument(e,data,"estimate")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="PDF" onClick={()=>savePDFDocument(e,data,"estimate")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
+                          <button className="icon-btn" title="WhatsApp" onClick={()=>whatsappDocument(e,data,"estimate")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
+                          {e.status!=="invoiced" && <button className="icon-btn" title="Convert to Invoice" onClick={()=>toInvoice(e)}><SvgIcon path={ICO.arrowRight} size={15} color="#059669"/></button>}
+                          <button className="icon-btn" title="Copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="Macro" onClick={()=>saveAsMacro(e)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
+                          <button className="icon-btn" title="Edit" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="Delete" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {selectedRow && (
+            <div className="card" style={{marginTop:16}}>
+              <h3 style={{fontSize:14,fontWeight:700,margin:"0 0 12px",color:"#374151"}}>
+                Estimate #{selectedRow.number} - {selectedRow.clientName} - {selectedRow.patientSurname} {selectedRow.patientName} - {fmt(selectedRow.total)}
+              </h3>
+              <div style={{overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                  <thead>
+                    <tr style={{background:"#f9fafb",borderBottom:"1px solid #e5e7eb"}}>
+                      <th style={{padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:600,color:"#6b7280"}}>Code</th>
+                      <th style={{padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:600,color:"#6b7280"}}>Description</th>
+                      <th style={{padding:"8px 12px",textAlign:"center",fontSize:12,fontWeight:600,color:"#6b7280"}}>Qty</th>
+                      <th style={{padding:"8px 12px",textAlign:"right",fontSize:12,fontWeight:600,color:"#6b7280"}}>Price</th>
+                      <th style={{padding:"8px 12px",textAlign:"right",fontSize:12,fontWeight:600,color:"#6b7280"}}>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selectedRow.items || []).map((item, idx) => (
+                      <tr key={idx} style={{borderBottom:"1px solid #f3f4f6"}}>
+                        <td style={{padding:"8px 12px",fontWeight:600}}>{item.tariffCode || item.code}</td>
+                        <td style={{padding:"8px 12px"}}>{item.description}</td>
+                        <td style={{padding:"8px 12px",textAlign:"center"}}>{item.qty}</td>
+                        <td style={{padding:"8px 12px",textAlign:"right"}}>{fmt(item.price)}</td>
+                        <td style={{padding:"8px 12px",textAlign:"right",fontWeight:600}}>{fmt((parseFloat(item.qty)||0) * (parseFloat(item.price)||0))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{borderTop:"2px solid #e5e7eb",background:"#f9fafb"}}>
+                      <td colSpan="4" style={{padding:"8px 12px",textAlign:"right",fontWeight:700}}>Total:</td>
+                      <td style={{padding:"8px 12px",textAlign:"right",fontWeight:700,fontSize:14}}>{fmt(selectedRow.total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
@@ -4538,11 +4816,57 @@ const Invoices = ({ data, setData }) => {
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyingInvoice, setCopyingInvoice] = useState(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [sortConfig, setSortConfig] = useState({ field: 'number', direction: 'desc' });
+  const [selectedRow, setSelectedRow] = useState(null);
+
+  const handleSort = (field) => {
+    let direction = 'asc';
+    if (sortConfig.field === field) {
+      if (sortConfig.direction === 'asc') {
+        direction = 'desc';
+      } else {
+        // Reset to default
+        setSortConfig({ field: 'number', direction: 'desc' });
+        return;
+      }
+    }
+    setSortConfig({ field, direction });
+  };
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
-    return [...data.invoices].filter(i => (i.clientName?.toLowerCase().includes(q) || String(i.number).includes(q)) && (!statusFilter||i.status===statusFilter)).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
-  }, [data.invoices, search, statusFilter]);
+    let filtered = [...data.invoices].filter(i => (i.clientName?.toLowerCase().includes(q) || String(i.number).includes(q)) && (!statusFilter||i.status===statusFilter));
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const field = sortConfig.field;
+      const dir = sortConfig.direction === 'asc' ? 1 : -1;
+
+      if (field === 'number') {
+        return dir * (a.number - b.number);
+      } else if (field === 'date') {
+        return dir * (a.date||"").localeCompare(b.date||"");
+      } else if (field === 'customer') {
+        return dir * (a.clientName||"").localeCompare(b.clientName||"");
+      } else if (field === 'patient') {
+        const aName = `${a.patientSurname||""} ${a.patientName||""}`.trim();
+        const bName = `${b.patientSurname||""} ${b.patientName||""}`.trim();
+        return dir * aName.localeCompare(bName);
+      } else if (field === 'total') {
+        return dir * ((a.total||0) - (b.total||0));
+      } else if (field === 'status') {
+        const getStatusOrder = (inv) => {
+          const ds = getInvoiceDisplayStatus(inv, data.payments||[]);
+          const order = { 'unpaid': 1, 'partial': 2, 'paid': 3 };
+          return order[ds] || 0;
+        };
+        return dir * (getStatusOrder(a) - getStatusOrder(b));
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [data.invoices, data.payments, search, statusFilter, sortConfig]);
 
   const save = (form) => {
     const client = data.clients.find(c => c.id===form.clientId);
@@ -4693,42 +5017,110 @@ const Invoices = ({ data, setData }) => {
           <button className="btn btn-primary" title="Create a new invoice for a client" onClick={()=>setShowForm(true)}><SvgIcon path={ICO.plus} size={16}/> {t("newInvoice")}</button>
         </div>
       ) : (
-        <div className="card">
-          {sorted.map((inv,i) => (
-            <div key={inv.id} style={{padding:"10px 20px",borderBottom:i<sorted.length-1?"1px solid #f3f4f6":"none",display:"flex",justifyContent:"space-between",alignItems:"center"}} onContextMenu={(e)=>handleContextMenu(e,inv)}>
-              <div style={{flex:1}}>
-                <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
-                  <span style={{fontSize:13,fontWeight:700}}>#{inv.number}</span>
-                  {(()=>{const ds=getInvoiceDisplayStatus(inv,data.payments||[]);return <span className={"badge badge-"+(ds==="paid"?"green":ds==="partial"?"orange":"yellow")}>{ds}</span>;})()}
-                  {inv.claimed && <span className="badge" style={{background:"#bfdbfe",color:"#1e40af",fontWeight:700}}>CLAIMED</span>}
-                  {inv.estimateRef && <span className="badge badge-purple">Est #{inv.estimateRef}</span>}
-                </div>
-                <p style={{margin:"2px 0 0",fontSize:13,color:"#4b5563"}}>{inv.clientName}</p>
-                {(inv.patientName || inv.patientSurname) && <p style={{margin:"1px 0 0",fontSize:12,color:"#6b7280"}}>Patient: {inv.patientName} {inv.patientSurname}</p>}
-                <p style={{margin:"1px 0 0",fontSize:11,color:"#9ca3af"}}>{fmtDate(inv.date)} · {inv.items?.length||0} items{inv.claimedDate ? " · Claimed "+fmtDate(inv.claimedDate) : ""}</p>
-              </div>
-              <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <span style={{fontSize:14,fontWeight:700}}>{fmt(inv.total)}</span>
-                <div style={{display:"flex",gap:2,alignItems:"center"}}>
-                  {!inv.claimed
-                    ? <button title="Submit directly to medical aid — removes from dentist account statement" onClick={()=>claimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#2563eb",color:"white",border:"none",borderRadius:6,cursor:"pointer"}}>CLAIM</button>
-                    : <button title="Remove direct claim status — invoice returns to dentist account" onClick={()=>unclaimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#dbeafe",color:"#1e40af",border:"1px solid #93c5fd",borderRadius:6,cursor:"pointer"}}>UNCLAIM</button>
-                  }
-                  <button className="icon-btn" title="Print this invoice" onClick={()=>printDocument(inv,data,"invoice")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Save this invoice as PDF (downloads immediately)" onClick={()=>savePDFDocument(inv,data,"invoice")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
-                  <button className="icon-btn" title="Send this invoice via WhatsApp to the client" onClick={()=>whatsappDocument(inv,data,"invoice")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
-                  <button className="icon-btn" title={inv.status==="paid"?"Mark this invoice as unpaid":"Mark this invoice as paid"} onClick={()=>togglePaid(inv)}>
-                    <SvgIcon path={ICO.check} size={15} color={inv.status==="paid"?"#d97706":"#059669"}/>
-                  </button>
-                  <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(inv)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
-                  <button className="icon-btn" title="Edit this invoice" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                  <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
-                </div>
+        <>
+          <div className="card" style={{padding:0,overflow:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse"}}>
+              <thead>
+                <tr style={{background:"#f9fafb",borderBottom:"2px solid #e5e7eb"}}>
+                  <SortableColumnHeader label="Invoice #" field="number" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Date" field="date" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Customer" field="customer" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Patient" field="patient" sortConfig={sortConfig} onSort={handleSort} />
+                  <SortableColumnHeader label="Total" field="total" sortConfig={sortConfig} onSort={handleSort} align="right" />
+                  <SortableColumnHeader label="Status" field="status" sortConfig={sortConfig} onSort={handleSort} />
+                  <th style={{padding:"10px 12px",fontSize:12,fontWeight:600,color:"#6b7280",textAlign:"right",width:280}}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((inv) => {
+                  const isSelected = selectedRow?.id === inv.id;
+                  const displayStatus = getInvoiceDisplayStatus(inv, data.payments||[]);
+                  return (
+                    <tr
+                      key={inv.id}
+                      onClick={() => setSelectedRow(isSelected ? null : inv)}
+                      onContextMenu={(e)=>handleContextMenu(e,inv)}
+                      style={{
+                        background: isSelected ? "#dbeafe" : "transparent",
+                        borderLeft: isSelected ? "3px solid #2563eb" : "3px solid transparent",
+                        borderBottom: "1px solid #f3f4f6",
+                        cursor: "pointer",
+                        transition: "background 0.15s"
+                      }}
+                      onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = "#f9fafb"; }}
+                      onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      <td style={{padding:"10px 12px",fontSize:13,fontWeight:700}}>#{inv.number}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{fmtDate(inv.date)}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{inv.clientName}</td>
+                      <td style={{padding:"10px 12px",fontSize:13}}>{inv.patientSurname} {inv.patientName}</td>
+                      <td style={{padding:"10px 12px",fontSize:13,fontWeight:700,textAlign:"right"}}>{fmt(inv.total)}</td>
+                      <td style={{padding:"10px 12px"}}>
+                        <div style={{display:"flex",gap:4,flexWrap:"wrap"}}>
+                          <span className={"badge badge-"+(displayStatus==="paid"?"green":displayStatus==="partial"?"orange":"yellow")}>{displayStatus}</span>
+                          {inv.claimed && <span className="badge" style={{background:"#bfdbfe",color:"#1e40af",fontSize:10}}>CLAIMED</span>}
+                        </div>
+                      </td>
+                      <td style={{padding:"10px 12px"}} onClick={e => e.stopPropagation()}>
+                        <div style={{display:"flex",gap:2,justifyContent:"flex-end"}}>
+                          {!inv.claimed
+                            ? <button title="Submit directly to medical aid" onClick={()=>claimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#2563eb",color:"white",border:"none",borderRadius:6,cursor:"pointer"}}>CLAIM</button>
+                            : <button title="Remove direct claim status" onClick={()=>unclaimInvoice(inv)} style={{padding:"3px 8px",fontSize:11,fontWeight:700,background:"#dbeafe",color:"#1e40af",border:"1px solid #93c5fd",borderRadius:6,cursor:"pointer"}}>UNCLAIM</button>
+                          }
+                          <button className="icon-btn" title="Print" onClick={()=>printDocument(inv,data,"invoice")}><SvgIcon path={ICO.printer} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="PDF" onClick={()=>savePDFDocument(inv,data,"invoice")}><SvgIcon path={ICO.download} size={15} color="#2563eb"/></button>
+                          <button className="icon-btn" title="WhatsApp" onClick={()=>whatsappDocument(inv,data,"invoice")}><SvgIcon path={ICO.whatsapp} size={16} color="#25D366" filled/></button>
+                          <button className="icon-btn" title="Copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="Macro" onClick={()=>saveAsMacro(inv)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
+                          <button className="icon-btn" title="Edit" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
+                          <button className="icon-btn" title="Delete" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {selectedRow && (
+            <div className="card" style={{marginTop:16}}>
+              <h3 style={{fontSize:14,fontWeight:700,margin:"0 0 12px",color:"#374151"}}>
+                Invoice #{selectedRow.number} - {selectedRow.clientName} - {selectedRow.patientSurname} {selectedRow.patientName} - {fmt(selectedRow.total)}
+              </h3>
+              <div style={{overflow:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                  <thead>
+                    <tr style={{background:"#f9fafb",borderBottom:"1px solid #e5e7eb"}}>
+                      <th style={{padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:600,color:"#6b7280"}}>Code</th>
+                      <th style={{padding:"8px 12px",textAlign:"left",fontSize:12,fontWeight:600,color:"#6b7280"}}>Description</th>
+                      <th style={{padding:"8px 12px",textAlign:"center",fontSize:12,fontWeight:600,color:"#6b7280"}}>Qty</th>
+                      <th style={{padding:"8px 12px",textAlign:"right",fontSize:12,fontWeight:600,color:"#6b7280"}}>Price</th>
+                      <th style={{padding:"8px 12px",textAlign:"right",fontSize:12,fontWeight:600,color:"#6b7280"}}>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selectedRow.items || []).map((item, idx) => (
+                      <tr key={idx} style={{borderBottom:"1px solid #f3f4f6"}}>
+                        <td style={{padding:"8px 12px",fontWeight:600}}>{item.tariffCode || item.code}</td>
+                        <td style={{padding:"8px 12px"}}>{item.description}</td>
+                        <td style={{padding:"8px 12px",textAlign:"center"}}>{item.qty}</td>
+                        <td style={{padding:"8px 12px",textAlign:"right"}}>{fmt(item.price)}</td>
+                        <td style={{padding:"8px 12px",textAlign:"right",fontWeight:600}}>{fmt((parseFloat(item.qty)||0) * (parseFloat(item.price)||0))}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{borderTop:"2px solid #e5e7eb",background:"#f9fafb"}}>
+                      <td colSpan="4" style={{padding:"8px 12px",textAlign:"right",fontWeight:700}}>Total:</td>
+                      <td style={{padding:"8px 12px",textAlign:"right",fontWeight:700,fontSize:14}}>{fmt(selectedRow.total)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
               </div>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
