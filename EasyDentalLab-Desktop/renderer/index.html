@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.38";
+const APP_VERSION = "2.3.39";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1613,9 +1613,31 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
   const handleBlur = () => { setTimeout(() => { if (ref.current && !ref.current.contains(document.activeElement)) setOpen(false); }, 150); };
 
   const filtered = useMemo(() => {
-    const q = (query || value || "").toLowerCase();
+    const q = (query || value || "").toLowerCase().trim();
     if (!q) return tariffs.slice(0, 50);
-    return tariffs.filter(t => t.code?.toLowerCase().includes(q) || t.description?.toLowerCase().includes(q)).slice(0, 50);
+
+    // Sort tariffs by code for sequential display
+    const sortedTariffs = [...tariffs].sort((a, b) =>
+      (a.code||"").localeCompare(b.code||"", undefined, { numeric: true })
+    );
+
+    // Find closest matching code by prefix
+    const matchIndex = sortedTariffs.findIndex(t =>
+      t.code?.toLowerCase().startsWith(q)
+    );
+
+    if (matchIndex >= 0) {
+      // Show range around the match: 10 before, match + 39 after = 50 total
+      const start = Math.max(0, matchIndex - 10);
+      const end = Math.min(sortedTariffs.length, start + 50);
+      return sortedTariffs.slice(start, end);
+    }
+
+    // Fallback: filter by contains in code or description
+    return sortedTariffs.filter(t =>
+      t.code?.toLowerCase().includes(q) ||
+      t.description?.toLowerCase().includes(q)
+    ).slice(0, 50);
   }, [tariffs, query, value]);
 
   const pick = (t) => { onSelect(t); setQuery(""); setOpen(false); };
