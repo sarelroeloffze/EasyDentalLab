@@ -1748,7 +1748,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         autoComplete="off"
       />
       {open && filtered.length > 0 && (
-        <div ref={dropdownRef} style={{position:"absolute",top:"100%",right:0,zIndex:100,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:360}}>
+        <div ref={dropdownRef} style={{position:"absolute",top:"100%",left:0,zIndex:1000,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:360}}>
           {filtered.map((t, idx) => (
             <div key={t.id}
               onMouseDown={(e) => { e.preventDefault(); pick(t); }}
