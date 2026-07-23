@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.35";
+const APP_VERSION = "2.3.36";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1349,31 +1349,40 @@ const ICO = {
 // MODAL
 // ============================================================
 
-const Modal = ({ open, onClose, title, wide, children }) => {
+const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
   const windowJustFocused = useRef(false);
 
   // Track window focus to prevent accidental overlay clicks when window regains focus
   useEffect(() => {
     const handleFocus = () => {
       windowJustFocused.current = true;
-      setTimeout(() => { windowJustFocused.current = false; }, 300);
+      setTimeout(() => { windowJustFocused.current = false; }, 1000); // Increased from 300ms to 1000ms
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  const handleCloseAttempt = () => {
+    // If parent provides onCloseAttempt, call it first (can prevent close or show confirmation)
+    if (onCloseAttempt) {
+      onCloseAttempt(onClose);
+    } else {
+      onClose();
+    }
+  };
 
   if (!open) return null;
   return (
     <div className="modal-overlay" onClick={e => {
       // Only close if clicking directly on overlay background AND window wasn't just focused
       if (e.target.classList.contains('modal-overlay') && !windowJustFocused.current) {
-        onClose();
+        handleCloseAttempt();
       }
     }}>
       <div className={"modal-content " + (wide ? "w-full max-w-4xl" : "w-full max-w-lg")} style={{margin:"0 16px"}} onClick={e => e.stopPropagation()}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)",position:"sticky",top:0,background:"var(--c-surface)",borderRadius:"12px 12px 0 0",zIndex:10}}>
           <h2 style={{fontSize:16,fontWeight:700,margin:0}}>{title}</h2>
-          <button className="icon-btn" title="Close this window" onClick={onClose}><SvgIcon path={ICO.x} size={18}/></button>
+          <button className="icon-btn" title="Close this window" onClick={handleCloseAttempt}><SvgIcon path={ICO.x} size={18}/></button>
         </div>
         <div style={{padding:"16px 24px"}}>{children}</div>
       </div>
@@ -1573,6 +1582,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
   const [hlIdx, setHlIdx] = useState(0);
   const ref = useRef(null);
   const inputRef = useRef(null);
+  const dropdownRef = useRef(null);
 
   const handleBlur = () => { setTimeout(() => { if (ref.current && !ref.current.contains(document.activeElement)) setOpen(false); }, 150); };
 
@@ -1607,44 +1617,54 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      if (open && filtered.length > 0) {
+        // Select highlighted item from dropdown
+        const match = filtered[hlIdx] || filtered[0];
+        if (match) pick(match);
+      }
       confirmAndMoveToQty();
     } else if (e.key === "ArrowRight" && (inputRef.current?.selectionStart === (query||value||"").length)) {
       // Right arrow at end of text — confirm and move to qty field
       e.preventDefault();
       confirmAndMoveToQty();
     } else if (e.key === "ArrowDown") {
-      // Always: confirm current code + add new line + focus new code input
       e.preventDefault();
 
-      // Step 1: confirm whatever is typed
-      const q = (query || value || "").toLowerCase().trim();
-      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-
-      if (match) {
-        onSelect(match);
-        setOpen(false);
-        setQuery("");
+      if (open && filtered.length > 0) {
+        // Navigate down in dropdown
+        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
       } else {
-        setOpen(false);
-      }
+        // Dropdown closed: confirm current code + add new line + focus new code input
+        const q = (query || value || "").toLowerCase().trim();
+        let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
+        if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
 
-      // Step 2: add new blank line - React will batch with onSelect update
-      if (onAddLine) {
-        onAddLine();
-        // Focus new line after a brief delay for DOM update
-        setTimeout(() => {
-          const table = inputRef.current?.closest("table");
-          if (table) {
-            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-            const last = allCodeInputs[allCodeInputs.length - 1];
-            if (last) last.focus();
-          }
-        }, 50);
+        if (match) {
+          onSelect(match);
+          setOpen(false);
+          setQuery("");
+        } else {
+          setOpen(false);
+        }
+
+        // Add new blank line
+        if (onAddLine) {
+          onAddLine();
+          setTimeout(() => {
+            const table = inputRef.current?.closest("table");
+            if (table) {
+              const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+              const last = allCodeInputs[allCodeInputs.length - 1];
+              if (last) last.focus();
+            }
+          }, 50);
+        }
       }
-    } else if (e.key === "ArrowUp" && open && filtered.length > 0) {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setHlIdx(prev => Math.max(prev - 1, 0));
+      if (open && filtered.length > 0) {
+        setHlIdx(prev => Math.max(prev - 1, 0));
+      }
     } else if (e.key === "Tab") {
       // Tab confirms and lets browser move focus naturally
       if (open && filtered.length > 0) {
@@ -1652,11 +1672,37 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         if (match) pick(match);
       }
       setOpen(false);
+    } else if (e.key === "Escape") {
+      // Escape closes dropdown without selecting
+      e.preventDefault();
+      setOpen(false);
+      setQuery("");
     }
   };
 
   // Reset highlight when filtered list changes
   React.useEffect(() => { setHlIdx(0); }, [filtered.length]);
+
+  // Auto-scroll to keep highlighted item visible
+  React.useEffect(() => {
+    if (open && dropdownRef.current && filtered.length > 0) {
+      const container = dropdownRef.current;
+      const items = container.children;
+      if (items[hlIdx]) {
+        const item = items[hlIdx];
+        const containerTop = container.scrollTop;
+        const containerBottom = containerTop + container.clientHeight;
+        const itemTop = item.offsetTop;
+        const itemBottom = itemTop + item.clientHeight;
+
+        if (itemTop < containerTop) {
+          container.scrollTop = itemTop;
+        } else if (itemBottom > containerBottom) {
+          container.scrollTop = itemBottom - container.clientHeight;
+        }
+      }
+    }
+  }, [hlIdx, open, filtered.length]);
 
   return (
     <div style={{position:"relative"}} ref={ref}>
@@ -1672,11 +1718,11 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         onKeyDown={handleKeyDown}
         style={inputStyle}
         placeholder="Code..."
-        title="Type code then Enter to confirm, Down Arrow for new line"
+        title="Type to search codes, use ↑↓ arrows to navigate, Enter to select"
         autoComplete="off"
       />
       {open && filtered.length > 0 && (
-        <div style={{position:"absolute",top:"100%",right:0,zIndex:100,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:360}}>
+        <div ref={dropdownRef} style={{position:"absolute",top:"100%",right:0,zIndex:100,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:360}}>
           {filtered.map((t, idx) => (
             <div key={t.id}
               onMouseDown={(e) => { e.preventDefault(); pick(t); }}
@@ -2921,10 +2967,35 @@ const PaymentModal = ({ client, data, payment, onSave, onCancel }) => {
 // CLIENTS
 // ============================================================
 
-const ClientForm = ({ client, onSave, onCancel }) => {
+const ClientForm = ({ client, onSave, onCancel, onDirtyChange }) => {
   const t = useT();
-  const [f, setF] = useState(client || { name:"", practice:"", email:"", phone:"", whatsapp:"", address:"", webpage:"", notes:"", referringPCNS:"" });
+  const initialFormData = client || { name:"", practice:"", email:"", phone:"", whatsapp:"", address:"", webpage:"", notes:"", referringPCNS:"" };
+  const [f, setF] = useState(initialFormData);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
+
+  // Track if form has unsaved changes
+  const isDirty = useMemo(() => {
+    if (!client) {
+      // New client - check if any data entered
+      return f.name?.trim() !== "" ||
+             f.practice?.trim() !== "" ||
+             f.email?.trim() !== "" ||
+             f.phone?.trim() !== "" ||
+             f.whatsapp?.trim() !== "" ||
+             f.address?.trim() !== "" ||
+             f.webpage?.trim() !== "" ||
+             f.notes?.trim() !== "" ||
+             f.referringPCNS?.trim() !== "";
+    } else {
+      // Editing - check if anything changed
+      return JSON.stringify(f) !== JSON.stringify(initialFormData);
+    }
+  }, [f, client, initialFormData]);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
   return (
     <div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
@@ -2961,6 +3032,7 @@ const Clients = ({ data, setData }) => {
   const [editingPayment, setEditingPayment] = useState(null);
   const [expandedPayments, setExpandedPayments] = useState(new Set());
   const csvRef = useRef(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const layout = {...(INITIAL_DATA.profile.layout), ...(data.profile.layout || {})};
   const stmtMethod = layout.statementSendMethod || "both";
@@ -3200,8 +3272,16 @@ const Clients = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?t("edit")+" "+t("nav_clients"):t("newClient")}>
-        <ClientForm client={editing} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+        if (formIsDirty) {
+          if (confirm("You have unsaved changes. Discard changes and close?")) {
+            proceed();
+          }
+        } else {
+          proceed();
+        }
+      }} title={editing?t("edit")+" "+t("nav_clients"):t("newClient")}>
+        <ClientForm client={editing} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onDirtyChange={setFormIsDirty}/>
       </Modal>
 
       <Modal open={!!paymentClient} onClose={()=>{setPaymentClient(null);setEditingPayment(null);}} title={(editingPayment?"Edit Payment — ":"Receive Payment — ")+(paymentClient?.name||"")} wide>
@@ -3252,10 +3332,33 @@ const Clients = ({ data, setData }) => {
 // TARIFFS
 // ============================================================
 
-const TariffForm = ({ tariff, categories, onSave, onCancel }) => {
+const TariffForm = ({ tariff, categories, onSave, onCancel, onDirtyChange }) => {
   const t = useT();
-  const [f, setF] = useState(tariff || { code:"", tariffCode:"", description:"", descriptionAFR:"", category:"", price:"", unit:"each" });
+  const initialFormData = tariff || { code:"", tariffCode:"", description:"", descriptionAFR:"", category:"", price:"", unit:"each" };
+  const [f, setF] = useState(initialFormData);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
+
+  // Track if form has unsaved changes
+  const isDirty = useMemo(() => {
+    if (!tariff) {
+      // New tariff - check if any data entered
+      return f.code?.trim() !== "" ||
+             f.tariffCode?.trim() !== "" ||
+             f.description?.trim() !== "" ||
+             f.descriptionAFR?.trim() !== "" ||
+             f.category?.trim() !== "" ||
+             f.price?.toString().trim() !== "" ||
+             f.unit !== "each";
+    } else {
+      // Editing - check if anything changed
+      return JSON.stringify(f) !== JSON.stringify(initialFormData);
+    }
+  }, [f, tariff, initialFormData]);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
   return (
     <div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12,marginBottom:12}}>
@@ -3292,6 +3395,7 @@ const Tariffs = ({ data, setData }) => {
   const csvRef = useRef(null);
   const pctRef = useRef(null);
   const scopeRef = useRef(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const PCT_PRESETS = ["1","2","3","4","5","8","10","12","15","20"];
   const SCOPE_OPTIONS = [
@@ -3507,8 +3611,16 @@ const Tariffs = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?t("edit")+" "+t("newTariff"):t("newTariff")}>
-        <TariffForm tariff={editing} categories={data.categories} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+        if (formIsDirty) {
+          if (confirm("You have unsaved changes. Discard changes and close?")) {
+            proceed();
+          }
+        } else {
+          proceed();
+        }
+      }} title={editing?t("edit")+" "+t("newTariff"):t("newTariff")}>
+        <TariffForm tariff={editing} categories={data.categories} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onDirtyChange={setFormIsDirty}/>
       </Modal>
 
       <Modal open={showCat} onClose={()=>setShowCat(false)} title="Manage Categories">
@@ -3534,12 +3646,30 @@ const Tariffs = ({ data, setData }) => {
 // MACROS (Device Templates)
 // ============================================================
 
-const MacroForm = ({ macro, tariffs, onSave, onCancel }) => {
+const MacroForm = ({ macro, tariffs, onSave, onCancel, onDirtyChange }) => {
   const tr = useT();
-  const [name, setName] = useState(macro?.name || '');
-  const [codes, setCodes] = useState(macro?.codes || []);
+  const initialName = macro?.name || '';
+  const initialCodes = macro?.codes || [];
+  const [name, setName] = useState(initialName);
+  const [codes, setCodes] = useState(initialCodes);
   const [showPicker, setShowPicker] = useState(false);
   const [tSearch, setTSearch] = useState('');
+
+  // Track if form has unsaved changes
+  const isDirty = useMemo(() => {
+    if (!macro) {
+      // New macro - check if any data entered
+      return name.trim() !== '' || codes.length > 0;
+    } else {
+      // Editing - check if anything changed
+      return name !== initialName || JSON.stringify(codes) !== JSON.stringify(initialCodes);
+    }
+  }, [name, codes, macro, initialName, initialCodes]);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
 
   const addCode = (t) => { setCodes([...codes, { code: t.code, qty: 1 }]); setShowPicker(false); setTSearch(''); };
   const updateCode = (idx, k, v) => setCodes(codes.map((c, i) => i === idx ? { ...c, [k]: v } : c));
@@ -3625,6 +3755,7 @@ const Macros = ({ data, setData }) => {
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const csvRef = useRef(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
@@ -3731,8 +3862,16 @@ const Macros = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null) }} title={editing ? t("edit")+" "+t("newMacro") : t("newMacro")} wide>
-        <MacroForm macro={editing} tariffs={data.tariffs} onSave={save} onCancel={() => { setShowForm(false); setEditing(null) }} />
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null); setFormIsDirty(false); }} onCloseAttempt={(proceed) => {
+        if (formIsDirty) {
+          if (confirm("You have unsaved changes. Discard changes and close?")) {
+            proceed();
+          }
+        } else {
+          proceed();
+        }
+      }} title={editing ? t("edit")+" "+t("newMacro") : t("newMacro")} wide>
+        <MacroForm macro={editing} tariffs={data.tariffs} onSave={save} onCancel={() => { setShowForm(false); setEditing(null); setFormIsDirty(false); }} onDirtyChange={setFormIsDirty} />
       </Modal>
     </div>
   );
@@ -3947,17 +4086,42 @@ const LineItemEditor = ({ items, setItems, tariffs, macros, lang }) => {
 // ESTIMATES
 // ============================================================
 
-const EstimateForm = ({ estimate, data, onSave, onCancel }) => {
+const EstimateForm = ({ estimate, data, onSave, onCancel, onDirtyChange }) => {
   const t = useT();
   const getInitialItems = () => {
     if (estimate) return Array.isArray(estimate.items) ? estimate.items : [];
     return [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}];
   };
-  const [f, setF] = useState(estimate ? {...estimate, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 });
+  const initialFormData = estimate ? {...estimate, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), validUntil:"", notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 };
+  const [f, setF] = useState(initialFormData);
   const [lang, setLang] = useState(estimate?.lang || "en");
   const [discountEnabled, setDiscountEnabled] = useState(estimate?.discountEnabled || false);
   const [discountPercent, setDiscountPercent] = useState(estimate?.discountPercent || 15);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
+
+  // Track if form has unsaved changes
+  const isDirty = useMemo(() => {
+    if (!estimate) {
+      // New estimate - check if any data entered
+      return f.clientId !== "" ||
+             f.patientSurname?.trim() !== "" ||
+             f.patientName?.trim() !== "" ||
+             f.memberName?.trim() !== "" ||
+             f.medicalAidName?.trim() !== "" ||
+             f.medicalAidNumber?.trim() !== "" ||
+             f.notes?.trim() !== "" ||
+             (f.items?.length > 1) ||
+             (f.items?.length === 1 && f.items[0].code !== "");
+    } else {
+      // Editing - check if anything changed
+      return JSON.stringify({...f, lang, discountEnabled, discountPercent}) !== JSON.stringify({...initialFormData, lang: estimate.lang, discountEnabled: estimate.discountEnabled, discountPercent: estimate.discountPercent});
+    }
+  }, [f, lang, discountEnabled, discountPercent, estimate, initialFormData]);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
   const switchLang = (newLang) => {
     setLang(newLang);
     setF(prev => ({...prev, lang: newLang, items: (Array.isArray(prev.items) ? prev.items : []).map(item => {
@@ -4054,6 +4218,7 @@ const Estimates = ({ data, setData, setPage }) => {
   const [editing, setEditing] = useState(null);
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyingEstimate, setCopyingEstimate] = useState(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
@@ -4230,8 +4395,16 @@ const Estimates = ({ data, setData, setPage }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?`${t("edit")} Estimate #${editing.number}`:t("newEstimate")} wide>
-        <EstimateForm estimate={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+        if (formIsDirty) {
+          if (confirm("You have unsaved changes. Discard changes and close?")) {
+            proceed();
+          }
+        } else {
+          proceed();
+        }
+      }} title={editing?`${t("edit")} Estimate #${editing.number}`:t("newEstimate")} wide>
+        <EstimateForm estimate={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onDirtyChange={setFormIsDirty}/>
       </Modal>
 
       <CopyModal open={showCopyModal} onClose={()=>{setShowCopyModal(false);setCopyingEstimate(null)}} onCopy={handleCopy} type="Estimate"/>
@@ -4243,17 +4416,42 @@ const Estimates = ({ data, setData, setPage }) => {
 // INVOICES
 // ============================================================
 
-const InvoiceForm = ({ invoice, data, onSave, onCancel }) => {
+const InvoiceForm = ({ invoice, data, onSave, onCancel, onDirtyChange }) => {
   const t = useT();
   const getInitialItems = () => {
     if (invoice) return Array.isArray(invoice.items) ? invoice.items : [];
     return [{id: Math.random().toString(36).slice(2, 11), code:"", description:"", qty:1, price:0}];
   };
-  const [f, setF] = useState(invoice ? {...invoice, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 });
+  const initialFormData = invoice ? {...invoice, items: getInitialItems()} : { clientId:"", patientTitle:"", patientSurname:"", patientName:"", memberName:"", medicalAidName:"", medicalAidNumber:"", date:today(), notes:"", items:getInitialItems(), lang:"en", discountEnabled:false, discountPercent:15 };
+  const [f, setF] = useState(initialFormData);
   const [lang, setLang] = useState(invoice?.lang || "en");
   const [discountEnabled, setDiscountEnabled] = useState(invoice?.discountEnabled || false);
   const [discountPercent, setDiscountPercent] = useState(invoice?.discountPercent || 15);
   const s = (k,v) => setF(p => ({...p,[k]:v}));
+
+  // Track if form has unsaved changes
+  const isDirty = useMemo(() => {
+    if (!invoice) {
+      // New invoice - check if any data entered
+      return f.clientId !== "" ||
+             f.patientSurname?.trim() !== "" ||
+             f.patientName?.trim() !== "" ||
+             f.memberName?.trim() !== "" ||
+             f.medicalAidName?.trim() !== "" ||
+             f.medicalAidNumber?.trim() !== "" ||
+             f.notes?.trim() !== "" ||
+             (f.items?.length > 1) ||
+             (f.items?.length === 1 && f.items[0].code !== "");
+    } else {
+      // Editing - check if anything changed
+      return JSON.stringify({...f, lang, discountEnabled, discountPercent}) !== JSON.stringify({...initialFormData, lang: invoice.lang, discountEnabled: invoice.discountEnabled, discountPercent: invoice.discountPercent});
+    }
+  }, [f, lang, discountEnabled, discountPercent, invoice, initialFormData]);
+
+  // Notify parent when dirty state changes
+  useEffect(() => {
+    if (onDirtyChange) onDirtyChange(isDirty);
+  }, [isDirty, onDirtyChange]);
   const switchLang = (newLang) => {
     setLang(newLang);
     setF(prev => ({...prev, lang: newLang, items: (Array.isArray(prev.items) ? prev.items : []).map(item => {
@@ -4350,6 +4548,7 @@ const Invoices = ({ data, setData }) => {
   const [statusFilter, setStatusFilter] = useState("");
   const [showCopyModal, setShowCopyModal] = useState(false);
   const [copyingInvoice, setCopyingInvoice] = useState(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   const sorted = useMemo(() => {
     const q = search.toLowerCase();
@@ -4543,8 +4742,16 @@ const Invoices = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null)}} title={editing?`${t("edit")} Invoice #${editing.number}`:t("newInvoice")} wide>
-        <InvoiceForm invoice={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null)}}/>
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+        if (formIsDirty) {
+          if (confirm("You have unsaved changes. Discard changes and close?")) {
+            proceed();
+          }
+        } else {
+          proceed();
+        }
+      }} title={editing?`${t("edit")} Invoice #${editing.number}`:t("newInvoice")} wide>
+        <InvoiceForm invoice={editing} data={data} onSave={save} onCancel={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onDirtyChange={setFormIsDirty}/>
       </Modal>
 
       <CopyModal open={showCopyModal} onClose={()=>{setShowCopyModal(false);setCopyingInvoice(null)}} onCopy={handleCopy} type="Invoice"/>
