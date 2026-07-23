@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-07-22)
+## 🎯 PROJECT STATUS (Updated 2026-07-23)
 
-### Current Version: Desktop App v2.3.35 + Web App v2.3.35 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.31 fixed installer failure, v2.3.34 added auto-restart, v2.3.35 cleaned up UI
+### Current Version: Desktop App v2.3.36 + Web App v2.3.36 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.36 adds unsaved changes protection + arrow key navigation
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -152,12 +152,22 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Cleaner Help section for end users
   - Desktop only
 
-### Available Installers (v2.3.35)
+- ✅ **v2.3.36 Update** (July 23, 2026) — **UNSAVED CHANGES PROTECTION + ARROW KEY NAVIGATION**
+  - **Unsaved changes protection:** All forms (Estimates, Invoices, Clients, Tariffs, Macros) now warn before closing with unsaved data
+  - **Confirmation dialog:** Shows "You have unsaved changes. Discard changes and close?" when clicking overlay/X button
+  - **Smart detection:** New forms check if any field has data; edit forms detect changes from original values
+  - **Arrow key navigation:** Code dropdown supports ArrowDown/ArrowUp to navigate, Enter to confirm, Escape to close
+  - **Auto-scroll:** Highlighted dropdown item stays visible during keyboard navigation
+  - **Modal grace period:** Increased from 300ms to 1000ms for better click-to-focus behavior
+  - **Result:** Prevents accidental data loss + faster Excel-like code selection workflow
+  - Both versions
+
+### Available Installers (v2.3.36)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.35.exe` | ~77 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.36.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -173,7 +183,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.35 published** (July 22, 2026) — Auto-update fully functional with complete UX
+- ✅ **v2.3.36 published** (July 23, 2026) — Unsaved changes protection + arrow key navigation
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
 - ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
 - ✅ **Complete flow:** Blue download banner → "Restart Now" → update installs → app relaunches automatically
@@ -637,6 +647,10 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | App didn't restart after update | **Bug:** v2.3.31-33 updated successfully but user had to manually restart app. **Root cause:** oneClick installer's runAfterFinish not working. **Fix:** Added customInstall NSIS macro that explicitly launches app after installation: `Exec "$INSTDIR\${APP_EXECUTABLE_FILENAME}"`. **Result:** Complete auto-update experience - click Restart Now → update → app relaunches automatically. Desktop only. |
 | **v2.3.35 Cleanup** | **Remove Debug Button** |
 | Debug auto-update button in Help section | **Removed:** "Debug: Auto-Update Test - Check for Updates Now" button. **Reason:** Auto-update works reliably and checks automatically on startup. Button was developer-only feature that could confuse dental lab users. **Result:** Cleaner Help section UI. Desktop only. |
+| **v2.3.36 Features** | **Unsaved Changes Protection + Arrow Key Navigation** |
+| Unsaved changes protection | All forms (EstimateForm, InvoiceForm, ClientForm, TariffForm, MacroForm) now warn before closing with unsaved data. Added `isDirty` state tracking to each form using `useMemo` — compares current form state with initial values (new forms check if any field has data, edit forms detect changes from original). Added `onDirtyChange` callback prop to notify parent components. Modal component now accepts `onCloseAttempt` callback that's invoked before closing. Shows confirmation dialog: "You have unsaved changes. Discard changes and close?" when user clicks overlay or X button with dirty form. Both desktop (renderer/index.html) and web (EasyDentalLab.html) versions. Lines ~3984-4020 (EstimateForm), ~4315-4351 (InvoiceForm), ~2958-2986 (ClientForm), ~3323-3349 (TariffForm), ~3637-3665 (MacroForm). |
+| Arrow key dropdown navigation | CodeInput component now supports keyboard navigation. ArrowDown navigates to next item when dropdown open; confirms selection and adds new line when closed. ArrowUp navigates to previous item. Enter confirms selection. Escape closes dropdown. Added auto-scroll feature using `useEffect` + `dropdownRef` to keep highlighted item visible during navigation (calculates item position vs container bounds, scrolls if needed). Excel-like workflow for faster data entry. Both desktop and web versions. Lines ~1564-1687 (desktop renderer), ~1579-1733 (web app). |
+| Modal grace period increased | Changed Modal component grace period from 300ms to 1000ms. Fixes Windows click-to-focus issue where clicking app window after ALT+TAB was treated as both window activation AND overlay click, causing forms to close. Longer grace period ensures overlay clicks within 1 second of window gaining focus are ignored. Lines ~1337-1367 (desktop renderer), ~1352-1382 (web app). Both versions. |
 
 ## License System
 
