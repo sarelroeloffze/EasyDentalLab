@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-07-23)
+## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.36 + Web App v2.3.36 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.36 adds unsaved changes protection + arrow key navigation
+### Current Version: Desktop App v2.3.41 + Web App v2.3.41 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.41 fixes code dropdown highlight behavior
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -162,12 +162,27 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Prevents accidental data loss + faster Excel-like code selection workflow
   - Both versions
 
-### Available Installers (v2.3.36)
+- ✅ **v2.3.37-40 Updates** (July 23-24, 2026) — **SORTABLE TABLES + SEQUENTIAL CODE DISPLAY**
+  - **v2.3.37:** Added sortable columns (tri-state: ascending → descending → default) to all 5 pages (Invoices, Estimates, Clients, Tariffs, Macros); added bottom panels on Invoices/Estimates showing line items when row selected
+  - **v2.3.38:** Fixed dropdown positioning (left:0, z-index:1000) and visibility
+  - **v2.3.39:** Changed dropdown to show sequential codes using startsWith() with range display
+  - **v2.3.40:** Improved sequential code display using >= comparison (5 before match, 45 after)
+  - **Result:** Better data organization and code search, but dropdown still highlighted first item instead of matched code
+  - Both versions
+
+- ✅ **v2.3.41 Update** (July 24, 2026) — **DROPDOWN HIGHLIGHTS MATCHED CODE**
+  - **Problem:** Code dropdown always highlighted first item in list, not the matched code user was typing
+  - **Root cause:** Two places set hlIdx to 0 (onChange handler + useEffect on filtered.length change)
+  - **Solution:** Modified filtered useMemo to return { items, matchIdx } with calculated match position; added useEffect to update hlIdx to matchIdx when query changes; removed conflicting hlIdx=0 resets
+  - **Result:** As user types "9604", code "9604" (or closest >= "9604") is highlighted at position 5 in dropdown with context (5 codes before, 45 after); arrow keys fine-tune selection; Excel-like workflow minimizes input time
+  - Both versions
+
+### Available Installers (v2.3.41)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.36.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.41.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -183,7 +198,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.36 published** (July 23, 2026) — Unsaved changes protection + arrow key navigation
+- ✅ **v2.3.41 published** (July 24, 2026) — Code dropdown highlights matched code as you type
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
 - ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
 - ✅ **Complete flow:** Blue download banner → "Restart Now" → update installs → app relaunches automatically
@@ -651,6 +666,13 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Unsaved changes protection | All forms (EstimateForm, InvoiceForm, ClientForm, TariffForm, MacroForm) now warn before closing with unsaved data. Added `isDirty` state tracking to each form using `useMemo` — compares current form state with initial values (new forms check if any field has data, edit forms detect changes from original). Added `onDirtyChange` callback prop to notify parent components. Modal component now accepts `onCloseAttempt` callback that's invoked before closing. Shows confirmation dialog: "You have unsaved changes. Discard changes and close?" when user clicks overlay or X button with dirty form. Both desktop (renderer/index.html) and web (EasyDentalLab.html) versions. Lines ~3984-4020 (EstimateForm), ~4315-4351 (InvoiceForm), ~2958-2986 (ClientForm), ~3323-3349 (TariffForm), ~3637-3665 (MacroForm). |
 | Arrow key dropdown navigation | CodeInput component now supports keyboard navigation. ArrowDown navigates to next item when dropdown open; confirms selection and adds new line when closed. ArrowUp navigates to previous item. Enter confirms selection. Escape closes dropdown. Added auto-scroll feature using `useEffect` + `dropdownRef` to keep highlighted item visible during navigation (calculates item position vs container bounds, scrolls if needed). Excel-like workflow for faster data entry. Both desktop and web versions. Lines ~1564-1687 (desktop renderer), ~1579-1733 (web app). |
 | Modal grace period increased | Changed Modal component grace period from 300ms to 1000ms. Fixes Windows click-to-focus issue where clicking app window after ALT+TAB was treated as both window activation AND overlay click, causing forms to close. Longer grace period ensures overlay clicks within 1 second of window gaining focus are ignored. Lines ~1337-1367 (desktop renderer), ~1352-1382 (web app). Both versions. |
+| **v2.3.37-40 Updates** | **Sortable Tables + Sequential Code Display** |
+| Sortable columns | Added `SortableColumnHeader` component with tri-state sorting (ascending → descending → default order). Applied to all 5 pages: Invoices, Estimates, Clients, Tariffs, Macros. Click column header to toggle sort. Both desktop and web versions. |
+| Bottom panels on Invoices/Estimates | Added row selection + bottom panel showing line items when invoice/estimate row is clicked. Allows quick preview of what's in each document without opening edit form. Both versions. |
+| Code dropdown positioning | Fixed dropdown positioning from `right:0` to `left:0`, increased z-index from 100 to 1000. Dropdown now appears in correct position above table rows. Lines ~1789 (desktop), ~1788 (web). Both versions. |
+| Sequential code display | Changed dropdown filtering from exact match (`includes()`) to sequential display using `>=` comparison. Dropdown shows 5 codes before the match and 45 after, sorted numerically. As user types "9604", codes around 9604 appear (9600, 9601, ... 9604, ... 9650). Lines ~1631-1657 (desktop), ~1631-1666 (web). Both versions. |
+| **v2.3.41 Fix** | **Dropdown Highlights Matched Code** |
+| Code dropdown highlight behavior | Fixed CodeInput to highlight the matched code instead of always highlighting first item. Modified filtered useMemo to return `{ items, matchIdx }` where matchIdx is the position of the matched code in the list (typically position 5 since we show 5 codes before the match). Added useEffect to update hlIdx to matchIdx when query changes. Removed conflicting useEffect that reset hlIdx to 0 on filtered.length change. Removed setHlIdx(0) from onChange handler. Result: As user types "9604", code "9604" (or closest >= "9604") is highlighted at position 5 with visual context. Arrow keys fine-tune selection. Excel-like workflow minimizes input time. Lines ~1615-1667, ~1772 (desktop renderer), ~1631-1666, ~1779 (web app). Both versions. |
 
 ## License System
 
