@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.42 + Web App v2.3.42 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.42 fixes Down Arrow navigation + removes duplicate banners
+### Current Version: Desktop App v2.3.43 + Web App v2.3.43 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.43 improves code dropdown display (wider, clearer, no scrollbar)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -185,12 +185,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Original fast workflow restored - type code, press Down Arrow, go to next line; single clean green banner when update ready; Up Arrow for fine-tuning selection before confirming
   - Both versions
 
-### Available Installers (v2.3.42)
+- ✅ **v2.3.43 Update** (July 24, 2026) — **IMPROVE CODE DROPDOWN DISPLAY**
+  - **Problem:** Code dropdown didn't show full code numbers (cut off); scrollbar required mouse interaction; display not clear enough
+  - **Solution:** Increased width 360px→500px; made code numbers larger (14px) and bolder (700); hidden scrollbar via CSS (.code-dropdown::-webkit-scrollbar, scrollbarWidth:"none", msOverflowStyle:"none"); improved layout with flexbox (code + description left, price green/bold right); description truncates with ellipsis
+  - **Result:** Full code numbers visible; keyboard-only navigation (Up/Down arrows, auto-scroll works without visible scrollbar); clearer, professional display
+  - Both versions
+
+### Available Installers (v2.3.43)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.42.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.43.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -206,7 +212,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.42 published** (July 24, 2026) — Down Arrow navigation fixed + duplicate banners removed
+- ✅ **v2.3.43 published** (July 24, 2026) — Code dropdown display improved (wider, clearer, keyboard-only)
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
 - ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
 - ✅ **Complete flow:** Blue download banner → "Restart Now" → update installs → app relaunches automatically
@@ -684,6 +690,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | **v2.3.42 Fixes** | **Down Arrow Navigation + Duplicate Banners** |
 | Down Arrow navigation broken | v2.3.41 broke Down Arrow workflow - would navigate in dropdown instead of confirming and adding new line. Root cause: Down Arrow handler checked `if (open && filtered.length > 0)` - since dropdown stays open when typing, it would navigate instead of confirm. Fix: Changed Down Arrow to ALWAYS confirm highlighted code and add new line (removed conditional). Lines ~1687-1711 (desktop renderer), ~1694-1718 (web app). Result: Original fast workflow restored - type code, press Down Arrow, go to next line. Up Arrow for fine-tuning selection before confirming. Both versions. |
 | Duplicate green restart banners | Two green "Restart Now" banners showing when update ready. Root cause: Two complete update banner systems running in parallel - old `updateBanner` state (lines 6832-6851, 6942-7050) and new `updateStatus` state (lines 6665-6714, 7140-7178). Both listening to same events, both rendering banners. Fix: Removed entire old updateBanner system (state, event listeners, JSX rendering). Kept only updateStatus system. Desktop only. |
+| **v2.3.43 Update** | **Code Dropdown Display Improvements** |
+| Code dropdown visibility | Code numbers were cut off, scrollbar required mouse interaction, display not clear. Root cause: dropdown too narrow (360px), scrollbar visible, code font too small (12px), no text truncation. Fix: Increased width to 500px; made code numbers 14px/bold(700)/blue/monospace with whiteSpace:"nowrap"; hidden scrollbar with CSS (.code-dropdown::-webkit-scrollbar { display: none; }, scrollbarWidth:"none", msOverflowStyle:"none"); improved flexbox layout with description truncation (textOverflow:"ellipsis"); made price green/bold. Lines ~270 (CSS), ~1775-1790 (desktop dropdown), ~1792-1807 (web dropdown). Result: Full code numbers visible, keyboard-only navigation (auto-scroll works without visible scrollbar), clearer professional display. Both versions. |
 
 ## License System
 
