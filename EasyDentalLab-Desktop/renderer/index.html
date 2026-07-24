@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.41";
+const APP_VERSION = "2.3.42";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1687,35 +1687,30 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
 
-      if (open && filtered.length > 0) {
-        // Navigate down in dropdown
-        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
+      // Down Arrow ALWAYS confirms highlighted code and adds new line
+      const q = (query || value || "").toLowerCase().trim();
+      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
+      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+
+      if (match) {
+        onSelect(match);
+        setOpen(false);
+        setQuery("");
       } else {
-        // Dropdown closed: confirm current code + add new line + focus new code input
-        const q = (query || value || "").toLowerCase().trim();
-        let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-        if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+        setOpen(false);
+      }
 
-        if (match) {
-          onSelect(match);
-          setOpen(false);
-          setQuery("");
-        } else {
-          setOpen(false);
-        }
-
-        // Add new blank line
-        if (onAddLine) {
-          onAddLine();
-          setTimeout(() => {
-            const table = inputRef.current?.closest("table");
-            if (table) {
-              const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-              const last = allCodeInputs[allCodeInputs.length - 1];
-              if (last) last.focus();
-            }
-          }, 50);
-        }
+      // Add new blank line
+      if (onAddLine) {
+        onAddLine();
+        setTimeout(() => {
+          const table = inputRef.current?.closest("table");
+          if (table) {
+            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+            const last = allCodeInputs[allCodeInputs.length - 1];
+            if (last) last.focus();
+          }
+        }, 50);
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
@@ -6833,27 +6828,6 @@ function App() {
     return () => { delete window._flushDataNow; };
   }, [data]);
 
-  // ── Auto-Updater ─────────────────────────────────────────────────────────────
-  const [updateBanner, setUpdateBanner] = useState(null); // {type: 'downloading'|'ready'|'manual', version, url}
-
-  useEffect(() => {
-    if (!window.electronAPI) return;
-
-    // New version available — downloading
-    window.electronAPI.onUpdateAvailable((info) => {
-      setUpdateBanner({ type: 'downloading', version: info.version });
-    });
-
-    // Download complete — ready to install
-    window.electronAPI.onUpdateDownloaded((info) => {
-      setUpdateBanner({ type: 'ready', version: info.version });
-    });
-
-    // macOS manual update (unsigned, can't auto-install)
-    window.electronAPI.onUpdateAvailableManual((info) => {
-      setUpdateBanner({ type: 'manual', version: info.version, url: info.downloadUrl });
-    });
-  }, []);
 
   const renderPage = () => {
     switch(page) {
@@ -6963,117 +6937,6 @@ function App() {
             </div>
           </div>
         </div>
-
-        {/* App Update Banner */}
-        {updateBanner && (
-          <div style={{
-            background: updateBanner.type === 'ready' ? "#ecfdf5" : "#dbeafe",
-            borderBottom: updateBanner.type === 'ready' ? "1px solid #6ee7b7" : "1px solid #93c5fd",
-            padding:"12px 24px",
-            display:"flex",
-            alignItems:"center",
-            gap:12,
-            justifyContent:"space-between"
-          }}>
-            <div style={{display:"flex",alignItems:"center",gap:10,flex:1}}>
-              <SvgIcon path={updateBanner.type === 'ready' ? ICO.check : ICO.download} size={20} color={updateBanner.type === 'ready' ? "#059669" : "#2563eb"}/>
-              <div>
-                <div style={{fontSize:13,fontWeight:600,color:updateBanner.type === 'ready' ? "#065f46" : "#1e40af"}}>
-                  {updateBanner.type === 'downloading' && `🔄 Version ${updateBanner.version} is available — downloading in background...`}
-                  {updateBanner.type === 'ready' && `✅ Update ready — restart to install version ${updateBanner.version}`}
-                  {updateBanner.type === 'manual' && `⬇️ Version ${updateBanner.version} available (macOS)`}
-                </div>
-                {updateBanner.type === 'manual' && (
-                  <div style={{fontSize:12,color:"#1e3a8a",marginTop:4}}>
-                    macOS requires manual download (unsigned app)
-                  </div>
-                )}
-              </div>
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              {updateBanner.type === 'ready' && (
-                <>
-                  <button
-                    onClick={() => window.electronAPI.installUpdate()}
-                    style={{
-                      background:"#059669",
-                      color:"white",
-                      border:"none",
-                      padding:"6px 14px",
-                      borderRadius:6,
-                      fontSize:12,
-                      fontWeight:600,
-                      cursor:"pointer"
-                    }}>
-                    Restart Now
-                  </button>
-                  <button
-                    onClick={() => setUpdateBanner(null)}
-                    style={{
-                      background:"transparent",
-                      color:"#065f46",
-                      border:"1px solid #6ee7b7",
-                      padding:"6px 14px",
-                      borderRadius:6,
-                      fontSize:12,
-                      fontWeight:600,
-                      cursor:"pointer"
-                    }}>
-                    Install on Next Launch
-                  </button>
-                </>
-              )}
-              {updateBanner.type === 'manual' && (
-                <>
-                  <button
-                    onClick={() => window.open(updateBanner.url, '_blank')}
-                    style={{
-                      background:"#2563eb",
-                      color:"white",
-                      border:"none",
-                      padding:"6px 14px",
-                      borderRadius:6,
-                      fontSize:12,
-                      fontWeight:600,
-                      cursor:"pointer"
-                    }}>
-                    Download Now →
-                  </button>
-                  <button
-                    onClick={() => setUpdateBanner(null)}
-                    style={{
-                      background:"transparent",
-                      color:"#1e40af",
-                      border:"1px solid #93c5fd",
-                      padding:"6px 14px",
-                      borderRadius:6,
-                      fontSize:12,
-                      fontWeight:600,
-                      cursor:"pointer"
-                    }}>
-                    Later
-                  </button>
-                </>
-              )}
-              {updateBanner.type === 'downloading' && (
-                <button
-                  onClick={() => setUpdateBanner(null)}
-                  style={{
-                    background:"transparent",
-                    color:"#1e40af",
-                    border:"1px solid #93c5fd",
-                    padding:"6px 14px",
-                    borderRadius:6,
-                    fontSize:12,
-                    fontWeight:600,
-                    cursor:"pointer"
-                  }}>
-                  Later
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* Tariff Update Notification */}
         {data._tariffUpdateAvailable && (

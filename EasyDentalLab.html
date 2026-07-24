@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.41";
+const APP_VERSION = "2.3.42";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1702,35 +1702,30 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
 
-      if (open && filtered.length > 0) {
-        // Navigate down in dropdown
-        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
+      // Down Arrow ALWAYS confirms highlighted code and adds new line
+      const q = (query || value || "").toLowerCase().trim();
+      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
+      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+
+      if (match) {
+        onSelect(match);
+        setOpen(false);
+        setQuery("");
       } else {
-        // Dropdown closed: confirm current code + add new line + focus new code input
-        const q = (query || value || "").toLowerCase().trim();
-        let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-        if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+        setOpen(false);
+      }
 
-        if (match) {
-          onSelect(match);
-          setOpen(false);
-          setQuery("");
-        } else {
-          setOpen(false);
-        }
-
-        // Add new blank line
-        if (onAddLine) {
-          onAddLine();
-          setTimeout(() => {
-            const table = inputRef.current?.closest("table");
-            if (table) {
-              const allCodeInputs = table.querySelectorAll("input[data-field='code']");
-              const last = allCodeInputs[allCodeInputs.length - 1];
-              if (last) last.focus();
-            }
-          }, 50);
-        }
+      // Add new blank line
+      if (onAddLine) {
+        onAddLine();
+        setTimeout(() => {
+          const table = inputRef.current?.closest("table");
+          if (table) {
+            const allCodeInputs = table.querySelectorAll("input[data-field='code']");
+            const last = allCodeInputs[allCodeInputs.length - 1];
+            if (last) last.focus();
+          }
+        }, 50);
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
