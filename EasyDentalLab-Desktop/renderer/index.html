@@ -285,7 +285,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.40";
+const APP_VERSION = "2.3.41";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1612,7 +1612,8 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
 
   const handleBlur = () => { setTimeout(() => { if (ref.current && !ref.current.contains(document.activeElement)) setOpen(false); }, 150); };
 
-  const filtered = useMemo(() => {
+  // Calculate filtered list and match position
+  const { items: filtered, matchIdx } = useMemo(() => {
     const q = (query || value || "").toLowerCase().trim();
 
     // Sort tariffs by code for sequential display
@@ -1620,7 +1621,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       (a.code||"").localeCompare(b.code||"", undefined, { numeric: true })
     );
 
-    if (!q) return sortedTariffs.slice(0, 50);
+    if (!q) return { items: sortedTariffs.slice(0, 50), matchIdx: 0 };
 
     // Find position where typed code would appear in sorted list
     // (first code that is >= typed value)
@@ -1637,8 +1638,16 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     const start = Math.max(0, matchIndex - 5);
     const end = Math.min(sortedTariffs.length, start + 50);
 
-    return sortedTariffs.slice(start, end);
+    // Calculate where the match appears in the filtered list
+    const matchIdxInFiltered = Math.min(matchIndex, 5);
+
+    return { items: sortedTariffs.slice(start, end), matchIdx: matchIdxInFiltered };
   }, [tariffs, query, value]);
+
+  // Update highlight index to match position when query changes
+  React.useEffect(() => {
+    if (query) setHlIdx(matchIdx);
+  }, [query, matchIdx]);
 
   const pick = (t) => { onSelect(t); setQuery(""); setOpen(false); };
 
@@ -1728,8 +1737,6 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     }
   };
 
-  // Reset highlight when filtered list changes
-  React.useEffect(() => { setHlIdx(0); }, [filtered.length]);
 
   // Auto-scroll to keep highlighted item visible
   React.useEffect(() => {
@@ -1760,7 +1767,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         data-field="code"
         data-row={rowId}
         value={open ? query : value}
-        onChange={e => { setQuery(e.target.value); onChange(e.target.value); if (!open) setOpen(true); setHlIdx(0); }}
+        onChange={e => { setQuery(e.target.value); onChange(e.target.value); if (!open) setOpen(true); }}
         onFocus={() => { setOpen(true); setQuery(value || ""); }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
