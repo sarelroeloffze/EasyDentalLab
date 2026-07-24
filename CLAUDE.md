@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.41 + Web App v2.3.41 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.41 fixes code dropdown highlight behavior
+### Current Version: Desktop App v2.3.42 + Web App v2.3.42 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.42 fixes Down Arrow navigation + removes duplicate banners
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -175,14 +175,22 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Root cause:** Two places set hlIdx to 0 (onChange handler + useEffect on filtered.length change)
   - **Solution:** Modified filtered useMemo to return { items, matchIdx } with calculated match position; added useEffect to update hlIdx to matchIdx when query changes; removed conflicting hlIdx=0 resets
   - **Result:** As user types "9604", code "9604" (or closest >= "9604") is highlighted at position 5 in dropdown with context (5 codes before, 45 after); arrow keys fine-tune selection; Excel-like workflow minimizes input time
+  - **REGRESSION:** Broke Down Arrow navigation - see v2.3.42 fix below
   - Both versions
 
-### Available Installers (v2.3.41)
+- ✅ **v2.3.42 Update** (July 24, 2026) — **FIX DOWN ARROW NAVIGATION + REMOVE DUPLICATE BANNERS**
+  - **Problem:** v2.3.41 broke Down Arrow navigation - would navigate in dropdown instead of confirming and adding new line; also had duplicate green restart banners
+  - **Root cause:** Down Arrow handler checked `if (open)` to decide between navigating or confirming; dropdown stays open when typing, so it navigated instead of confirming
+  - **Solution:** Changed Down Arrow to ALWAYS confirm highlighted code and add new line (removed conditional dropdown navigation); removed old updateBanner system (kept only updateStatus)
+  - **Result:** Original fast workflow restored - type code, press Down Arrow, go to next line; single clean green banner when update ready; Up Arrow for fine-tuning selection before confirming
+  - Both versions
+
+### Available Installers (v2.3.42)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.41.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.42.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -198,7 +206,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- ✅ **v2.3.41 published** (July 24, 2026) — Code dropdown highlights matched code as you type
+- ✅ **v2.3.42 published** (July 24, 2026) — Down Arrow navigation fixed + duplicate banners removed
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
 - ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
 - ✅ **Complete flow:** Blue download banner → "Restart Now" → update installs → app relaunches automatically
@@ -672,7 +680,10 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Code dropdown positioning | Fixed dropdown positioning from `right:0` to `left:0`, increased z-index from 100 to 1000. Dropdown now appears in correct position above table rows. Lines ~1789 (desktop), ~1788 (web). Both versions. |
 | Sequential code display | Changed dropdown filtering from exact match (`includes()`) to sequential display using `>=` comparison. Dropdown shows 5 codes before the match and 45 after, sorted numerically. As user types "9604", codes around 9604 appear (9600, 9601, ... 9604, ... 9650). Lines ~1631-1657 (desktop), ~1631-1666 (web). Both versions. |
 | **v2.3.41 Fix** | **Dropdown Highlights Matched Code** |
-| Code dropdown highlight behavior | Fixed CodeInput to highlight the matched code instead of always highlighting first item. Modified filtered useMemo to return `{ items, matchIdx }` where matchIdx is the position of the matched code in the list (typically position 5 since we show 5 codes before the match). Added useEffect to update hlIdx to matchIdx when query changes. Removed conflicting useEffect that reset hlIdx to 0 on filtered.length change. Removed setHlIdx(0) from onChange handler. Result: As user types "9604", code "9604" (or closest >= "9604") is highlighted at position 5 with visual context. Arrow keys fine-tune selection. Excel-like workflow minimizes input time. Lines ~1615-1667, ~1772 (desktop renderer), ~1631-1666, ~1779 (web app). Both versions. |
+| Code dropdown highlight behavior | Fixed CodeInput to highlight the matched code instead of always highlighting first item. Modified filtered useMemo to return `{ items, matchIdx }` where matchIdx is the position of the matched code in the list (typically position 5 since we show 5 codes before the match). Added useEffect to update hlIdx to matchIdx when query changes. Removed conflicting useEffect that reset hlIdx to 0 on filtered.length change. Removed setHlIdx(0) from onChange handler. Result: As user types "9604", code "9604" (or closest >= "9604") is highlighted at position 5 with visual context. Arrow keys fine-tune selection. Excel-like workflow minimizes input time. Lines ~1615-1667, ~1772 (desktop renderer), ~1631-1666, ~1779 (web app). Both versions. **REGRESSION:** Broke Down Arrow navigation (fixed in v2.3.42). |
+| **v2.3.42 Fixes** | **Down Arrow Navigation + Duplicate Banners** |
+| Down Arrow navigation broken | v2.3.41 broke Down Arrow workflow - would navigate in dropdown instead of confirming and adding new line. Root cause: Down Arrow handler checked `if (open && filtered.length > 0)` - since dropdown stays open when typing, it would navigate instead of confirm. Fix: Changed Down Arrow to ALWAYS confirm highlighted code and add new line (removed conditional). Lines ~1687-1711 (desktop renderer), ~1694-1718 (web app). Result: Original fast workflow restored - type code, press Down Arrow, go to next line. Up Arrow for fine-tuning selection before confirming. Both versions. |
+| Duplicate green restart banners | Two green "Restart Now" banners showing when update ready. Root cause: Two complete update banner systems running in parallel - old `updateBanner` state (lines 6832-6851, 6942-7050) and new `updateStatus` state (lines 6665-6714, 7140-7178). Both listening to same events, both rendering banners. Fix: Removed entire old updateBanner system (state, event listeners, JSX rendering). Kept only updateStatus system. Desktop only. |
 
 ## License System
 
