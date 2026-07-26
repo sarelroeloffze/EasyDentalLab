@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.43";
+const APP_VERSION = "2.3.44";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1623,7 +1623,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       (a.code||"").localeCompare(b.code||"", undefined, { numeric: true })
     );
 
-    if (!q) return { items: sortedTariffs.slice(0, 50), matchIdx: 0 };
+    if (!q) return { items: sortedTariffs.slice(0, 100), matchIdx: 0 };
 
     // Find position where typed code would appear in sorted list
     // (first code that is >= typed value)
@@ -1633,15 +1633,15 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
 
     // If no code is >= query, show from end
     if (matchIndex < 0) {
-      matchIndex = Math.max(0, sortedTariffs.length - 50);
+      matchIndex = Math.max(0, sortedTariffs.length - 100);
     }
 
-    // Show sequential range: some before the match, then codes after
-    const start = Math.max(0, matchIndex - 5);
-    const end = Math.min(sortedTariffs.length, start + 50);
+    // Show sequential range: more codes before and after the match
+    const start = Math.max(0, matchIndex - 10);
+    const end = Math.min(sortedTariffs.length, start + 100);
 
     // Calculate where the match appears in the filtered list
-    const matchIdxInFiltered = Math.min(matchIndex, 5);
+    const matchIdxInFiltered = Math.min(matchIndex - start, 10);
 
     return { items: sortedTariffs.slice(start, end), matchIdx: matchIdxInFiltered };
   }, [tariffs, query, value]);
@@ -1774,7 +1774,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         autoComplete="off"
       />
       {open && filtered.length > 0 && (
-        <div ref={dropdownRef} className="code-dropdown" style={{position:"absolute",top:"100%",left:0,zIndex:1000,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:280,overflowY:"auto",marginTop:2,minWidth:500,scrollbarWidth:"none",msOverflowStyle:"none"}}>
+        <div ref={dropdownRef} className="code-dropdown" style={{position:"absolute",top:"100%",left:0,zIndex:1000,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:500,overflowY:"auto",marginTop:2,minWidth:500,scrollbarWidth:"none",msOverflowStyle:"none"}}>
           {filtered.map((t, idx) => (
             <div key={t.id}
               onMouseDown={(e) => { e.preventDefault(); pick(t); }}
