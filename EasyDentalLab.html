@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.45";
+const APP_VERSION = "2.3.46";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1788,8 +1788,10 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         title="Type to search codes, use ↑↓ arrows to navigate, Enter to select"
         autoComplete="off"
       />
-      {open && filtered.length > 0 && (
-        <div ref={dropdownRef} className="code-dropdown" style={{position:"absolute",top:"100%",left:0,zIndex:1000,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:600,minHeight:400,overflowY:"auto",marginTop:2,minWidth:500,scrollbarWidth:"none",msOverflowStyle:"none"}}>
+      {open && filtered.length > 0 && (() => {
+        const rect = inputRef.current?.getBoundingClientRect();
+        return (
+        <div ref={dropdownRef} className="code-dropdown" style={{position:"fixed",top:(rect?.bottom || 0) + 2,left:rect?.left || 0,zIndex:99999,background:"var(--c-surface)",border:"1px solid var(--c-border)",borderRadius:8,boxShadow:"0 12px 32px rgba(0,0,0,0.18)",maxHeight:600,minHeight:400,overflowY:"auto",minWidth:500,scrollbarWidth:"none",msOverflowStyle:"none"}}>
           {filtered.map((t, idx) => (
             <div key={t.id}
               onMouseDown={(e) => { e.preventDefault(); pick(t); }}
@@ -1804,7 +1806,8 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
     </div>
   );
 };
