@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.46";
+const APP_VERSION = "2.3.47";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -4474,7 +4474,7 @@ const Estimates = ({ data, setData, setPage }) => {
       const newTotal = refreshedItems.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
       return {
         ...prev,
-        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId:est.clientId,clientName:est.clientName,date:today(),items:refreshedItems,notes:est.notes,total:newTotal,status:"unpaid",estimateRef:est.number,patientTitle:est.patientTitle,patientSurname:est.patientSurname,patientName:est.patientName,memberName:est.memberName,medicalAidName:est.medicalAidName,medicalAidNumber:est.medicalAidNumber,lang:est.lang}],
+        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId:est.clientId,clientName:est.clientName,date:today(),items:refreshedItems,notes:est.notes,total:newTotal,status:"unpaid",estimateRef:est.number,patientTitle:est.patientTitle,patientSurname:est.patientSurname,patientName:est.patientName,memberName:est.memberName,medicalAidName:est.medicalAidName,medicalAidNumber:est.medicalAidNumber,lang:est.lang,discountEnabled:est.discountEnabled||false,discountPercent:est.discountPercent||15}],
         nextInvoiceNo: prev.nextInvoiceNo+1,
         estimates: prev.estimates.map(e => e.id===est.id ? {...e,status:"invoiced"} : e),
       };
@@ -4487,6 +4487,7 @@ const Estimates = ({ data, setData, setPage }) => {
       let refreshedItems = [];
       let patientTitle = "", patientSurname = "", patientName = "", memberName = "", medicalAidName = "", medicalAidNumber = "";
       let clientId = "", clientName = "", notes = "", lang = "en", validUntil = "";
+      let discountEnabled = false, discountPercent = 15;
 
       if (mode === "all") {
         // Copy everything
@@ -4505,6 +4506,8 @@ const Estimates = ({ data, setData, setPage }) => {
         lang = est.lang;
         notes = est.notes;
         validUntil = est.validUntil;
+        discountEnabled = est.discountEnabled || false;
+        discountPercent = est.discountPercent || 15;
       } else if (mode === "patient") {
         // Copy patient & client info only (blank line items)
         refreshedItems = [];
@@ -4517,6 +4520,8 @@ const Estimates = ({ data, setData, setPage }) => {
         medicalAidName = est.medicalAidName;
         medicalAidNumber = est.medicalAidNumber;
         lang = est.lang;
+        discountEnabled = est.discountEnabled || false;
+        discountPercent = est.discountPercent || 15;
       } else if (mode === "detail") {
         // Copy line items only (blank patient info)
         refreshedItems = est.items.map(item => {
@@ -4524,12 +4529,14 @@ const Estimates = ({ data, setData, setPage }) => {
           return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
         });
         notes = est.notes;
+        discountEnabled = est.discountEnabled || false;
+        discountPercent = est.discountPercent || 15;
       }
 
       const newTotal = refreshedItems.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
       return {
         ...prev,
-        estimates: [...prev.estimates, {id:genId(),number:prev.nextEstimateNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"draft",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,validUntil}],
+        estimates: [...prev.estimates, {id:genId(),number:prev.nextEstimateNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"draft",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,validUntil,discountEnabled,discountPercent}],
         nextEstimateNo: prev.nextEstimateNo+1,
       };
     });
@@ -4935,6 +4942,7 @@ const Invoices = ({ data, setData }) => {
       let refreshedItems = [];
       let patientTitle = "", patientSurname = "", patientName = "", memberName = "", medicalAidName = "", medicalAidNumber = "";
       let clientId = "", clientName = "", notes = "", lang = "en";
+      let discountEnabled = false, discountPercent = 15;
 
       if (mode === "all") {
         // Copy everything
@@ -4952,6 +4960,8 @@ const Invoices = ({ data, setData }) => {
         medicalAidNumber = inv.medicalAidNumber;
         lang = inv.lang;
         notes = inv.notes;
+        discountEnabled = inv.discountEnabled || false;
+        discountPercent = inv.discountPercent || 15;
       } else if (mode === "patient") {
         // Copy patient & client info only (blank line items)
         refreshedItems = [];
@@ -4964,6 +4974,8 @@ const Invoices = ({ data, setData }) => {
         medicalAidName = inv.medicalAidName;
         medicalAidNumber = inv.medicalAidNumber;
         lang = inv.lang;
+        discountEnabled = inv.discountEnabled || false;
+        discountPercent = inv.discountPercent || 15;
       } else if (mode === "detail") {
         // Copy line items only (blank patient info)
         refreshedItems = inv.items.map(item => {
@@ -4971,12 +4983,14 @@ const Invoices = ({ data, setData }) => {
           return tr ? {...item, tariffCode: tr.tariffCode||tr.code, price: tr.price} : item;
         });
         notes = inv.notes;
+        discountEnabled = inv.discountEnabled || false;
+        discountPercent = inv.discountPercent || 15;
       }
 
       const newTotal = refreshedItems.reduce((s,i) => s + (parseFloat(i.qty)||0) * (parseFloat(i.price)||0), 0);
       return {
         ...prev,
-        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"unpaid",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,claimed:false,claimedDate:null,estimateRef:null}],
+        invoices: [...prev.invoices, {id:genId(),number:prev.nextInvoiceNo,clientId,clientName,date:today(),items:refreshedItems,notes,total:newTotal,status:"unpaid",patientTitle,patientSurname,patientName,memberName,medicalAidName,medicalAidNumber,lang,claimed:false,claimedDate:null,estimateRef:null,discountEnabled,discountPercent}],
         nextInvoiceNo: prev.nextInvoiceNo+1,
       };
     });

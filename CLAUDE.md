@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.43 + Web App v2.3.43 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.43 improves code dropdown display (wider, clearer, no scrollbar)
+### Current Version: Desktop App v2.3.47 + Web App v2.3.47 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.47 preserves discount settings when copying/converting estimates & invoices
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -191,12 +191,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Full code numbers visible; keyboard-only navigation (Up/Down arrows, auto-scroll works without visible scrollbar); clearer, professional display
   - Both versions
 
-### Available Installers (v2.3.43)
+- ✅ **v2.3.47 Update** (July 28, 2026) — **DISCOUNT SETTINGS NOW PRESERVED**
+  - **Problem:** When copying an estimate/invoice or converting estimate to invoice, discount settings (discountEnabled + discountPercent) were reset to defaults instead of being preserved
+  - **Solution:** Updated `toInvoice()`, `copyEstimate()`, and `copyInvoice()` to carry over `discountEnabled` and `discountPercent` fields in all 3 copy modes (all/patient/detail)
+  - **Result:** Discount settings now preserved when duplicating or converting documents — less data re-entry for users
+  - Both versions
+
+### Available Installers (v2.3.47)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.43.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.44.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -212,6 +218,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v2.3.47 published** (July 28, 2026) — Discount settings preserved when copying/converting estimates & invoices
 - ✅ **v2.3.43 published** (July 24, 2026) — Code dropdown display improved (wider, clearer, keyboard-only)
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
 - ✅ **v2.3.34 enhancement:** Auto-restart after update = seamless experience
@@ -626,7 +633,7 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Linux installer built | `EasyDentalLab-2.0.0-arm64.AppImage` (100 MB, ARM64). Self-contained, runs on all modern distros (Ubuntu 20.04+, Fedora, Debian) without installation. Executable via `chmod +x` + `./EasyDentalLab-2.0.0-arm64.AppImage`. .deb package broken (96 bytes packaging error) — use AppImage instead. |
 | Installation guide created | `EasyDentalLab-Desktop/INSTALLERS-README.md` — complete installation instructions for Windows/macOS/Linux, system requirements, troubleshooting, SHA256 checksums, known issues, migration guide from web version. |
 | Afrikaans description bug (16 codes) | Fixed embedded CSV format for codes 9314, 9383, 9419, 9431, 9433, 9461, 9463, 9525, 9537, 9541, 9553, 9557, 9561, 9720, 9722, 9788. These had combined English+Afrikaans in Description field causing parser to misalign columns — Afrikaans selection showed price number instead of description. Split descriptions properly: English in Description column, Afrikaans in DescriptionAFR column. Added proper categories (Models, Prosthetics, Chrome Cobalt, Crown & Bridge, Material, Implants) and "each" measure. Lines 370, 423, 446, 452, 454, 469, 470, 512, 520, 523, 533, 534, 537, 600, 601, 657. |
-| Discount feature (invoices + estimates) | Added optional percentage discount (checkbox + input) to invoice and estimate forms. Default 15%, max 100%. Discount applies to subtotal BEFORE VAT calculation. Display shows: Subtotal → Discount (if enabled) → Total (incl. VAT) → VAT breakdown. Discount persisted in `discountEnabled` (boolean) and `discountPercent` (number) fields. Print/PDF output includes discount line when enabled. Convert estimate→invoice and copy functions do NOT carry over discount (fresh start). `EstimateForm` + `InvoiceForm` updated with discount UI (lines ~3765, ~3800, ~4019, ~4060). `buildDocumentHTML` (line ~1577) and `buildPDFBlob` (line ~2239) updated with discount calculation + totals table. Help sections updated for Invoices and Estimates (lines ~4510, ~4527). |
+| Discount feature (invoices + estimates) | Added optional percentage discount (checkbox + input) to invoice and estimate forms. Default 15%, max 100%. Discount applies to subtotal BEFORE VAT calculation. Display shows: Subtotal → Discount (if enabled) → Total (incl. VAT) → VAT breakdown. Discount persisted in `discountEnabled` (boolean) and `discountPercent` (number) fields. Print/PDF output includes discount line when enabled. **Discount settings now preserved**: Convert estimate→invoice and all copy functions (copyEstimate, copyInvoice) now carry over discount settings (v2.3.47+). `EstimateForm` + `InvoiceForm` updated with discount UI (lines ~3765, ~3800, ~4019, ~4060). `buildDocumentHTML` (line ~1577) and `buildPDFBlob` (line ~2239) updated with discount calculation + totals table. Help sections updated for Invoices and Estimates (lines ~4510, ~4527). |
 | Automatic version upgrade detection | Added `APP_VERSION` constant and version tracking in localStorage. On app load, `loadData()` detects version mismatch and sets `_tariffUpdateAvailable` flag. Yellow notification banner appears at top of app (dismissible) with "Update Now" button. New `reloadDefaultTariffs()` function replaces tariffs with embedded CSV. Settings page has manual "Reload Default Tariffs" button with version display. Solves localStorage cache issue when upgrading — users no longer see old tariff data after update. Lines ~288 (APP_VERSION), ~877 (loadData version check), ~945 (reloadDefaultTariffs), ~5745 (upgrade banner), ~5102 (Settings button). |
 | UI fixes: version display + Afrikaans column | Fixed sidebar version display to show `APP_VERSION` instead of hardcoded "v1.0" (line ~5751). Added Afrikaans description column to Tariffs table (line ~3364) — was missing, making Afrikaans descriptions invisible/uneditable. Fixed 9722 tariff: English "Acrylic, per denture" / Afrikaans "Akriel, per gebit" (line ~601). |
 | **v2.2.0 Features & Fixes** | **Multi-PC sync, auto-updater, save-on-close, workflow improvements** |
@@ -692,6 +699,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Duplicate green restart banners | Two green "Restart Now" banners showing when update ready. Root cause: Two complete update banner systems running in parallel - old `updateBanner` state (lines 6832-6851, 6942-7050) and new `updateStatus` state (lines 6665-6714, 7140-7178). Both listening to same events, both rendering banners. Fix: Removed entire old updateBanner system (state, event listeners, JSX rendering). Kept only updateStatus system. Desktop only. |
 | **v2.3.43 Update** | **Code Dropdown Display Improvements** |
 | Code dropdown visibility | Code numbers were cut off, scrollbar required mouse interaction, display not clear. Root cause: dropdown too narrow (360px), scrollbar visible, code font too small (12px), no text truncation. Fix: Increased width to 500px; made code numbers 14px/bold(700)/blue/monospace with whiteSpace:"nowrap"; hidden scrollbar with CSS (.code-dropdown::-webkit-scrollbar { display: none; }, scrollbarWidth:"none", msOverflowStyle:"none"); improved flexbox layout with description truncation (textOverflow:"ellipsis"); made price green/bold. Lines ~270 (CSS), ~1775-1790 (desktop dropdown), ~1792-1807 (web dropdown). Result: Full code numbers visible, keyboard-only navigation (auto-scroll works without visible scrollbar), clearer professional display. Both versions. |
+| **v2.3.47 Update** | **Discount Settings Preserved on Copy/Convert** |
+| Discount not preserved | When copying an estimate/invoice or converting estimate to invoice, discount settings (discountEnabled + discountPercent) were reset to defaults. Root cause: `toInvoice()`, `copyEstimate()`, and `copyInvoice()` did not include discount fields in the new document creation. Fix: Added `discountEnabled` and `discountPercent` to all three functions, copying the values from source document in all modes (all/patient/detail). Lines ~4468-4480 (toInvoice), ~4485-4536 (copyEstimate), ~4933-4983 (copyInvoice) in both desktop renderer and web app. Result: Discount settings now preserved when duplicating or converting documents, reducing data re-entry. Both versions. |
 
 ## License System
 
