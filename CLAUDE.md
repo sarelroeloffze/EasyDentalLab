@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.48 + Web App v2.3.48 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.48 fixes code selection + input freeze bugs
+### Current Version: Desktop App v2.3.49 + Web App v2.3.49 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.49 fixes persistent input freeze (stale dropdowns blocking inputs)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)

@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.48";
+const APP_VERSION = "2.3.49";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1358,7 +1358,7 @@ const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
   useEffect(() => {
     const handleFocus = () => {
       windowJustFocused.current = true;
-      setTimeout(() => { windowJustFocused.current = false; }, 200); // Reduced from 1000ms - was blocking legitimate clicks
+      setTimeout(() => { windowJustFocused.current = false; }, 0); // Removed grace period - was causing input freeze
     };
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
@@ -1778,6 +1778,30 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
       }
     }
   }, [hlIdx, open, filtered.length]);
+
+  // Close dropdown on scroll (prevents stale fixed-position dropdowns from blocking other inputs)
+  React.useEffect(() => {
+    if (!open) return;
+
+    const closeOnScroll = () => {
+      setOpen(false);
+      setQuery("");
+    };
+
+    // Listen for scroll on any scrollable parent
+    window.addEventListener('scroll', closeOnScroll, true);
+
+    return () => {
+      window.removeEventListener('scroll', closeOnScroll, true);
+    };
+  }, [open]);
+
+  // Cleanup: ensure dropdown closes when component unmounts
+  React.useEffect(() => {
+    return () => {
+      setOpen(false);
+    };
+  }, []);
 
   return (
     <div style={{position:"relative"}} ref={ref}>
