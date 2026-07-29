@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.53";
+const APP_VERSION = "2.3.55";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1370,6 +1370,31 @@ const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
           <button className="icon-btn" title="Close this window" onClick={handleCloseAttempt}><SvgIcon path={ICO.x} size={18}/></button>
         </div>
         <div style={{padding:"16px 24px"}}>{children}</div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================================
+// CONFIRM MODAL
+// ============================================================
+
+const ConfirmModal = ({ open, onConfirm, onCancel, title = "Confirm", message = "Are you sure?", confirmText = "Confirm", cancelText = "Cancel", danger = false }) => {
+  if (!open) return null;
+  return (
+    <div className="modal-overlay" style={{zIndex:9999}}>
+      <div className="modal-content w-full max-w-md" style={{margin:"0 16px"}}>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)"}}>
+          <h2 style={{fontSize:16,fontWeight:700,margin:0}}>{title}</h2>
+          <button className="icon-btn" title="Close" onClick={onCancel}><SvgIcon path={ICO.x} size={18}/></button>
+        </div>
+        <div style={{padding:"24px"}}>
+          <p style={{fontSize:14,color:"var(--c-text1)",marginBottom:24,lineHeight:1.5}}>{message}</p>
+          <div style={{display:"flex",gap:12,justifyContent:"flex-end"}}>
+            <button className="btn btn-secondary" onClick={onCancel}>{cancelText}</button>
+            <button className={danger ? "btn btn-danger" : "btn btn-primary"} onClick={onConfirm}>{confirmText}</button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -3419,14 +3444,16 @@ const Clients = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={async (proceed) => {
         if (formIsDirty) {
-          // Use setTimeout to let click event complete before showing confirm dialog
-          setTimeout(() => {
-            if (confirm("You have unsaved changes. Discard changes and close?")) {
-              proceed();
-            }
-          }, 0);
+          const confirmed = await window._showConfirm({
+            title: "Unsaved Changes",
+            message: "You have unsaved changes. Discard changes and close?",
+            danger: true
+          });
+          if (confirmed) {
+            proceed();
+          }
         } else {
           proceed();
         }
@@ -3788,14 +3815,16 @@ const Tariffs = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={async (proceed) => {
         if (formIsDirty) {
-          // Use setTimeout to let click event complete before showing confirm dialog
-          setTimeout(() => {
-            if (confirm("You have unsaved changes. Discard changes and close?")) {
-              proceed();
-            }
-          }, 0);
+          const confirmed = await window._showConfirm({
+            title: "Unsaved Changes",
+            message: "You have unsaved changes. Discard changes and close?",
+            danger: true
+          });
+          if (confirmed) {
+            proceed();
+          }
         } else {
           proceed();
         }
@@ -4082,14 +4111,16 @@ const Macros = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null); setFormIsDirty(false); }} onCloseAttempt={(proceed) => {
+      <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null); setFormIsDirty(false); }} onCloseAttempt={async (proceed) => {
         if (formIsDirty) {
-          // Use setTimeout to let click event complete before showing confirm dialog
-          setTimeout(() => {
-            if (confirm("You have unsaved changes. Discard changes and close?")) {
-              proceed();
-            }
-          }, 0);
+          const confirmed = await window._showConfirm({
+            title: "Unsaved Changes",
+            message: "You have unsaved changes. Discard changes and close?",
+            danger: true
+          });
+          if (confirmed) {
+            proceed();
+          }
         } else {
           proceed();
         }
@@ -4675,7 +4706,7 @@ const Estimates = ({ data, setData, setPage }) => {
                           <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                           <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(e)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                           <button className="icon-btn" title="Edit this estimate" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                          <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{setTimeout(()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))},0)}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                          <button className="icon-btn" title="Delete this estimate permanently" onClick={async ()=>{const confirmed=await window._showConfirm({title:"Delete Estimate",message:"Are you sure you want to delete this estimate?",danger:true});if(confirmed)setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                         </div>
                       </td>
                     </tr>
@@ -4720,14 +4751,16 @@ const Estimates = ({ data, setData, setPage }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={async (proceed) => {
         if (formIsDirty) {
-          // Use setTimeout to let click event complete before showing confirm dialog
-          setTimeout(() => {
-            if (confirm("You have unsaved changes. Discard changes and close?")) {
-              proceed();
-            }
-          }, 0);
+          const confirmed = await window._showConfirm({
+            title: "Unsaved Changes",
+            message: "You have unsaved changes. Discard changes and close?",
+            danger: true
+          });
+          if (confirmed) {
+            proceed();
+          }
         } else {
           proceed();
         }
@@ -5136,7 +5169,7 @@ const Invoices = ({ data, setData }) => {
                           <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                           <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(inv)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                           <button className="icon-btn" title="Edit this invoice" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                          <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{setTimeout(()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))},0)}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                          <button className="icon-btn" title="Delete this invoice permanently" onClick={async ()=>{const confirmed=await window._showConfirm({title:"Delete Invoice",message:"Are you sure you want to delete this invoice?",danger:true});if(confirmed)setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                         </div>
                       </td>
                     </tr>
@@ -5181,14 +5214,16 @@ const Invoices = ({ data, setData }) => {
         </div>
       )}
 
-      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
+      <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={async (proceed) => {
         if (formIsDirty) {
-          // Use setTimeout to let click event complete before showing confirm dialog
-          setTimeout(() => {
-            if (confirm("You have unsaved changes. Discard changes and close?")) {
-              proceed();
-            }
-          }, 0);
+          const confirmed = await window._showConfirm({
+            title: "Unsaved Changes",
+            message: "You have unsaved changes. Discard changes and close?",
+            danger: true
+          });
+          if (confirmed) {
+            proceed();
+          }
         } else {
           proceed();
         }
@@ -6624,6 +6659,28 @@ function App() {
     localStorage.setItem("edl_ui_lang", next);
   };
 
+  // ── Global Confirm Modal ─────────────────────────────────────────────────────
+  const [confirmModal, setConfirmModal] = useState(null); // { title, message, onConfirm, onCancel, danger }
+  const showConfirm = ({ title = "Confirm", message = "Are you sure?", danger = false }) => {
+    return new Promise((resolve) => {
+      setConfirmModal({
+        title,
+        message,
+        danger,
+        onConfirm: () => {
+          setConfirmModal(null);
+          resolve(true);
+        },
+        onCancel: () => {
+          setConfirmModal(null);
+          resolve(false);
+        },
+      });
+    });
+  };
+  // Make showConfirm available globally for child components
+  window._showConfirm = showConfirm;
+
   // ── Backup Toast Notifications ──────────────────────────────────────────────
   const [backupToast, setBackupToast] = useState(null); // {message, type: "error"|"success"}
   useEffect(() => {
@@ -6861,6 +6918,18 @@ function App() {
         }}>
           {backupToast.message}
         </div>
+      )}
+
+      {/* Global Confirm Modal */}
+      {confirmModal && (
+        <ConfirmModal
+          open={true}
+          onConfirm={confirmModal.onConfirm}
+          onCancel={confirmModal.onCancel}
+          title={confirmModal.title}
+          message={confirmModal.message}
+          danger={confirmModal.danger}
+        />
       )}
     </div>
     </LangContext.Provider>
