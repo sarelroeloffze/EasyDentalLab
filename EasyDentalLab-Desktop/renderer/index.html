@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.51";
+const APP_VERSION = "2.3.52";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -3415,9 +3415,12 @@ const Clients = ({ data, setData }) => {
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
         if (formIsDirty) {
-          if (confirm("You have unsaved changes. Discard changes and close?")) {
-            proceed();
-          }
+          // Use setTimeout to let click event complete before showing confirm dialog
+          setTimeout(() => {
+            if (confirm("You have unsaved changes. Discard changes and close?")) {
+              proceed();
+            }
+          }, 0);
         } else {
           proceed();
         }
@@ -3781,9 +3784,12 @@ const Tariffs = ({ data, setData }) => {
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
         if (formIsDirty) {
-          if (confirm("You have unsaved changes. Discard changes and close?")) {
-            proceed();
-          }
+          // Use setTimeout to let click event complete before showing confirm dialog
+          setTimeout(() => {
+            if (confirm("You have unsaved changes. Discard changes and close?")) {
+              proceed();
+            }
+          }, 0);
         } else {
           proceed();
         }
@@ -4072,9 +4078,12 @@ const Macros = ({ data, setData }) => {
 
       <Modal open={showForm} onClose={() => { setShowForm(false); setEditing(null); setFormIsDirty(false); }} onCloseAttempt={(proceed) => {
         if (formIsDirty) {
-          if (confirm("You have unsaved changes. Discard changes and close?")) {
-            proceed();
-          }
+          // Use setTimeout to let click event complete before showing confirm dialog
+          setTimeout(() => {
+            if (confirm("You have unsaved changes. Discard changes and close?")) {
+              proceed();
+            }
+          }, 0);
         } else {
           proceed();
         }
@@ -4722,9 +4731,12 @@ const Estimates = ({ data, setData, setPage }) => {
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
         if (formIsDirty) {
-          if (confirm("You have unsaved changes. Discard changes and close?")) {
-            proceed();
-          }
+          // Use setTimeout to let click event complete before showing confirm dialog
+          setTimeout(() => {
+            if (confirm("You have unsaved changes. Discard changes and close?")) {
+              proceed();
+            }
+          }, 0);
         } else {
           proceed();
         }
@@ -5190,9 +5202,12 @@ const Invoices = ({ data, setData }) => {
 
       <Modal open={showForm} onClose={()=>{setShowForm(false);setEditing(null);setFormIsDirty(false);}} onCloseAttempt={(proceed) => {
         if (formIsDirty) {
-          if (confirm("You have unsaved changes. Discard changes and close?")) {
-            proceed();
-          }
+          // Use setTimeout to let click event complete before showing confirm dialog
+          setTimeout(() => {
+            if (confirm("You have unsaved changes. Discard changes and close?")) {
+              proceed();
+            }
+          }, 0);
         } else {
           proceed();
         }
