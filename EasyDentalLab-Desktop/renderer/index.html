@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.55";
+const APP_VERSION = "2.3.56";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1663,10 +1663,13 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
 
   // Confirm current code and move to qty field (skip description since it's auto-filled)
   const confirmAndMoveToQty = () => {
-    const q = (query || value || "").toLowerCase().trim();
-    let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-    if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-    if (match) { pick(match); }
+    // Only pick a new code if value isn't already set (from click/previous selection)
+    if (!value || value.trim() === "") {
+      const q = (query || value || "").toLowerCase().trim();
+      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
+      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
+      if (match) { pick(match); }
+    }
     setOpen(false);
     // Move focus to qty input in same row
     setTimeout(() => {
