@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.49";
+const APP_VERSION = "2.3.50";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1352,18 +1352,6 @@ const ICO = {
 // ============================================================
 
 const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
-  const windowJustFocused = useRef(false);
-
-  // Track window focus to prevent accidental overlay clicks when window regains focus
-  useEffect(() => {
-    const handleFocus = () => {
-      windowJustFocused.current = true;
-      setTimeout(() => { windowJustFocused.current = false; }, 0); // Removed grace period - was causing input freeze
-    };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
-
   const handleCloseAttempt = () => {
     // If parent provides onCloseAttempt, call it first (can prevent close or show confirmation)
     if (onCloseAttempt) {
@@ -1375,13 +1363,8 @@ const Modal = ({ open, onClose, onCloseAttempt, title, wide, children }) => {
 
   if (!open) return null;
   return (
-    <div className="modal-overlay" onClick={e => {
-      // Only close if clicking directly on overlay background AND window wasn't just focused
-      if (e.target.classList.contains('modal-overlay') && !windowJustFocused.current) {
-        handleCloseAttempt();
-      }
-    }}>
-      <div className={"modal-content " + (wide ? "w-full max-w-4xl" : "w-full max-w-lg")} style={{margin:"0 16px"}} onClick={e => e.stopPropagation()}>
+    <div className="modal-overlay">
+      <div className={"modal-content " + (wide ? "w-full max-w-4xl" : "w-full max-w-lg")} style={{margin:"0 16px"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"16px 24px",borderBottom:"1px solid var(--c-border)",position:"sticky",top:0,background:"var(--c-surface)",borderRadius:"12px 12px 0 0",zIndex:10}}>
           <h2 style={{fontSize:16,fontWeight:700,margin:0}}>{title}</h2>
           <button className="icon-btn" title="Close this window" onClick={handleCloseAttempt}><SvgIcon path={ICO.x} size={18}/></button>
