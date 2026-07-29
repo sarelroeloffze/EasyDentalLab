@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.52";
+const APP_VERSION = "2.3.53";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -3778,7 +3778,7 @@ const Tariffs = ({ data, setData }) => {
                   <td style={{padding:"8px 8px"}}>
                     <div style={{display:"flex",gap:2,justifyContent:"flex-end"}}>
                       <button className="icon-btn" title="Edit this tariff code and price" onClick={()=>{setEditing(t);setShowForm(true)}}><SvgIcon path={ICO.edit} size={14} color="#6b7280"/></button>
-                      <button className="icon-btn" title="Delete this tariff code" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,tariffs:prev.tariffs.filter(x=>x.id!==t.id)}))}}><SvgIcon path={ICO.trash} size={14} color="#ef4444"/></button>
+                      <button className="icon-btn" title="Delete this tariff code" onClick={()=>{setTimeout(()=>{if(confirm("Delete?"))setData(prev=>({...prev,tariffs:prev.tariffs.filter(x=>x.id!==t.id)}))},0)}}><SvgIcon path={ICO.trash} size={14} color="#ef4444"/></button>
                     </div>
                   </td>
                 </tr>
@@ -4071,7 +4071,7 @@ const Macros = ({ data, setData }) => {
                     <td style={{padding:"10px 16px",textAlign:"right"}}>
                       <div style={{display:"flex",gap:2,alignItems:"center",justifyContent:"flex-end"}} onClick={e=>e.stopPropagation()}>
                         <button className="icon-btn" title="Edit this macro — change name, add/remove codes, adjust quantities" onClick={() => { setEditing(m); setShowForm(true) }}><SvgIcon path={ICO.edit} size={15} color="#6b7280" /></button>
-                        <button className="icon-btn" title="Delete this macro permanently" onClick={() => { if (confirm("Delete this macro?")) setData(prev => ({ ...prev, macros: prev.macros.filter(x => x.id !== m.id) })) }}><SvgIcon path={ICO.trash} size={15} color="#ef4444" /></button>
+                        <button className="icon-btn" title="Delete this macro permanently" onClick={() => { setTimeout(() => { if (confirm("Delete this macro?")) setData(prev => ({ ...prev, macros: prev.macros.filter(x => x.id !== m.id) })) }, 0) }}><SvgIcon path={ICO.trash} size={15} color="#ef4444" /></button>
                       </div>
                     </td>
                   </tr>
@@ -4675,7 +4675,7 @@ const Estimates = ({ data, setData, setPage }) => {
                           <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={()=>openCopyModal(e)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                           <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(e)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                           <button className="icon-btn" title="Edit this estimate" onClick={()=>{setEditing(e);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                          <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                          <button className="icon-btn" title="Delete this estimate permanently" onClick={()=>{setTimeout(()=>{if(confirm("Delete?"))setData(prev=>({...prev,estimates:prev.estimates.filter(x=>x.id!==e.id)}))},0)}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                         </div>
                       </td>
                     </tr>
@@ -5136,7 +5136,7 @@ const Invoices = ({ data, setData }) => {
                           <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={()=>openCopyModal(inv)}><SvgIcon path={ICO.copy} size={15} color="#6b7280"/></button>
                           <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={()=>saveAsMacro(inv)}><SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6"/></button>
                           <button className="icon-btn" title="Edit this invoice" onClick={()=>{setEditing(inv);setShowForm(true)}}><SvgIcon path={ICO.edit} size={15} color="#6b7280"/></button>
-                          <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
+                          <button className="icon-btn" title="Delete this invoice permanently" onClick={()=>{setTimeout(()=>{if(confirm("Delete?"))setData(prev=>({...prev,invoices:prev.invoices.filter(x=>x.id!==inv.id)}))},0)}}><SvgIcon path={ICO.trash} size={15} color="#ef4444"/></button>
                         </div>
                       </td>
                     </tr>
