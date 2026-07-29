@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-07-24)
 
-### Current Version: Desktop App v2.3.47 + Web App v2.3.47 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.47 preserves discount settings when copying/converting estimates & invoices
+### Current Version: Desktop App v2.3.48 + Web App v2.3.48 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.48 fixes code selection + input freeze bugs
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -197,12 +197,20 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Discount settings now preserved when duplicating or converting documents — less data re-entry for users
   - Both versions
 
-### Available Installers (v2.3.47)
+- ✅ **v2.3.48 Update** (July 29, 2026) — **FIX CODE SELECTION + INPUT FREEZE BUGS**
+  - **Problem 1:** When typing a code to navigate dropdown, then clicking a different code and pressing Down Arrow, it selected the typed code instead of the clicked code (stale hlIdx issue)
+  - **Solution 1:** Modified Down Arrow handler to check if value is already set before using hlIdx; added `setHlIdx(idx)` to onMouseDown handler so clicks update hlIdx immediately
+  - **Problem 2:** After using the app for a while, input fields (surname, name, etc.) became uneditable - clicking inside them did nothing
+  - **Solution 2:** Reduced `windowJustFocused` grace period from 1000ms to 200ms - the long timeout was blocking legitimate clicks on form inputs
+  - **Result:** Code selection now works correctly when clicking then pressing Down Arrow; form inputs remain editable throughout entire session
+  - Both versions
+
+### Available Installers (v2.3.48)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.44.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.48.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -218,6 +226,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v2.3.48 published** (July 29, 2026) — Fixed code selection bug (Down Arrow after click) + input freeze bug (windowJustFocused timeout)
 - ✅ **v2.3.47 published** (July 28, 2026) — Discount settings preserved when copying/converting estimates & invoices
 - ✅ **v2.3.43 published** (July 24, 2026) — Code dropdown display improved (wider, clearer, keyboard-only)
 - ✅ **v2.3.31 breakthrough:** Manual directory deletion before install = no uninstall errors
@@ -701,6 +710,9 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Code dropdown visibility | Code numbers were cut off, scrollbar required mouse interaction, display not clear. Root cause: dropdown too narrow (360px), scrollbar visible, code font too small (12px), no text truncation. Fix: Increased width to 500px; made code numbers 14px/bold(700)/blue/monospace with whiteSpace:"nowrap"; hidden scrollbar with CSS (.code-dropdown::-webkit-scrollbar { display: none; }, scrollbarWidth:"none", msOverflowStyle:"none"); improved flexbox layout with description truncation (textOverflow:"ellipsis"); made price green/bold. Lines ~270 (CSS), ~1775-1790 (desktop dropdown), ~1792-1807 (web dropdown). Result: Full code numbers visible, keyboard-only navigation (auto-scroll works without visible scrollbar), clearer professional display. Both versions. |
 | **v2.3.47 Update** | **Discount Settings Preserved on Copy/Convert** |
 | Discount not preserved | When copying an estimate/invoice or converting estimate to invoice, discount settings (discountEnabled + discountPercent) were reset to defaults. Root cause: `toInvoice()`, `copyEstimate()`, and `copyInvoice()` did not include discount fields in the new document creation. Fix: Added `discountEnabled` and `discountPercent` to all three functions, copying the values from source document in all modes (all/patient/detail). Lines ~4468-4480 (toInvoice), ~4485-4536 (copyEstimate), ~4933-4983 (copyInvoice) in both desktop renderer and web app. Result: Discount settings now preserved when duplicating or converting documents, reducing data re-entry. Both versions. |
+| **v2.3.48 Update** | **Code Selection + Input Freeze Bugs Fixed** |
+| Wrong code selected on Down Arrow | When typing a code to navigate dropdown (e.g., "9600"), then clicking a different code (e.g., "9610") and pressing Down Arrow, it selected the originally typed code ("9604") instead of the clicked code. Root cause: Down Arrow handler used stale `hlIdx` (highlighted index) instead of checking if value was already set by click. Also, onMouseDown didn't update hlIdx before calling pick(). Fix: Modified Down Arrow handler to check `if (!value \|\| value.trim() === "")` before using hlIdx - if value already set (from click), just close dropdown without re-selecting. Added `setHlIdx(idx)` to onMouseDown handler so clicks update hlIdx immediately. Lines ~1689-1720 (CodeInput ArrowDown handler), ~1782 (onMouseDown) in both desktop renderer and web app. Result: Clicking a code then pressing Down Arrow now correctly adds the clicked code, not the typed/highlighted code. Both versions. |
+| Form inputs become uneditable | After using app for a while (copying estimates, entering invoices), input fields (surname, name, medical aid) became uneditable - clicking inside them did nothing, couldn't change text. Works fine on fresh app launch but breaks after repeated use. Root cause: Modal component's `windowJustFocused` grace period was set to 1000ms (v2.3.36 increased it from 300ms). This long timeout was blocking legitimate clicks on form inputs - the grace period is meant to prevent accidental overlay clicks when regaining window focus, but 1000ms is too long and was interfering with normal input interaction. Fix: Reduced `windowJustFocused` timeout from 1000ms back to 200ms - enough to prevent accidental overlay clicks but short enough to not block legitimate form input clicks. Line ~1346 (Modal component) in both desktop renderer and web app. Result: Form inputs remain fully editable throughout entire session, even after many operations. Both versions. |
 
 ## License System
 
