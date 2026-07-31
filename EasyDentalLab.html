@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.57";
+const APP_VERSION = "2.3.58";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1716,26 +1716,17 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     } else if (e.key === "ArrowDown") {
       e.preventDefault();
 
-      // Down Arrow ALWAYS confirms current selection and adds new line
-      // Use current value if set (from click/previous selection), otherwise use highlighted item
-      if (!value || value.trim() === "") {
-        // No value set yet - use highlighted item from dropdown
-        const q = (query || value || "").toLowerCase().trim();
+      // Down Arrow confirms current selection and adds new line
+      const q = (query || value || "").toLowerCase().trim();
+      if (q) {
         let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
         if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-
         if (match) {
           onSelect(match);
-          setOpen(false);
-          setQuery("");
-        } else {
-          setOpen(false);
         }
-      } else {
-        // Value already set (e.g. from clicking) - just close dropdown
-        setOpen(false);
-        setQuery("");
       }
+      setOpen(false);
+      setQuery("");
 
       // Add new blank line
       if (onAddLine) {
