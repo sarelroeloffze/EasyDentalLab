@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-07-24)
+## 🎯 PROJECT STATUS (Updated 2026-09-03)
 
-### Current Version: Desktop App v2.3.49 + Web App v2.3.49 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.49 fixes persistent input freeze (stale dropdowns blocking inputs)
+### Current Version: Desktop App v2.3.59 + Web App v2.3.59 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.59 fixes code selection bug (clicked code not registering)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -205,12 +205,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Code selection now works correctly when clicking then pressing Down Arrow; form inputs remain editable throughout entire session
   - Both versions
 
-### Available Installers (v2.3.48)
+- ✅ **v2.3.59 Update** (September 3, 2026) — **FIX CLICKED CODE NOT REGISTERING**
+  - **Problem:** When typing a code (e.g., "9600") to navigate dropdown, then clicking a different code (e.g., "9602"), the typed code appeared on invoice instead of the clicked code
+  - **Root cause:** Input's onChange handler called parent's onChange on every keystroke, setting item.code to typed value; when user clicked different code, onSelect was called but typed value had already been saved
+  - **Solution:** Removed onChange call from input's onChange handler (line 1806/1821) — typing now only updates local query state; onSelect handles all code updates when user clicks or confirms; added blur handler to auto-select matching code if user types exact code and tabs away
+  - **Result:** Clicking a code from dropdown now correctly registers that code on invoice/estimate, not the typed search query
+  - Both versions
+
+### Available Installers (v2.3.59)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.48.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.2.3.59.exe` | ~73 MB | x64 (Intel/AMD) |
 | **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
 | **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
 
@@ -226,6 +233,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v2.3.59 published** (September 3, 2026) — Fixed code selection bug (clicked code not registering when typing then clicking different code)
 - ✅ **v2.3.48 published** (July 29, 2026) — Fixed code selection bug (Down Arrow after click) + input freeze bug (windowJustFocused timeout)
 - ✅ **v2.3.47 published** (July 28, 2026) — Discount settings preserved when copying/converting estimates & invoices
 - ✅ **v2.3.43 published** (July 24, 2026) — Code dropdown display improved (wider, clearer, keyboard-only)
@@ -713,6 +721,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | **v2.3.48 Update** | **Code Selection + Input Freeze Bugs Fixed** |
 | Wrong code selected on Down Arrow | When typing a code to navigate dropdown (e.g., "9600"), then clicking a different code (e.g., "9610") and pressing Down Arrow, it selected the originally typed code ("9604") instead of the clicked code. Root cause: Down Arrow handler used stale `hlIdx` (highlighted index) instead of checking if value was already set by click. Also, onMouseDown didn't update hlIdx before calling pick(). Fix: Modified Down Arrow handler to check `if (!value \|\| value.trim() === "")` before using hlIdx - if value already set (from click), just close dropdown without re-selecting. Added `setHlIdx(idx)` to onMouseDown handler so clicks update hlIdx immediately. Lines ~1689-1720 (CodeInput ArrowDown handler), ~1782 (onMouseDown) in both desktop renderer and web app. Result: Clicking a code then pressing Down Arrow now correctly adds the clicked code, not the typed/highlighted code. Both versions. |
 | Form inputs become uneditable | After using app for a while (copying estimates, entering invoices), input fields (surname, name, medical aid) became uneditable - clicking inside them did nothing, couldn't change text. Works fine on fresh app launch but breaks after repeated use. Root cause: Modal component's `windowJustFocused` grace period was set to 1000ms (v2.3.36 increased it from 300ms). This long timeout was blocking legitimate clicks on form inputs - the grace period is meant to prevent accidental overlay clicks when regaining window focus, but 1000ms is too long and was interfering with normal input interaction. Fix: Reduced `windowJustFocused` timeout from 1000ms back to 200ms - enough to prevent accidental overlay clicks but short enough to not block legitimate form input clicks. Line ~1346 (Modal component) in both desktop renderer and web app. Result: Form inputs remain fully editable throughout entire session, even after many operations. Both versions. |
+| **v2.3.59 Update** | **Clicked Code Not Registering** |
+| Clicked code not applied to invoice | When typing a code to navigate dropdown (e.g., "9600"), then clicking a different code from the filtered list (e.g., "9602"), the typed code "9600" appeared on the invoice instead of the clicked code "9602". Root cause: Input's onChange handler called parent's onChange on every keystroke, setting item.code to the typed value; when user clicked a different code, onSelect was called but the typed value had already been saved to parent state. Fix: Removed `onChange(e.target.value)` call from input's onChange handler (line 1806 desktop, 1821 web) - typing now only updates local query state; onSelect handles ALL code updates when user clicks or confirms a selection. Added enhanced blur handler that auto-selects exact code match when user types and tabs away without clicking. Lines ~1623 (handleBlur desktop), ~1639 (handleBlur web), ~1806 (input onChange desktop), ~1821 (input onChange web). Result: Clicking a code from dropdown now correctly registers that code on invoice/estimate, not the typed search query. Both versions. |
 
 ## License System
 

@@ -287,7 +287,7 @@ const useT = () => {
 // DATA & UTILITIES
 // ============================================================
 
-const APP_VERSION = "2.3.58";
+const APP_VERSION = "2.3.59";
 const SUPPORT_WHATSAPP = "27832591561";       // Sarel's WhatsApp number
 const SUPPORT_EMAIL    = "sarel@roeloffze.com";
 
@@ -1636,7 +1636,22 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
   const inputRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  const handleBlur = () => { setTimeout(() => { if (ref.current && !ref.current.contains(document.activeElement)) setOpen(false); }, 150); };
+  const handleBlur = () => {
+    setTimeout(() => {
+      if (ref.current && !ref.current.contains(document.activeElement)) {
+        // If user typed a value but didn't select from dropdown, try to find and select the matching code
+        const q = query.trim().toLowerCase();
+        if (q && q !== (value || "").toLowerCase()) {
+          const match = tariffs.find(t => (t.code || "").toLowerCase() === q);
+          if (match) {
+            onSelect(match);
+          }
+        }
+        setOpen(false);
+        setQuery("");
+      }
+    }, 150);
+  };
 
   const { items: filtered, matchIdx } = useMemo(() => {
     const q = (query || value || "").toLowerCase().trim();
@@ -1818,7 +1833,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         data-field="code"
         data-row={rowId}
         value={open ? query : value}
-        onChange={e => { setQuery(e.target.value); onChange(e.target.value); if (!open) setOpen(true); }}
+        onChange={e => { setQuery(e.target.value); if (!open) setOpen(true); }}
         onFocus={() => { setOpen(true); setQuery(value || ""); }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
