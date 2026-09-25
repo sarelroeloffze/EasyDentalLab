@@ -163,7 +163,6 @@ export interface ElectronAPI {
   readBackupFile: (filename: string) => Promise<{ success: boolean; content?: string; error?: string }>;
   openExternal: (url: string) => Promise<void>;
   flushDataNow: () => Promise<void>;
-  onFolderSynced: (callback: () => void) => void;
   onMainProcessLog: (callback: (message: string) => void) => void;
   onUpdateAvailable: (callback: (version: string) => void) => void;
   onUpdateDownloaded: (callback: () => void) => void;

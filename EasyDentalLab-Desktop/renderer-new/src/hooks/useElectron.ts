@@ -34,20 +34,9 @@ export function useElectron() {
   // Load backup folder path on mount
   useEffect(() => {
     if (!api) return;
-    
+
     api.getBackupFolder().then(result => {
       setBackupFolderPath(result.path);
-    });
-  }, [api]);
-
-  // Listen for folder sync events
-  useEffect(() => {
-    if (!api) return;
-    
-    api.onFolderSynced(() => {
-      console.log('📁 Folder synced event received');
-      // Trigger data reload
-      window.location.reload();
     });
   }, [api]);
 
