@@ -24,6 +24,26 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
     return id;
   };
 
+  const consolidateItems = (currentItems: LineItem[], newItems: LineItem[]): LineItem[] => {
+    const consolidated = [...currentItems];
+    newItems.forEach(newItem => {
+      const existingIndex = consolidated.findIndex(existing => existing.code === newItem.code);
+      if (existingIndex >= 0) {
+        // Duplicate found - add quantities, update price/description to latest
+        consolidated[existingIndex] = {
+          ...consolidated[existingIndex],
+          qty: (parseFloat(String(consolidated[existingIndex].qty)) || 0) + (parseFloat(String(newItem.qty)) || 0),
+          price: newItem.price,
+          description: newItem.description,
+          tariffCode: newItem.tariffCode
+        };
+      } else {
+        consolidated.push(newItem);
+      }
+    });
+    return consolidated;
+  };
+
   const addTariff = (t: Tariff) => {
     const newItem: LineItem = {
       id: genId(),
@@ -33,7 +53,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       qty: 1,
       price: t.price
     };
-    setItems(prev => [...prev, newItem]);
+    setItems(prev => consolidateItems(prev, [newItem]));
     setShowPicker(false);
     setTSearch("");
   };
@@ -50,7 +70,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
         price: t?.price || 0
       };
     });
-    setItems(prev => [...prev, ...newItems]);
+    setItems(prev => consolidateItems(prev, newItems));
     setShowMacroPicker(false);
     setMSearch("");
   };

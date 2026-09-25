@@ -98,14 +98,6 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
   const vatAmount = vatRate > 0 ? afterDiscount * (vatRate / 100) / (1 + vatRate / 100) : 0;
   const total = afterDiscount;
 
-  // Auto-focus first code input when form opens
-  useEffect(() => {
-    setTimeout(() => {
-      const firstCodeInput = document.querySelector('input[data-field="code"]') as HTMLInputElement;
-      if (firstCodeInput) firstCodeInput.focus();
-    }, 100);
-  }, []);
-
   return (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 16 }}>

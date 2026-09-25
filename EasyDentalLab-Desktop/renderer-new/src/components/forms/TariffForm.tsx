@@ -11,7 +11,11 @@ interface TariffFormProps {
 }
 
 export function TariffForm({ tariff, onSave, onCancel, onDirtyChange, categories }: TariffFormProps) {
-  const initialFormData = tariff || {
+  const initialFormData = tariff ? {
+    ...tariff,
+    tariffCode: tariff.tariffCode || "",
+    descriptionAFR: tariff.descriptionAFR || ""
+  } : {
     code: "",
     tariffCode: "",
     description: "",

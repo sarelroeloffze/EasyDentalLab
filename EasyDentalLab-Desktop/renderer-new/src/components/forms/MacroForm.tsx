@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Macro, Tariff } from '../../types';
+import type { Macro } from '../../types';
 import { Input } from '../ui';
 import { genId } from '../../utils/helpers';
 
@@ -8,7 +8,6 @@ interface MacroFormProps {
   onSave: (formData: any) => void;
   onCancel: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
-  tariffs: Tariff[];
 }
 
 interface MacroCode {
@@ -17,7 +16,7 @@ interface MacroCode {
   qty: number;
 }
 
-export function MacroForm({ macro, onSave, onCancel, onDirtyChange, tariffs }: MacroFormProps) {
+export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormProps) {
   const getInitialCodes = (): MacroCode[] => {
     if (macro && Array.isArray(macro.codes)) {
       return macro.codes.map(c => ({ id: genId(), code: c.code, qty: c.qty }));

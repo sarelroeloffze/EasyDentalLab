@@ -150,7 +150,6 @@ export function Macros({ data, setData }: MacrosProps) {
             setFormIsDirty(false);
           }}
           onDirtyChange={setFormIsDirty}
-          tariffs={data.tariffs}
         />
       </Modal>
     </div>
