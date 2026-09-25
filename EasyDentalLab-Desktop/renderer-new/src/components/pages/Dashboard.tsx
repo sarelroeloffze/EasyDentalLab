@@ -5,6 +5,7 @@ import { getInvoiceBalance } from '../../utils/calculations';
 
 interface DashboardProps {
   data: AppData;
+  setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
 }
 
 export function Dashboard({ data }: DashboardProps) {

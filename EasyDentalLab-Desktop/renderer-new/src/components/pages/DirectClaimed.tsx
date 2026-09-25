@@ -4,6 +4,7 @@ import { Button } from '../ui';
 import { fmt, fmtDate } from '../../utils/formatters';
 
 interface DirectClaimedProps {
+  setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
   data: AppData;
 }
 

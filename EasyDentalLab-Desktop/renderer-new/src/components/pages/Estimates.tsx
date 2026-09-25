@@ -1,30 +1,91 @@
-import React from 'react';
-import type { AppData } from '../../types';
-import { Button } from '../ui';
-import { fmt, fmtDate } from '../../utils/formatters';
+import { useState } from 'react';
+import type { AppData, Estimate } from '../../types';
+import { Button, Modal } from '../ui';
+import { EstimateForm } from '../forms/EstimateForm';
+import { fmt, fmtDate, genId } from '../../utils/helpers';
 
 interface EstimatesProps {
   data: AppData;
+  setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
 }
 
-export function Estimates({ data }: EstimatesProps) {
+export function Estimates({ data, setData }: EstimatesProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [editing, setEditing] = useState<Estimate | null>(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
+
+  if (!setData) {
+    return <div style={{ padding: 32 }}>Error: setData not provided</div>;
+  }
+
+  const save = (form: any) => {
+    const client = data.clients.find(c => c.id === form.clientId);
+    const clientName = client ? client.name + (client.practice ? " — " + client.practice : "") : "";
+
+    setData(prev => {
+      if (editing) {
+        return {
+          ...prev,
+          estimates: prev.estimates.map(e =>
+            e.id === editing.id ? { ...editing, ...form, clientName } : e
+          )
+        };
+      }
+      return {
+        ...prev,
+        estimates: [
+          ...prev.estimates,
+          {
+            ...form,
+            id: genId(),
+            number: prev.nextEstimateNo,
+            clientName
+          }
+        ],
+        nextEstimateNo: prev.nextEstimateNo + 1
+      };
+    });
+    setShowForm(false);
+    setEditing(null);
+    setFormIsDirty(false);
+  };
+
+  const handleCloseAttempt = (onClose: () => void) => {
+    if (formIsDirty) {
+      if (window.confirm("You have unsaved changes. Discard changes and close?")) {
+        onClose();
+        setFormIsDirty(false);
+      }
+    } else {
+      onClose();
+    }
+  };
+
   return (
     <div style={{ padding: '32px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 24
       }}>
-        <h1 style={{ 
-          fontSize: 32, 
+        <h1 style={{
+          fontSize: 32,
           fontWeight: 700,
           color: 'var(--c-text1)',
           margin: 0
         }}>
           Estimates
         </h1>
-        <Button icon="➕">New Estimate</Button>
+        <Button
+          icon="➕"
+          onClick={() => {
+            setEditing(null);
+            setShowForm(true);
+          }}
+        >
+          New Estimate
+        </Button>
       </div>
 
       <div style={{
@@ -35,7 +96,7 @@ export function Estimates({ data }: EstimatesProps) {
       }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ 
+            <tr style={{
               background: 'var(--c-surface2)',
               borderBottom: '1px solid var(--c-border)'
             }}>
@@ -48,21 +109,61 @@ export function Estimates({ data }: EstimatesProps) {
             </tr>
           </thead>
           <tbody>
-            {data.estimates.map((est) => (
-              <tr key={est.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
-                <td style={tableCellStyle}>{est.number}</td>
-                <td style={tableCellStyle}>{fmtDate(est.date)}</td>
-                <td style={tableCellStyle}>{est.clientName}</td>
-                <td style={tableCellStyle}>{est.patientSurname} {est.patientName}</td>
-                <td style={tableCellStyle}>{fmt(est.total)}</td>
-                <td style={tableCellStyle}>
-                  <Button variant="secondary">Edit</Button>
+            {data.estimates.length === 0 ? (
+              <tr>
+                <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: 'var(--c-text3)' }}>
+                  No estimates yet. Click "New Estimate" to create one.
                 </td>
               </tr>
-            ))}
+            ) : (
+              data.estimates.map((est) => (
+                <tr key={est.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
+                  <td style={tableCellStyle}>{est.number}</td>
+                  <td style={tableCellStyle}>{fmtDate(est.date)}</td>
+                  <td style={tableCellStyle}>{est.clientName}</td>
+                  <td style={tableCellStyle}>{est.patientSurname} {est.patientName}</td>
+                  <td style={tableCellStyle}>{fmt(est.total)}</td>
+                  <td style={tableCellStyle}>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setEditing(est);
+                        setShowForm(true);
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
+
+      <Modal
+        open={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setEditing(null);
+          setFormIsDirty(false);
+        }}
+        onCloseAttempt={handleCloseAttempt}
+        title={editing ? "Edit Estimate" : "New Estimate"}
+        wide
+      >
+        <EstimateForm
+          estimate={editing}
+          data={data}
+          onSave={save}
+          onCancel={() => {
+            setShowForm(false);
+            setEditing(null);
+            setFormIsDirty(false);
+          }}
+          onDirtyChange={setFormIsDirty}
+        />
+      </Modal>
     </div>
   );
 }

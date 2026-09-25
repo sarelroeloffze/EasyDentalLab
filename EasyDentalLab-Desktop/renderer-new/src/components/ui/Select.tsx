@@ -1,13 +1,36 @@
 import React from 'react';
 
-interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'style'> {
+interface SelectProps {
   label?: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: Array<{ value: string; label: string }>;
+  placeholder?: string;
+  required?: boolean;
   error?: string;
   fullWidth?: boolean;
-  options: Array<{ value: string; label: string }>;
+  style?: React.CSSProperties;
+  title?: string;
+  disabled?: boolean;
 }
 
-export function Select({ label, error, fullWidth = true, options, ...props }: SelectProps) {
+export function Select({
+  label,
+  value,
+  onChange,
+  options,
+  placeholder,
+  required,
+  error,
+  fullWidth = true,
+  style,
+  title,
+  disabled
+}: SelectProps) {
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    onChange(e.target.value);
+  };
+
   return (
     <div style={{ marginBottom: 16, width: fullWidth ? '100%' : 'auto' }}>
       {label && (
@@ -19,11 +42,15 @@ export function Select({ label, error, fullWidth = true, options, ...props }: Se
           color: 'var(--c-text2)'
         }}>
           {label}
-          {props.required && <span style={{ color: '#ef4444', marginLeft: 4 }}>*</span>}
+          {required && <span style={{ color: '#ef4444', marginLeft: 4 }}>*</span>}
         </label>
       )}
       <select
-        {...props}
+        value={value}
+        onChange={handleChange}
+        required={required}
+        title={title}
+        disabled={disabled}
         style={{
           width: '100%',
           padding: '10px 12px',
@@ -34,9 +61,15 @@ export function Select({ label, error, fullWidth = true, options, ...props }: Se
           color: 'var(--c-text1)',
           cursor: 'pointer',
           transition: 'border-color 0.2s',
-          ...(error ? { borderColor: '#ef4444' } : {})
+          ...(error ? { borderColor: '#ef4444' } : {}),
+          ...style
         }}
       >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
         {options.map(opt => (
           <option key={opt.value} value={opt.value}>
             {opt.label}

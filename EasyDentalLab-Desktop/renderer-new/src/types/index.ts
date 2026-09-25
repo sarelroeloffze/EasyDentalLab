@@ -66,6 +66,7 @@ export interface Client {
   address: string;
   city: string;
   postalCode: string;
+  archived?: boolean;
 }
 
 export interface Tariff {

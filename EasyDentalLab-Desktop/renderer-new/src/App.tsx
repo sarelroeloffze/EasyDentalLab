@@ -43,26 +43,26 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard data={data} />;
+        return <Dashboard data={data} setData={setData} />;
       case 'invoices':
-        return <Invoices data={data} />;
+        return <Invoices data={data} setData={setData} />;
       case 'estimates':
-        return <Estimates data={data} />;
+        return <Estimates data={data} setData={setData} />;
       case 'directclaimed':
-        return <DirectClaimed data={data} />;
+        return <DirectClaimed data={data} setData={setData} />;
       case 'clients':
-        return <Clients data={data} />;
+        return <Clients data={data} setData={setData} />;
       case 'tariffs':
-        return <Tariffs data={data} />;
+        return <Tariffs data={data} setData={setData} />;
       case 'macros':
-        return <Macros data={data} />;
+        return <Macros data={data} setData={setData} />;
       case 'settings':
-        return <Settings 
-          data={data} 
-          onSave={(profile) => setData({ ...data, profile })} 
+        return <Settings
+          data={data}
+          onSave={(profile) => setData({ ...data, profile })}
         />;
       default:
-        return <Dashboard data={data} />;
+        return <Dashboard data={data} setData={setData} />;
     }
   };
 

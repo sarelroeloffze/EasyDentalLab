@@ -44,47 +44,47 @@ export function Settings({ data, onSave }: SettingsProps) {
         <Input
           label="Business Name"
           value={profile.businessName}
-          onChange={(e) => setProfile({ ...profile, businessName: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, businessName: value })}
         />
 
         <Input
           label="Phone"
           type="tel"
           value={profile.phone}
-          onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, phone: value })}
         />
 
         <Input
           label="Email"
           type="email"
           value={profile.email}
-          onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, email: value })}
         />
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           <Input
             label="VAT Number"
             value={profile.vatNumber}
-            onChange={(e) => setProfile({ ...profile, vatNumber: e.target.value })}
+            onChange={(value) => setProfile({ ...profile, vatNumber: value })}
           />
           <Input
             label="VAT %"
             type="number"
             value={profile.vatPercent.toString()}
-            onChange={(e) => setProfile({ ...profile, vatPercent: parseFloat(e.target.value) || 0 })}
+            onChange={(value) => setProfile({ ...profile, vatPercent: parseFloat(value) || 0 })}
           />
         </div>
 
         <Input
           label="Laboratory Number"
           value={profile.labNumber}
-          onChange={(e) => setProfile({ ...profile, labNumber: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, labNumber: value })}
         />
 
         <Input
           label="PCNS"
           value={profile.pcns}
-          onChange={(e) => setProfile({ ...profile, pcns: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, pcns: value })}
         />
       </div>
 
@@ -107,19 +107,19 @@ export function Settings({ data, onSave }: SettingsProps) {
         <Input
           label="Bank Name"
           value={profile.bankName}
-          onChange={(e) => setProfile({ ...profile, bankName: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, bankName: value })}
         />
 
         <Input
           label="Account Number"
           value={profile.bankAccount}
-          onChange={(e) => setProfile({ ...profile, bankAccount: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, bankAccount: value })}
         />
 
         <Input
           label="Branch Code"
           value={profile.bankBranch}
-          onChange={(e) => setProfile({ ...profile, bankBranch: e.target.value })}
+          onChange={(value) => setProfile({ ...profile, bankBranch: value })}
         />
       </div>
 

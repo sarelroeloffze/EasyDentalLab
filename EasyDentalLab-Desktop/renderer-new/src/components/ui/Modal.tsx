@@ -1,16 +1,20 @@
 import React, { useRef, useEffect } from 'react';
 
 interface ModalProps {
-  isOpen: boolean;
+  open?: boolean; // Support both 'open' and 'isOpen'
+  isOpen?: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: React.ReactNode;
   width?: number;
-  onCloseAttempt?: () => boolean; // Return false to prevent close
+  wide?: boolean;
+  onCloseAttempt?: (onClose: () => void) => void; // Callback that receives onClose
 }
 
-export function Modal({ isOpen, onClose, title, children, width = 600, onCloseAttempt }: ModalProps) {
+export function Modal({ isOpen, open, onClose, title, children, width, wide, onCloseAttempt }: ModalProps) {
   const windowJustFocusedRef = useRef(false);
+  const modalOpen = open ?? isOpen ?? false;
+  const modalWidth = wide ? 900 : (width || 600);
 
   useEffect(() => {
     const handleFocus = () => {
@@ -24,30 +28,23 @@ export function Modal({ isOpen, onClose, title, children, width = 600, onCloseAt
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const handleOverlayClick = (e: React.MouseEvent) => {
-    if (windowJustFocusedRef.current) return;
-    
-    if (e.target === e.currentTarget) {
-      // Clicked on overlay
-      if (onCloseAttempt) {
-        const canClose = onCloseAttempt();
-        if (canClose) onClose();
-      } else {
-        onClose();
-      }
-    }
-  };
-
-  const handleCloseClick = () => {
+  const handleClose = () => {
     if (onCloseAttempt) {
-      const canClose = onCloseAttempt();
-      if (canClose) onClose();
+      onCloseAttempt(onClose);
     } else {
       onClose();
     }
   };
 
-  if (!isOpen) return null;
+  const handleOverlayClick = (e: React.MouseEvent) => {
+    if (windowJustFocusedRef.current) return;
+
+    if (e.target === e.currentTarget) {
+      handleClose();
+    }
+  };
+
+  if (!modalOpen) return null;
 
   return (
     <div 
@@ -67,13 +64,13 @@ export function Modal({ isOpen, onClose, title, children, width = 600, onCloseAt
         padding: '20px'
       }}
     >
-      <div 
+      <div
         className="modal-content"
         style={{
           background: 'var(--c-surface)',
           borderRadius: '12px',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          maxWidth: width,
+          maxWidth: modalWidth,
           width: '100%',
           maxHeight: '90vh',
           display: 'flex',
@@ -82,32 +79,34 @@ export function Modal({ isOpen, onClose, title, children, width = 600, onCloseAt
         }}
       >
         {/* Header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '20px 24px',
-          borderBottom: '1px solid var(--c-border)'
-        }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--c-text1)' }}>
-            {title}
-          </h2>
-          <button
-            onClick={handleCloseClick}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: 24,
-              cursor: 'pointer',
-              color: 'var(--c-text3)',
-              padding: '4px 8px',
-              lineHeight: 1
-            }}
-            title="Close"
-          >
-            ×
-          </button>
-        </div>
+        {title && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '20px 24px',
+            borderBottom: '1px solid var(--c-border)'
+          }}>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--c-text1)' }}>
+              {title}
+            </h2>
+            <button
+              onClick={handleClose}
+              style={{
+                background: 'none',
+                border: 'none',
+                fontSize: 24,
+                cursor: 'pointer',
+                color: 'var(--c-text3)',
+                padding: '4px 8px',
+                lineHeight: 1
+              }}
+              title="Close"
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {/* Body */}
         <div style={{
