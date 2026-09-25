@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { AppData, Estimate } from '../../types';
-import { Button, Modal } from '../ui';
+import { Button, Modal, ConfirmModal } from '../ui';
 import { EstimateForm } from '../forms/EstimateForm';
 import { fmt, fmtDate, genId } from '../../utils/helpers';
 
@@ -13,6 +13,8 @@ export function Estimates({ data, setData }: EstimatesProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Estimate | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const pendingClose = useRef<(() => void) | null>(null);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
@@ -20,7 +22,7 @@ export function Estimates({ data, setData }: EstimatesProps) {
 
   const save = (form: any) => {
     const client = data.clients.find(c => c.id === form.clientId);
-    const clientName = client ? client.name + (client.practice ? " — " + client.practice : "") : "";
+    const clientName = client ? client.name : "";
 
     setData(prev => {
       if (editing) {
@@ -52,13 +54,25 @@ export function Estimates({ data, setData }: EstimatesProps) {
 
   const handleCloseAttempt = (onClose: () => void) => {
     if (formIsDirty) {
-      if (window.confirm("You have unsaved changes. Discard changes and close?")) {
-        onClose();
-        setFormIsDirty(false);
-      }
+      pendingClose.current = onClose;
+      setConfirmDiscard(true);
     } else {
       onClose();
     }
+  };
+
+  const handleConfirmDiscard = () => {
+    if (pendingClose.current) {
+      pendingClose.current();
+      pendingClose.current = null;
+    }
+    setConfirmDiscard(false);
+    setFormIsDirty(false);
+  };
+
+  const handleCancelDiscard = () => {
+    pendingClose.current = null;
+    setConfirmDiscard(false);
   };
 
   return (
@@ -164,6 +178,17 @@ export function Estimates({ data, setData }: EstimatesProps) {
           onDirtyChange={setFormIsDirty}
         />
       </Modal>
+
+      <ConfirmModal
+        open={confirmDiscard}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Discard changes and close?"
+        confirmText="Discard"
+        cancelText="Keep Editing"
+        onConfirm={handleConfirmDiscard}
+        onCancel={handleCancelDiscard}
+        danger={true}
+      />
     </div>
   );
 }

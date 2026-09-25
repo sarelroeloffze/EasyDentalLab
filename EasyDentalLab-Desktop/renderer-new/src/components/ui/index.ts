@@ -1,4 +1,5 @@
 export { Modal } from './Modal';
+export { ConfirmModal } from './ConfirmModal';
 export { Input } from './Input';
 export { Select } from './Select';
 export { Button } from './Button';

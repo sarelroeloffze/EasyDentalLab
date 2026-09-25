@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { AppData, Client } from '../../types';
-import { Button, Modal } from '../ui';
+import { Button, Modal, ConfirmModal } from '../ui';
 import { ClientForm } from '../forms/ClientForm';
 import { genId } from '../../utils/helpers';
 
@@ -13,6 +13,8 @@ export function Clients({ data, setData }: ClientsProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const pendingClose = useRef<(() => void) | null>(null);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
@@ -46,13 +48,25 @@ export function Clients({ data, setData }: ClientsProps) {
 
   const handleCloseAttempt = (onClose: () => void) => {
     if (formIsDirty) {
-      if (window.confirm("You have unsaved changes. Discard changes and close?")) {
-        onClose();
-        setFormIsDirty(false);
-      }
+      pendingClose.current = onClose;
+      setConfirmDiscard(true);
     } else {
       onClose();
     }
+  };
+
+  const handleConfirmDiscard = () => {
+    if (pendingClose.current) {
+      pendingClose.current();
+      pendingClose.current = null;
+    }
+    setConfirmDiscard(false);
+    setFormIsDirty(false);
+  };
+
+  const handleCancelDiscard = () => {
+    pendingClose.current = null;
+    setConfirmDiscard(false);
   };
 
   return (
@@ -154,6 +168,17 @@ export function Clients({ data, setData }: ClientsProps) {
           onDirtyChange={setFormIsDirty}
         />
       </Modal>
+
+      <ConfirmModal
+        open={confirmDiscard}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Discard changes and close?"
+        confirmText="Discard"
+        cancelText="Keep Editing"
+        onConfirm={handleConfirmDiscard}
+        onCancel={handleCancelDiscard}
+        danger={true}
+      />
     </div>
   );
 }

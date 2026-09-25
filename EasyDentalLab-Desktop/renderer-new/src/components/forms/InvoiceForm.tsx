@@ -296,8 +296,11 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange }: 
         <button
           className="btn btn-primary"
           title="Save this invoice"
-          onClick={() => onSave({ ...f, lang, total, discountEnabled, discountPercent: parseFloat(String(discountPercent)) || 15 })}
-          disabled={!f.clientId || !f.patientSurname?.trim() || f.items.length === 0}
+          onClick={() => {
+            const validItems = f.items.filter((item: any) => item.code && item.code.trim() !== "");
+            onSave({ ...f, items: validItems, lang, total, discountEnabled, discountPercent: parseFloat(String(discountPercent)) || 15 });
+          }}
+          disabled={!f.clientId || !f.patientSurname?.trim() || f.items.filter((item: any) => item.code?.trim()).length === 0}
         >
           Save Invoice
         </button>
