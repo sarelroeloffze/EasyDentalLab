@@ -237,6 +237,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
           onChange={e => setTSearch(e.target.value)}
           placeholder="Search tariff codes..."
           style={{ marginBottom: 12 }}
+          autoFocus
         />
         <div style={{ maxHeight: 260, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }}>
           {fTariffs.map(t => (
@@ -285,6 +286,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
           onChange={e => setMSearch(e.target.value)}
           placeholder="Search macros..."
           style={{ marginBottom: 12 }}
+          autoFocus
         />
         <div style={{ maxHeight: 320, overflowY: 'auto', border: '1px solid #e5e7eb', borderRadius: 8 }}>
           {filteredMacros.map(m => {

@@ -121,6 +121,21 @@ body {
   border-color: var(--c-text3);
 }
 
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
 /* ============================================================
  * Scrollbar Styles
  * ============================================================ */
