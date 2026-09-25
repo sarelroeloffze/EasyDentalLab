@@ -331,7 +331,7 @@ function createWindow() {
     icon: path.join(__dirname, 'resources/icon.png')
   });
 
-  mainWindow.loadFile('renderer/index.html');
+  mainWindow.loadFile('renderer-new/dist/index.html');
 
   // Send test IPC message when page finishes loading
   mainWindow.webContents.on('did-finish-load', () => {

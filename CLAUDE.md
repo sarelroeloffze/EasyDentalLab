@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-09-03)
+## 🎯 PROJECT STATUS (Updated 2026-09-25)
 
-### Current Version: Desktop App v2.3.59 + Web App v2.3.59 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.59 fixes code selection bug (clicked code not registering)
+### Current Version: Desktop App v2.3.60 + Web App v2.3.60 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.60 fixes arrow navigation double-pick bug + improves keyboard UX
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -212,14 +212,22 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Clicking a code from dropdown now correctly registers that code on invoice/estimate, not the typed search query
   - Both versions
 
-### Available Installers (v2.3.59)
+- ✅ **v2.3.60 Update** (September 25, 2026) — **FIX ARROW NAVIGATION DOUBLE-PICK BUG + IMPROVE KEYBOARD UX**
+  - **Problem:** When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected due to double-pick race condition
+  - **Root cause:** Enter and Down Arrow handlers called `pick()` twice — first using `filtered[hlIdx]` (arrow-navigated selection), then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code
+  - **Solution:** Refactored to single-pick pattern: removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` and `confirmAndAddLine()` helpers; Enter now picks once and moves to qty; Ctrl+Enter confirms and adds new line; ArrowDown navigates DOWN in dropdown when open (was missing — only ArrowUp worked); ArrowDown when closed confirms and adds line (legacy behavior preserved)
+  - **Result:** Clean, predictable navigation — ArrowUp/ArrowDown navigate in dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions)
+  - **Help updated:** "Tips & Keyboard Shortcuts" section rewritten with complete keyboard navigation guide
+  - Both versions
+
+### Available Installers (v2.3.60)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.59.exe` | ~73 MB | x64 (Intel/AMD) |
-| **macOS** | `EasyDentalLab-2.3.35-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.3.35-arm64.AppImage` | ~101 MB | ARM64 |
+| **Windows** | `EasyDentalLab.Setup.2.3.60.exe` | ~73 MB | x64 (Intel/AMD) |
+| **macOS** | `EasyDentalLab-2.3.60-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
+| **Linux** | `EasyDentalLab-2.3.60-arm64.AppImage` | ~101 MB | ARM64 |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -233,6 +241,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- 🔄 **v2.3.60 ready** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
 - ✅ **v2.3.59 published** (September 3, 2026) — Fixed code selection bug (clicked code not registering when typing then clicking different code)
 - ✅ **v2.3.48 published** (July 29, 2026) — Fixed code selection bug (Down Arrow after click) + input freeze bug (windowJustFocused timeout)
 - ✅ **v2.3.47 published** (July 28, 2026) — Discount settings preserved when copying/converting estimates & invoices
@@ -723,6 +732,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Form inputs become uneditable | After using app for a while (copying estimates, entering invoices), input fields (surname, name, medical aid) became uneditable - clicking inside them did nothing, couldn't change text. Works fine on fresh app launch but breaks after repeated use. Root cause: Modal component's `windowJustFocused` grace period was set to 1000ms (v2.3.36 increased it from 300ms). This long timeout was blocking legitimate clicks on form inputs - the grace period is meant to prevent accidental overlay clicks when regaining window focus, but 1000ms is too long and was interfering with normal input interaction. Fix: Reduced `windowJustFocused` timeout from 1000ms back to 200ms - enough to prevent accidental overlay clicks but short enough to not block legitimate form input clicks. Line ~1346 (Modal component) in both desktop renderer and web app. Result: Form inputs remain fully editable throughout entire session, even after many operations. Both versions. |
 | **v2.3.59 Update** | **Clicked Code Not Registering** |
 | Clicked code not applied to invoice | When typing a code to navigate dropdown (e.g., "9600"), then clicking a different code from the filtered list (e.g., "9602"), the typed code "9600" appeared on the invoice instead of the clicked code "9602". Root cause: Input's onChange handler called parent's onChange on every keystroke, setting item.code to the typed value; when user clicked a different code, onSelect was called but the typed value had already been saved to parent state. Fix: Removed `onChange(e.target.value)` call from input's onChange handler (line 1806 desktop, 1821 web) - typing now only updates local query state; onSelect handles ALL code updates when user clicks or confirms a selection. Added enhanced blur handler that auto-selects exact code match when user types and tabs away without clicking. Lines ~1623 (handleBlur desktop), ~1639 (handleBlur web), ~1806 (input onChange desktop), ~1821 (input onChange web). Result: Clicking a code from dropdown now correctly registers that code on invoice/estimate, not the typed search query. Both versions. |
+| **v2.3.60 Update** | **Arrow Navigation Double-Pick Bug + Improved Keyboard UX** |
+| Arrow navigation selects wrong code | When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected. Root cause: **Double-pick race condition** - Enter and Down Arrow handlers called `pick()` twice (first using `filtered[hlIdx]` from arrow navigation, then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code). Also, ArrowDown couldn't navigate DOWN in dropdown (only ArrowUp worked), creating asymmetric UX. Fix: Refactored to single-pick pattern - removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` (just moves focus) and `confirmAndAddLine()` (picks once + adds line) helpers; Enter now picks once using `filtered[hlIdx]` then calls `moveToQtyField()`; Ctrl+Enter calls `confirmAndAddLine()`; ArrowDown when dropdown open now navigates down (`setHlIdx(prev => Math.min(prev + 1, filtered.length - 1))`); ArrowDown when closed confirms and adds line (legacy behavior). Updated tooltip to show all shortcuts. Rewrote Help section "Tips & Keyboard Shortcuts" with complete navigation guide. Lines ~1677-1761 (CodeInput in web), ~1677-1746 (desktop), ~1854 (tooltip web), ~1839 (tooltip desktop), ~5713-5721 (Help web), ~5770-5778 (Help desktop). Result: Clean, predictable navigation - ArrowUp/ArrowDown navigate within dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions). Both versions. |
 
 ## License System
 

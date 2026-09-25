@@ -1691,18 +1691,8 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
 
   const pick = (t) => { onSelect(t); setQuery(""); setOpen(false); };
 
-  // Confirm current code and move to qty field (skip description since it's auto-filled)
-  const confirmAndMoveToQty = () => {
-    // Only look up code if query exists (user typed something)
-    // If query is empty, it means they clicked/selected already (pick() clears query)
-    const q = (query || value || "").toLowerCase().trim();
-    if (q) {
-      let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-      if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-      if (match) { pick(match); }
-    }
-    setOpen(false);
-    // Move focus to qty input in same row
+  // Move focus to qty input in same row
+  const moveToQtyField = () => {
     setTimeout(() => {
       const row = inputRef.current?.closest("tr");
       if (row) {
@@ -1715,36 +1705,21 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
     }, 50);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (open && filtered.length > 0) {
-        // Select highlighted item from dropdown
-        const match = filtered[hlIdx] || filtered[0];
-        if (match) pick(match);
+  // Confirm highlighted code and add new line
+  const confirmAndAddLine = () => {
+    // Pick the highlighted code from dropdown
+    if (filtered.length > 0) {
+      const match = filtered[hlIdx] || filtered[0];
+      if (match) {
+        onSelect(match);
       }
-      confirmAndMoveToQty();
-    } else if (e.key === "ArrowRight" && (inputRef.current?.selectionStart === (query||value||"").length)) {
-      // Right arrow at end of text — confirm and move to qty field
-      e.preventDefault();
-      confirmAndMoveToQty();
-    } else if (e.key === "ArrowDown") {
-      e.preventDefault();
+    }
+    setOpen(false);
+    setQuery("");
 
-      // Down Arrow confirms current selection and adds new line
-      const q = (query || value || "").toLowerCase().trim();
-      if (q) {
-        let match = filtered.length > 0 ? filtered[hlIdx] || filtered[0] : null;
-        if (!match) match = tariffs.find(t => t.code?.toLowerCase() === q);
-        if (match) {
-          onSelect(match);
-        }
-      }
-      setOpen(false);
-      setQuery("");
-
-      // Add new blank line
-      if (onAddLine) {
+    // Add new blank line
+    if (onAddLine) {
+      setTimeout(() => {
         onAddLine();
         setTimeout(() => {
           const table = inputRef.current?.closest("table");
@@ -1754,10 +1729,47 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
             if (last) last.focus();
           }
         }, 50);
+      }, 10);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+
+      if (e.ctrlKey || e.metaKey) {
+        // Ctrl+Enter or Cmd+Enter: Confirm and add new line
+        confirmAndAddLine();
+      } else if (open && filtered.length > 0) {
+        // Enter: Pick highlighted code and move to qty field
+        const match = filtered[hlIdx] || filtered[0];
+        if (match) {
+          pick(match);
+          moveToQtyField();
+        }
+      } else if (value) {
+        // Enter with dropdown closed but value exists: just move to qty
+        moveToQtyField();
+      }
+    } else if (e.key === "ArrowRight" && (inputRef.current?.selectionStart === (query||value||"").length)) {
+      // Right arrow at end of text: move to qty field
+      e.preventDefault();
+      if (open) setOpen(false);
+      moveToQtyField();
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+
+      if (open && filtered.length > 0) {
+        // ArrowDown when dropdown open: Navigate down in dropdown
+        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
+      } else {
+        // ArrowDown when dropdown closed: Confirm and add new line (legacy behavior)
+        confirmAndAddLine();
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       if (open && filtered.length > 0) {
+        // ArrowUp: Navigate up in dropdown
         setHlIdx(prev => Math.max(prev - 1, 0));
       }
     } else if (e.key === "Tab") {
@@ -1839,7 +1851,7 @@ const CodeInput = ({ value, onChange, onSelect, onAddLine, tariffs, inputStyle, 
         onKeyDown={handleKeyDown}
         style={inputStyle}
         placeholder="Code..."
-        title="Type to search codes, use ↑↓ arrows to navigate, Enter to select"
+        title="Type to search codes, ↑↓ arrows to navigate, Enter to select, Ctrl+Enter to add new line"
         autoComplete="off"
       />
       {open && filtered.length > 0 && (() => {
@@ -5701,11 +5713,14 @@ const HelpSection = () => {
     { id:"tips", icon:"💡", title:"Tips & Keyboard Shortcuts", content: (<div>
       <H>Line Item Entry Shortcuts</H>
       <UL>
-        <li><strong>Enter</strong> — confirms the selected tariff code, fills in description and price, moves focus to Description.</li>
-        <li><strong>→ Right Arrow</strong> (at end of code) — same as Enter.</li>
-        <li><strong>↓ Down Arrow</strong> — confirms current code and adds a new blank line below.</li>
-        <li><strong>↑ / ↓ Arrow Keys</strong> in autocomplete dropdown — navigate the suggestions.</li>
-        <li><strong>Tab</strong> — confirms the highlighted autocomplete suggestion.</li>
+        <li><strong>Type</strong> to search — code dropdown shows sequential codes; as you type, the closest match is highlighted.</li>
+        <li><strong>↑ / ↓ Arrow Keys</strong> — navigate up/down in the dropdown to fine-tune your selection.</li>
+        <li><strong>Enter</strong> — confirms the highlighted code, fills in description and price, moves to Qty field.</li>
+        <li><strong>Ctrl+Enter</strong> (Windows) or <strong>Cmd+Enter</strong> (Mac) — confirms code and adds a new blank line below (fast workflow).</li>
+        <li><strong>→ Right Arrow</strong> (at end of code) — same as Enter (moves to Qty).</li>
+        <li><strong>↓ Down Arrow</strong> when dropdown closed — confirms code and adds new line (legacy shortcut, same as Ctrl+Enter).</li>
+        <li><strong>Tab</strong> — confirms the highlighted code and moves to next field naturally.</li>
+        <li><strong>Escape</strong> — closes dropdown without selecting.</li>
       </UL>
       <H>General Tips</H>
       <UL>

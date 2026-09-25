@@ -1,0 +1,144 @@
+/* ============================================================
+ * CSS Custom Properties (Design Tokens)
+ * ============================================================ */
+
+:root {
+  /* Light Mode Colors */
+  --c-bg: #f8fafc;
+  --c-surface: #ffffff;
+  --c-surface2: #f1f5f9;
+  --c-border: #e2e8f0;
+  --c-border2: #f1f5f9;
+  --c-text1: #0f172a;
+  --c-text2: #475569;
+  --c-text3: #94a3b8;
+  --c-text4: #cbd5e1;
+  --c-sidebar: #ffffff;
+  --c-sel: #eff6ff;
+}
+
+html.dark {
+  /* Dark Mode Colors */
+  --c-bg: #0f172a;
+  --c-surface: #1e293b;
+  --c-surface2: #334155;
+  --c-border: #334155;
+  --c-border2: #475569;
+  --c-text1: #f1f5f9;
+  --c-text2: #cbd5e1;
+  --c-text3: #94a3b8;
+  --c-text4: #64748b;
+  --c-sidebar: #1e293b;
+  --c-sel: #1e3a8a;
+}
+
+/* ============================================================
+ * Global Styles
+ * ============================================================ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: var(--c-bg);
+  color: var(--c-text1);
+}
+
+/* ============================================================
+ * Input Field Styles
+ * ============================================================ */
+
+.input-field {
+  font-family: inherit;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #2563eb !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ============================================================
+ * Code Dropdown Styles
+ * ============================================================ */
+
+.code-dropdown::-webkit-scrollbar {
+  display: none;
+}
+
+.code-dropdown {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ============================================================
+ * Utility Classes
+ * ============================================================ */
+
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.btn-secondary {
+  background: var(--c-surface2);
+  color: var(--c-text1);
+  border: 1px solid var(--c-border);
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+  background: var(--c-surface);
+  border-color: var(--c-text3);
+}
+
+/* ============================================================
+ * Scrollbar Styles
+ * ============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--c-surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--c-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text4);
+}
