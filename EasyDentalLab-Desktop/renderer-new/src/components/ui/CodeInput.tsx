@@ -37,20 +37,17 @@ export function CodeInput({
 
     if (!q) return { items: sortedTariffs.slice(0, 100), matchIdx: 0 };
 
-    // Find position where typed code would appear
-    let matchIndex = sortedTariffs.findIndex(t =>
-      (t.code || '').toLowerCase() >= q
+    // TRUE FILTER: only show codes that start with typed query
+    const matches = sortedTariffs.filter(t =>
+      (t.code || '').toLowerCase().startsWith(q)
     );
 
-    if (matchIndex < 0) {
-      matchIndex = Math.max(0, sortedTariffs.length - 100);
-    }
+    // Find exact match index (0 if exact match exists at position 0)
+    const exactMatchIdx = matches.findIndex(t =>
+      (t.code || '').toLowerCase() === q
+    );
 
-    const start = Math.max(0, matchIndex - 10);
-    const end = Math.min(sortedTariffs.length, start + 100);
-    const matchIdxInFiltered = Math.min(matchIndex - start, 10);
-
-    return { items: sortedTariffs.slice(start, end), matchIdx: matchIdxInFiltered };
+    return { items: matches, matchIdx: exactMatchIdx >= 0 ? exactMatchIdx : 0 };
   }, [tariffs, query, value]);
 
   // Update highlight position when query changes
@@ -190,10 +187,11 @@ export function CodeInput({
           // Otherwise navigate down in dropdown
           setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
         }
-      } else {
-        // Dropdown closed: confirm and add new line (legacy behavior)
+      } else if (filtered.length > 0) {
+        // Dropdown closed but matches exist: confirm and add new line
         confirmAndAddLine();
       }
+      // If filtered.length === 0, do nothing (no matches for this code)
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (open && filtered.length > 0) {
@@ -239,7 +237,7 @@ export function CodeInput({
         autoComplete="off"
       />
       
-      {open && filtered.length > 0 && (() => {
+      {open && (() => {
         const rect = inputRef.current?.getBoundingClientRect();
         if (!rect) return null;
 
@@ -264,7 +262,16 @@ export function CodeInput({
               msOverflowStyle: 'none'
             }}
           >
-            {filtered.map((t, idx) => (
+            {filtered.length === 0 ? (
+              <div style={{
+                padding: '32px 20px',
+                textAlign: 'center',
+                color: 'var(--c-text3)',
+                fontSize: 14
+              }}>
+                No matching codes found for "{query || value}"
+              </div>
+            ) : filtered.map((t, idx) => (
               <div
                 key={t.id}
                 onMouseDown={(e) => {
