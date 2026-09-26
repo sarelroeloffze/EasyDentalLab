@@ -13,6 +13,7 @@ interface ModalProps {
 
 export function Modal({ isOpen, open, onClose, title, children, width, wide, onCloseAttempt }: ModalProps) {
   const windowJustFocusedRef = useRef(false);
+  const overlayRef = useRef<HTMLDivElement>(null);
   const modalOpen = open ?? isOpen ?? false;
   const modalWidth = wide ? 900 : (width || 600);
 
@@ -27,6 +28,13 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  // Auto-focus modal when it opens
+  useEffect(() => {
+    if (modalOpen && overlayRef.current) {
+      overlayRef.current.focus();
+    }
+  }, [modalOpen]);
 
   const handleClose = () => {
     if (onCloseAttempt) {
@@ -56,6 +64,7 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
 
   return (
     <div
+      ref={overlayRef}
       className="modal-overlay"
       onClick={handleOverlayClick}
       onKeyDown={handleKeyDown}
