@@ -15,6 +15,8 @@ export function Tariffs({ data, setData }: TariffsProps) {
   const [editing, setEditing] = useState<Tariff | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Tariff | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
   if (!setData) {
@@ -70,6 +72,27 @@ export function Tariffs({ data, setData }: TariffsProps) {
   const handleCancelDiscard = () => {
     pendingClose.current = null;
     setConfirmDiscard(false);
+  };
+
+  const handleDeleteClick = (tariff: Tariff) => {
+    setDeleteTarget(tariff);
+    setConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      setData(prev => ({
+        ...prev,
+        tariffs: prev.tariffs.filter(t => t.id !== deleteTarget.id)
+      }));
+    }
+    setDeleteTarget(null);
+    setConfirmDelete(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteTarget(null);
+    setConfirmDelete(false);
   };
 
   return (
@@ -137,15 +160,23 @@ export function Tariffs({ data, setData }: TariffsProps) {
                   <td style={tableCellStyle}>{fmt(tariff.price)}</td>
                   <td style={tableCellStyle}>{tariff.category}</td>
                   <td style={tableCellStyle}>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setEditing(tariff);
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setEditing(tariff);
+                          setShowForm(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteClick(tariff)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -192,6 +223,17 @@ export function Tariffs({ data, setData }: TariffsProps) {
         cancelText="Keep Editing"
         onConfirm={handleConfirmDiscard}
         onCancel={handleCancelDiscard}
+        danger={true}
+      />
+
+      <ConfirmModal
+        open={confirmDelete}
+        title="Delete Tariff"
+        message={`Are you sure you want to delete tariff "${deleteTarget?.code}"? This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
         danger={true}
       />
     </div>

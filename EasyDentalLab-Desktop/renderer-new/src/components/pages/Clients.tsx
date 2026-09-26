@@ -14,6 +14,8 @@ export function Clients({ data, setData }: ClientsProps) {
   const [editing, setEditing] = useState<Client | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
   if (!setData) {
@@ -67,6 +69,27 @@ export function Clients({ data, setData }: ClientsProps) {
   const handleCancelDiscard = () => {
     pendingClose.current = null;
     setConfirmDiscard(false);
+  };
+
+  const handleDeleteClick = (client: Client) => {
+    setDeleteTarget(client);
+    setConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      setData(prev => ({
+        ...prev,
+        clients: prev.clients.filter(c => c.id !== deleteTarget.id)
+      }));
+    }
+    setDeleteTarget(null);
+    setConfirmDelete(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteTarget(null);
+    setConfirmDelete(false);
   };
 
   return (
@@ -130,15 +153,23 @@ export function Clients({ data, setData }: ClientsProps) {
                   <td style={tableCellStyle}>{client.phone}</td>
                   <td style={tableCellStyle}>{client.email}</td>
                   <td style={tableCellStyle}>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setEditing(client);
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setEditing(client);
+                          setShowForm(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteClick(client)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -179,6 +210,17 @@ export function Clients({ data, setData }: ClientsProps) {
         cancelText="Keep Editing"
         onConfirm={handleConfirmDiscard}
         onCancel={handleCancelDiscard}
+        danger={true}
+      />
+
+      <ConfirmModal
+        open={confirmDelete}
+        title="Delete Client"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
         danger={true}
       />
     </div>

@@ -14,6 +14,8 @@ export function Macros({ data, setData }: MacrosProps) {
   const [editing, setEditing] = useState<Macro | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Macro | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
   if (!setData) {
@@ -67,6 +69,27 @@ export function Macros({ data, setData }: MacrosProps) {
   const handleCancelDiscard = () => {
     pendingClose.current = null;
     setConfirmDiscard(false);
+  };
+
+  const handleDeleteClick = (macro: Macro) => {
+    setDeleteTarget(macro);
+    setConfirmDelete(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteTarget) {
+      setData(prev => ({
+        ...prev,
+        macros: prev.macros.filter(m => m.id !== deleteTarget.id)
+      }));
+    }
+    setDeleteTarget(null);
+    setConfirmDelete(false);
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteTarget(null);
+    setConfirmDelete(false);
   };
 
   return (
@@ -128,15 +151,23 @@ export function Macros({ data, setData }: MacrosProps) {
                     {macro.codes.map(c => c.code).join(', ')}
                   </td>
                   <td style={tableCellStyle}>
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setEditing(macro);
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </Button>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => {
+                          setEditing(macro);
+                          setShowForm(true);
+                        }}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="danger"
+                        onClick={() => handleDeleteClick(macro)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -177,6 +208,17 @@ export function Macros({ data, setData }: MacrosProps) {
         cancelText="Keep Editing"
         onConfirm={handleConfirmDiscard}
         onCancel={handleCancelDiscard}
+        danger={true}
+      />
+
+      <ConfirmModal
+        open={confirmDelete}
+        title="Delete Macro"
+        message={`Are you sure you want to delete "${deleteTarget?.name}"? This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
         danger={true}
       />
     </div>
