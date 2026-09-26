@@ -177,7 +177,7 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
           </tbody>
         </table>
 
-        {(!name.trim() || codes.filter(c => c.code.trim() !== "").length === 0) && (
+        {isDirty && (!name.trim() || codes.filter(c => c.code.trim() !== "").length === 0) && (
           <p style={{
             fontSize: 12,
             color: '#dc2626',
