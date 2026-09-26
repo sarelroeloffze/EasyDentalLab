@@ -24,21 +24,9 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
       }, 200); // 200ms grace period
     };
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && modalOpen) {
-        e.preventDefault();
-        e.stopPropagation();
-        handleClose();
-      }
-    };
-
     window.addEventListener('focus', handleFocus);
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('focus', handleFocus);
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [modalOpen]);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const handleClose = () => {
     if (onCloseAttempt) {
@@ -56,12 +44,22 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      e.stopPropagation();
+      handleClose();
+    }
+  };
+
   if (!modalOpen) return null;
 
   return (
-    <div 
+    <div
       className="modal-overlay"
       onClick={handleOverlayClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={-1}
       style={{
         position: 'fixed',
         top: 0,

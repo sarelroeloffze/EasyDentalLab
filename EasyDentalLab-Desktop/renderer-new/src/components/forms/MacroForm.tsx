@@ -31,6 +31,7 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
 
   const [name, setName] = useState(initialFormData.name);
   const [codes, setCodes] = useState<MacroCode[]>(initialFormData.codes);
+  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Track if form has unsaved changes
   const isDirty = useMemo(() => {
@@ -64,6 +65,7 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
   };
 
   const updateCode = (id: string, field: 'code' | 'qty', value: string | number) => {
+    setHasInteracted(true);
     setCodes(codes.map(c =>
       c.id === id ? { ...c, [field]: value } : c
     ));
@@ -83,7 +85,10 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
       <Input
         label="Macro Name"
         value={name}
-        onChange={v => setName(v)}
+        onChange={v => {
+          setName(v);
+          setHasInteracted(true);
+        }}
         required
         placeholder="e.g. Full Crown Set"
         style={{ marginBottom: 16 }}
@@ -177,7 +182,7 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
           </tbody>
         </table>
 
-        {isDirty && (!name.trim() || codes.filter(c => c.code.trim() !== "").length === 0) && (
+        {hasInteracted && (!name.trim() || codes.filter(c => c.code.trim() !== "").length === 0) && (
           <p style={{
             fontSize: 12,
             color: '#dc2626',
