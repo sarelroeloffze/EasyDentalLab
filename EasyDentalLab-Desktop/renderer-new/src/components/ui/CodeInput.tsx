@@ -235,8 +235,11 @@ export function CodeInput({
           if (!open) setOpen(true);
         }}
         onFocus={() => {
-          setOpen(true);
           setQuery(value || '');
+          // Only open dropdown if field has value (don't show on blank lines)
+          if (value && value.trim()) {
+            setOpen(true);
+          }
         }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}

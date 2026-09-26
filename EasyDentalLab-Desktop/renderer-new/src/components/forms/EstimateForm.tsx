@@ -105,7 +105,7 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
   return (
     <>
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: 12, marginBottom: 16 }}>
         <SearchSelect
           label="Dentist Name"
           value={f.clientId}
