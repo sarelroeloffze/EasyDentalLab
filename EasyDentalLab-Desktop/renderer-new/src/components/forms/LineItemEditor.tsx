@@ -230,7 +230,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       )}
 
       {/* Tariff Picker Modal */}
-      <Modal open={showPicker} onClose={() => { setShowPicker(false); setTSearch(""); }} title="Select Tariff Code">
+      <Modal open={showPicker} onClose={() => { setShowPicker(false); setTSearch(""); }} title="Select Tariff Code" autoFocus={false}>
         <input
           className="input-field"
           value={tSearch}
@@ -276,7 +276,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       </Modal>
 
       {/* Macro Picker Modal */}
-      <Modal open={showMacroPicker} onClose={() => { setShowMacroPicker(false); setMSearch(""); }} title="Select Macro (Device Template)">
+      <Modal open={showMacroPicker} onClose={() => { setShowMacroPicker(false); setMSearch(""); }} title="Select Macro (Device Template)" autoFocus={false}>
         <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 12px' }}>
           Selecting a macro will add all its tariff codes to the line items. You can still change quantities or add more items after.
         </p>
