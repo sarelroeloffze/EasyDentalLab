@@ -60,6 +60,13 @@ export function SearchSelect({ label, value, onChange, options, placeholder, sty
           onFocus={() => { setQuery(""); }}
           onChange={e => { setQuery(e.target.value); if (!open) setOpen(true); }}
           onBlur={handleBlur}
+          onKeyDown={e => {
+            if (e.key === 'Escape' && open) {
+              e.stopPropagation();
+              setOpen(false);
+              setQuery("");
+            }
+          }}
           autoComplete="off"
           autoFocus={autoFocus}
         />

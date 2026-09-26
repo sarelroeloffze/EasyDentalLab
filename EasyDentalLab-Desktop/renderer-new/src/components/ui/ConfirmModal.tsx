@@ -38,6 +38,14 @@ export function ConfirmModal({
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel();
       }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          onCancel();
+        }
+      }}
+      tabIndex={-1}
     >
       <div
         style={{
