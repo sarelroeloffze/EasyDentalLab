@@ -206,10 +206,14 @@ export function CodeInput({
       }
       setOpen(false);
     } else if (e.key === 'Escape') {
-      // Escape: close dropdown
       e.preventDefault();
-      setOpen(false);
-      setQuery('');
+      if (open) {
+        // Dropdown is open: close it and stop propagation
+        e.stopPropagation();
+        setOpen(false);
+        setQuery('');
+      }
+      // If dropdown already closed, let Escape bubble up to close the form
     }
   };
 
@@ -287,7 +291,7 @@ export function CodeInput({
                   display: 'flex',
                   justifyContent: 'space-between',
                   gap: 10,
-                  background: idx === hlIdx ? 'var(--c-sel)' : 'var(--c-surface)',
+                  background: idx === hlIdx ? '#dbeafe' : 'var(--c-surface)',
                   minHeight: '28px',
                   lineHeight: '1.3'
                 }}
