@@ -209,9 +209,9 @@ export function CodeInput({
       e.preventDefault();
       if (open) {
         // Dropdown is open: close it and stop propagation
+        // Keep the typed text so user can continue from where they left off
         e.stopPropagation();
         setOpen(false);
-        setQuery('');
       }
       // If dropdown already closed, let Escape bubble up to close the form
     }
