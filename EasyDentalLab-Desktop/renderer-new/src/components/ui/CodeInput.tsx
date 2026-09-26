@@ -224,7 +224,7 @@ export function CodeInput({
         className="input-field"
         data-field="code"
         data-row={rowId}
-        value={open ? query : value}
+        value={query || value}
         onChange={(e) => {
           setQuery(e.target.value);
           if (!open) setOpen(true);
