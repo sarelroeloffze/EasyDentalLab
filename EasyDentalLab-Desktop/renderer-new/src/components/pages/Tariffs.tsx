@@ -173,9 +173,11 @@ export function Tariffs({ data, setData }: TariffsProps) {
           tariff={editing}
           onSave={save}
           onCancel={() => {
-            setShowForm(false);
-            setEditing(null);
-            setFormIsDirty(false);
+            handleCloseAttempt(() => {
+              setShowForm(false);
+              setEditing(null);
+              setFormIsDirty(false);
+            });
           }}
           onDirtyChange={setFormIsDirty}
           categories={categories}

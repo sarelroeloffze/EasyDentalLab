@@ -161,9 +161,11 @@ export function Clients({ data, setData }: ClientsProps) {
           client={editing}
           onSave={save}
           onCancel={() => {
-            setShowForm(false);
-            setEditing(null);
-            setFormIsDirty(false);
+            handleCloseAttempt(() => {
+              setShowForm(false);
+              setEditing(null);
+              setFormIsDirty(false);
+            });
           }}
           onDirtyChange={setFormIsDirty}
         />

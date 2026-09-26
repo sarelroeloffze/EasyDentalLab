@@ -24,9 +24,19 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
       }, 200); // 200ms grace period
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && modalOpen) {
+        handleClose();
+      }
+    };
+
     window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, []);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [modalOpen]);
 
   const handleClose = () => {
     if (onCloseAttempt) {

@@ -176,6 +176,19 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
             ))}
           </tbody>
         </table>
+
+        {(!name.trim() || codes.filter(c => c.code.trim() !== "").length === 0) && (
+          <p style={{
+            fontSize: 12,
+            color: '#dc2626',
+            marginTop: 8,
+            marginBottom: 0
+          }}>
+            {!name.trim()
+              ? "Macro name is required"
+              : "At least one tariff code is required"}
+          </p>
+        )}
       </div>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 24 }}>
