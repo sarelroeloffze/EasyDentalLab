@@ -6,10 +6,10 @@ import { getInvoiceBalance } from '../../utils/calculations';
 interface DashboardProps {
   data: AppData;
   setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
-  onNavigate?: (page: string) => void;
+  onNavigateAndOpenForm?: (page: string) => void;
 }
 
-export function Dashboard({ data, onNavigate }: DashboardProps) {
+export function Dashboard({ data, onNavigateAndOpenForm }: DashboardProps) {
   const stats = useMemo(() => {
     const totalClients = data.clients.length;
     const totalInvoices = data.invoices.length;
@@ -102,10 +102,9 @@ export function Dashboard({ data, onNavigate }: DashboardProps) {
           gap: 12,
           flexWrap: 'wrap'
         }}>
-          <QuickAction icon="📄" label="New Invoice" onClick={() => onNavigate?.('invoices')} />
-          <QuickAction icon="📝" label="New Estimate" onClick={() => onNavigate?.('estimates')} />
-          <QuickAction icon="👨‍⚕️" label="New Client" onClick={() => onNavigate?.('clients')} />
-          <QuickAction icon="💰" label="New Payment" onClick={() => onNavigate?.('clients')} />
+          <QuickAction icon="📄" label="New Invoice" onClick={() => onNavigateAndOpenForm?.('invoices')} />
+          <QuickAction icon="📝" label="New Estimate" onClick={() => onNavigateAndOpenForm?.('estimates')} />
+          <QuickAction icon="👨‍⚕️" label="New Client" onClick={() => onNavigateAndOpenForm?.('clients')} />
         </div>
       </div>
     </div>

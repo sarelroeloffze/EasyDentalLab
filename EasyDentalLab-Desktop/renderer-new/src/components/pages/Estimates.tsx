@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { AppData, Estimate } from '../../types';
 import { Button, Modal, ConfirmModal } from '../ui';
 import { EstimateForm } from '../forms/EstimateForm';
@@ -7,14 +7,24 @@ import { fmt, fmtDate, genId } from '../../utils/helpers';
 interface EstimatesProps {
   data: AppData;
   setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
+  openFormOnMount?: boolean;
+  onFormOpened?: () => void;
 }
 
-export function Estimates({ data, setData }: EstimatesProps) {
+export function Estimates({ data, setData, openFormOnMount, onFormOpened }: EstimatesProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Estimate | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const pendingClose = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (openFormOnMount) {
+      setEditing(null);
+      setShowForm(true);
+      onFormOpened?.();
+    }
+  }, [openFormOnMount, onFormOpened]);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import type { AppData, Client } from '../../types';
 import { Button, Modal, ConfirmModal } from '../ui';
 import { ClientForm } from '../forms/ClientForm';
@@ -7,9 +7,11 @@ import { genId } from '../../utils/helpers';
 interface ClientsProps {
   data: AppData;
   setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
+  openFormOnMount?: boolean;
+  onFormOpened?: () => void;
 }
 
-export function Clients({ data, setData }: ClientsProps) {
+export function Clients({ data, setData, openFormOnMount, onFormOpened }: ClientsProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Client | null>(null);
   const [formIsDirty, setFormIsDirty] = useState(false);
@@ -17,6 +19,14 @@ export function Clients({ data, setData }: ClientsProps) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Client | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    if (openFormOnMount) {
+      setEditing(null);
+      setShowForm(true);
+      onFormOpened?.();
+    }
+  }, [openFormOnMount, onFormOpened]);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;

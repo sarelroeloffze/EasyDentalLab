@@ -21,6 +21,12 @@ function App() {
   const { isElectron, updateAvailable, updateDownloaded, installUpdate } = useElectron();
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [openFormOnMount, setOpenFormOnMount] = useState(false);
+
+  const navigateAndOpenForm = (page: string) => {
+    setCurrentPage(page);
+    setOpenFormOnMount(true);
+  };
 
   if (!loaded) {
     return (
@@ -43,15 +49,15 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard data={data} setData={setData} onNavigate={setCurrentPage} />;
+        return <Dashboard data={data} setData={setData} onNavigateAndOpenForm={navigateAndOpenForm} />;
       case 'invoices':
-        return <Invoices data={data} setData={setData} />;
+        return <Invoices data={data} setData={setData} openFormOnMount={openFormOnMount} onFormOpened={() => setOpenFormOnMount(false)} />;
       case 'estimates':
-        return <Estimates data={data} setData={setData} />;
+        return <Estimates data={data} setData={setData} openFormOnMount={openFormOnMount} onFormOpened={() => setOpenFormOnMount(false)} />;
       case 'directclaimed':
         return <DirectClaimed data={data} setData={setData} />;
       case 'clients':
-        return <Clients data={data} setData={setData} />;
+        return <Clients data={data} setData={setData} openFormOnMount={openFormOnMount} onFormOpened={() => setOpenFormOnMount(false)} />;
       case 'tariffs':
         return <Tariffs data={data} setData={setData} />;
       case 'macros':

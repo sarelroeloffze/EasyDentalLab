@@ -4,7 +4,7 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.17';
+export const APP_VERSION = '3.0.18';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
