@@ -1,6 +1,6 @@
 {
   "name": "easydentallab",
-  "version": "3.0.26",
+  "version": "3.0.27",
   "description": "Dental laboratory invoicing application for South Africa",
   "homepage": "https://github.com/sarelroeloffze/EasyDentalLab",
   "main": "main.js",

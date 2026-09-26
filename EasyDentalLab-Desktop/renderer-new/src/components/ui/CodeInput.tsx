@@ -113,7 +113,8 @@ export function CodeInput({
 
   // Confirm highlighted code and add new line
   const confirmAndAddLine = () => {
-    if (filtered.length > 0) {
+    const q = (query || value || '').trim();
+    if (q && filtered.length > 0) {
       const match = filtered[hlIdx] || filtered[0];
       if (match) onSelect(match);
     }
@@ -158,10 +159,13 @@ export function CodeInput({
         confirmAndAddLine();
       } else if (open && filtered.length > 0) {
         // Enter: Pick highlighted code and move to qty
-        const match = filtered[hlIdx] || filtered[0];
-        if (match) {
-          pick(match);
-          moveToQtyField();
+        const q = (query || value || '').trim();
+        if (q) {
+          const match = filtered[hlIdx] || filtered[0];
+          if (match) {
+            pick(match);
+            moveToQtyField();
+          }
         }
       } else if (value) {
         // Enter with dropdown closed: just move to qty
@@ -200,7 +204,8 @@ export function CodeInput({
       }
     } else if (e.key === 'Tab') {
       // Tab: confirm and let browser move focus
-      if (open && filtered.length > 0) {
+      const q = (query || value || '').trim();
+      if (q && open && filtered.length > 0) {
         const match = filtered[hlIdx] || filtered[0];
         if (match) pick(match);
       }
