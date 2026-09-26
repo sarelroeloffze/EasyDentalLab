@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import type { LineItem, Tariff, Macro } from '../../types';
 import { CodeInput, Modal } from '../ui';
 import { SvgIcon, ICO } from '../../utils/icons';
@@ -17,6 +17,8 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
   const [showMacroPicker, setShowMacroPicker] = useState(false);
   const [tSearch, setTSearch] = useState("");
   const [mSearch, setMSearch] = useState("");
+  const fromTariffButtonRef = useRef<HTMLButtonElement>(null);
+  const fromMacroButtonRef = useRef<HTMLButtonElement>(null);
 
   const addBlank = () => {
     const id = genId();
@@ -112,6 +114,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
         <div style={{ display: 'flex', gap: 6 }}>
           {macros && macros.length > 0 && (
             <button
+              ref={fromMacroButtonRef}
               className="btn btn-sm"
               title="Select a device macro to add all its tariff codes at once"
               style={{ background: '#7c3aed', color: 'white' }}
@@ -121,6 +124,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
             </button>
           )}
           <button
+            ref={fromTariffButtonRef}
             className="btn btn-secondary btn-sm"
             title="Add a single tariff code from the tariff list"
             onClick={() => setShowPicker(true)}
@@ -230,7 +234,11 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       )}
 
       {/* Tariff Picker Modal */}
-      <Modal open={showPicker} onClose={() => { setShowPicker(false); setTSearch(""); }} title="Select Tariff Code" autoFocus={false}>
+      <Modal open={showPicker} onClose={() => {
+        setShowPicker(false);
+        setTSearch("");
+        setTimeout(() => fromTariffButtonRef.current?.focus(), 0);
+      }} title="Select Tariff Code" autoFocus={false}>
         <input
           className="input-field"
           value={tSearch}
@@ -276,7 +284,11 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       </Modal>
 
       {/* Macro Picker Modal */}
-      <Modal open={showMacroPicker} onClose={() => { setShowMacroPicker(false); setMSearch(""); }} title="Select Macro (Device Template)" autoFocus={false}>
+      <Modal open={showMacroPicker} onClose={() => {
+        setShowMacroPicker(false);
+        setMSearch("");
+        setTimeout(() => fromMacroButtonRef.current?.focus(), 0);
+      }} title="Select Macro (Device Template)" autoFocus={false}>
         <p style={{ fontSize: 12, color: '#6b7280', margin: '0 0 12px' }}>
           Selecting a macro will add all its tariff codes to the line items. You can still change quantities or add more items after.
         </p>
