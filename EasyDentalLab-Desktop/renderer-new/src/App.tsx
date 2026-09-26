@@ -43,7 +43,7 @@ function App() {
   const renderPage = () => {
     switch (currentPage) {
       case 'dashboard':
-        return <Dashboard data={data} setData={setData} />;
+        return <Dashboard data={data} setData={setData} onNavigate={setCurrentPage} />;
       case 'invoices':
         return <Invoices data={data} setData={setData} />;
       case 'estimates':

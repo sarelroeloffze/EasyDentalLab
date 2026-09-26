@@ -6,9 +6,10 @@ import { getInvoiceBalance } from '../../utils/calculations';
 interface DashboardProps {
   data: AppData;
   setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
+  onNavigate?: (page: string) => void;
 }
 
-export function Dashboard({ data }: DashboardProps) {
+export function Dashboard({ data, onNavigate }: DashboardProps) {
   const stats = useMemo(() => {
     const totalClients = data.clients.length;
     const totalInvoices = data.invoices.length;
@@ -96,15 +97,15 @@ export function Dashboard({ data }: DashboardProps) {
         }}>
           Quick Actions
         </h2>
-        <div style={{ 
-          display: 'flex', 
-          gap: 12, 
-          flexWrap: 'wrap' 
+        <div style={{
+          display: 'flex',
+          gap: 12,
+          flexWrap: 'wrap'
         }}>
-          <QuickAction icon="📄" label="New Invoice" />
-          <QuickAction icon="📝" label="New Estimate" />
-          <QuickAction icon="👨‍⚕️" label="New Client" />
-          <QuickAction icon="💰" label="New Payment" />
+          <QuickAction icon="📄" label="New Invoice" onClick={() => onNavigate?.('invoices')} />
+          <QuickAction icon="📝" label="New Estimate" onClick={() => onNavigate?.('estimates')} />
+          <QuickAction icon="👨‍⚕️" label="New Client" onClick={() => onNavigate?.('clients')} />
+          <QuickAction icon="💰" label="New Payment" onClick={() => onNavigate?.('clients')} />
         </div>
       </div>
     </div>
@@ -149,22 +150,33 @@ function StatCard({
   );
 }
 
-function QuickAction({ icon, label }: { icon: string; label: string }) {
+function QuickAction({ icon, label, onClick }: { icon: string; label: string; onClick?: () => void }) {
   return (
-    <button style={{
-      background: 'var(--c-surface2)',
-      border: '1px solid var(--c-border)',
-      borderRadius: 8,
-      padding: '12px 20px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      cursor: 'pointer',
-      fontSize: 14,
-      fontWeight: 500,
-      color: 'var(--c-text1)',
-      transition: 'all 0.2s'
-    }}>
+    <button
+      onClick={onClick}
+      style={{
+        background: 'var(--c-surface2)',
+        border: '1px solid var(--c-border)',
+        borderRadius: 8,
+        padding: '12px 20px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        cursor: 'pointer',
+        fontSize: 14,
+        fontWeight: 500,
+        color: 'var(--c-text1)',
+        transition: 'all 0.2s'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.background = 'var(--c-surface)';
+        e.currentTarget.style.borderColor = '#2563eb';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.background = 'var(--c-surface2)';
+        e.currentTarget.style.borderColor = 'var(--c-border)';
+      }}
+    >
       <span>{icon}</span>
       <span>{label}</span>
     </button>
