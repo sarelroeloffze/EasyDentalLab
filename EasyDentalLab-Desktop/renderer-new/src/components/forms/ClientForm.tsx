@@ -11,7 +11,7 @@ interface ClientFormProps {
   prefillName?: string;
 }
 
-export function ClientForm({ client, clients, onSave, onCancel, onDirtyChange, prefillName }: ClientFormProps) {
+export function ClientForm({ client, clients: _clients, onSave, onCancel, onDirtyChange, prefillName }: ClientFormProps) {
   const initialFormData = client || {
     name: prefillName || "",
     practice: "",

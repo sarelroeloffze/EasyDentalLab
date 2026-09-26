@@ -6,7 +6,6 @@ publish:
   provider: github
   owner: sarelroeloffze
   repo: EasyDentalLab
-  private: true
 
 directories:
   output: build
@@ -14,7 +13,7 @@ directories:
 files:
   - main.js
   - preload.js
-  - renderer/**/*
+  - renderer-new/dist/**/*
   - resources/**/*
 
 win:
