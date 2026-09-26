@@ -179,8 +179,17 @@ export function CodeInput({
       e.preventDefault();
 
       if (open && filtered.length > 0) {
-        // Navigate down in dropdown
-        setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
+        const q = (query || value || '').toLowerCase().trim();
+        const highlighted = filtered[hlIdx];
+
+        // If typed code exactly matches highlighted code, confirm and add new line
+        // This enables fast data entry: type code, press Down, type next code
+        if (highlighted && q === highlighted.code.toLowerCase()) {
+          confirmAndAddLine();
+        } else {
+          // Otherwise navigate down in dropdown
+          setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
+        }
       } else {
         // Dropdown closed: confirm and add new line (legacy behavior)
         confirmAndAddLine();
