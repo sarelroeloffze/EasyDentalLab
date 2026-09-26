@@ -57,7 +57,7 @@ export function SearchSelect({ label, value, onChange, options, placeholder, sty
           style={{ paddingRight: 32 }}
           value={open ? query : (selected?.label || "")}
           placeholder={placeholder || "Type to search..."}
-          onFocus={() => { setOpen(true); setQuery(""); }}
+          onFocus={() => { setQuery(""); }}
           onChange={e => { setQuery(e.target.value); if (!open) setOpen(true); }}
           onBlur={handleBlur}
           autoComplete="off"
