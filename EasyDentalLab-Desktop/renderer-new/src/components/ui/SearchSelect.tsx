@@ -82,7 +82,7 @@ export function SearchSelect({ label, value, onChange, options, placeholder, sty
       <div style={{ position: 'relative' }}>
         <input
           className="input-field"
-          style={{ paddingRight: 32 }}
+          style={{ paddingRight: 32, width: '100%' }}
           value={open ? query : (selected?.label || "")}
           placeholder={placeholder || "Type to search..."}
           onFocus={() => {
