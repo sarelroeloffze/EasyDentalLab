@@ -17,6 +17,7 @@ interface InputProps {
   min?: string | number;
   max?: string | number;
   step?: string | number;
+  autoFocus?: boolean;
 }
 
 export function Input({
@@ -35,7 +36,8 @@ export function Input({
   disabled,
   min,
   max,
-  step
+  step,
+  autoFocus
 }: InputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     onChange(e.target.value);
@@ -79,6 +81,7 @@ export function Input({
           disabled={disabled}
           rows={rows}
           style={inputStyle}
+          autoFocus={autoFocus}
         />
       ) : (
         <input
@@ -94,6 +97,7 @@ export function Input({
           max={max}
           step={step}
           style={inputStyle}
+          autoFocus={autoFocus}
         />
       )}
       {error && (

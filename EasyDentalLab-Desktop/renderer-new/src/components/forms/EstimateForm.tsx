@@ -107,6 +107,7 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
           onChange={v => s("clientId", v)}
           options={clients.map(c => ({ value: c.id, label: c.name + (c.practice ? " — " + c.practice : "") }))}
           placeholder="Type to search dentists..."
+          autoFocus={!estimate}
         />
         <Input
           label="Estimate Date"

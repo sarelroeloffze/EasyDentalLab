@@ -107,6 +107,7 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange }: 
           onChange={v => s("clientId", v)}
           options={clients.map(c => ({ value: c.id, label: c.name + (c.practice ? " — " + c.practice : "") }))}
           placeholder="Type to search dentists..."
+          autoFocus={!invoice}
         />
         <Input
           label="Invoice Date"

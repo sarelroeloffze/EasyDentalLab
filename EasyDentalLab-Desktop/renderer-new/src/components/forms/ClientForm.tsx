@@ -52,6 +52,7 @@ export function ClientForm({ client, onSave, onCancel, onDirtyChange }: ClientFo
           onChange={v => s("name", v)}
           required
           placeholder="e.g. Dr. Smith"
+          autoFocus={!client}
         />
         <Input
           label="Practice Name"

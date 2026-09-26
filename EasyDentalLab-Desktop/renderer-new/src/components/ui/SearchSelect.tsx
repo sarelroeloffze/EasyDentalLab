@@ -8,9 +8,10 @@ interface SearchSelectProps {
   options: Array<{ value: string; label: string }>;
   placeholder?: string;
   style?: React.CSSProperties;
+  autoFocus?: boolean;
 }
 
-export function SearchSelect({ label, value, onChange, options, placeholder, style }: SearchSelectProps) {
+export function SearchSelect({ label, value, onChange, options, placeholder, style, autoFocus }: SearchSelectProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
@@ -60,6 +61,7 @@ export function SearchSelect({ label, value, onChange, options, placeholder, sty
           onChange={e => { setQuery(e.target.value); if (!open) setOpen(true); }}
           onBlur={handleBlur}
           autoComplete="off"
+          autoFocus={autoFocus}
         />
         <span
           onMouseDown={(e) => {
