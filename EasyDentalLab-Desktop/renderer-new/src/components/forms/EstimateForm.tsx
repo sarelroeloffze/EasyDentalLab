@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Estimate, AppData, LineItem } from '../../types';
-import { Input, Select, SearchSelect, MedicalAidSelect } from '../ui';
+import type { Estimate, AppData, LineItem, Client } from '../../types';
+import { Input, Select, SearchSelect, MedicalAidSelect, Modal } from '../ui';
 import { LineItemEditor } from './LineItemEditor';
+import { ClientForm } from './ClientForm';
 import { genId, fmt, descForLang, today } from '../../utils/helpers';
 
 interface EstimateFormProps {
@@ -10,9 +11,10 @@ interface EstimateFormProps {
   onSave: (formData: any) => void;
   onCancel: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  onSaveClient?: (client: Client) => Client;
 }
 
-export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }: EstimateFormProps) {
+export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, onSaveClient }: EstimateFormProps) {
   const getInitialItems = (): LineItem[] => {
     if (estimate) return Array.isArray(estimate.items) ? estimate.items : [];
     return [{ id: genId(), code: "", description: "", qty: 1, price: 0 }];
@@ -40,6 +42,8 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
   const [lang, setLang] = useState<'en' | 'af'>(estimate?.lang || "en");
   const [discountEnabled, setDiscountEnabled] = useState(estimate?.discountEnabled || false);
   const [discountPercent, setDiscountPercent] = useState(estimate?.discountPercent || 15);
+  const [showNewClientModal, setShowNewClientModal] = useState(false);
+  const [newClientName, setNewClientName] = useState('');
 
   const s = (k: string, v: any) => setF((p: any) => ({ ...p, [k]: v }));
 
@@ -99,6 +103,7 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
   const total = afterDiscount;
 
   return (
+    <>
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 16 }}>
         <SearchSelect
@@ -108,6 +113,11 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
           options={clients.map(c => ({ value: c.id, label: c.name + (c.practice ? " — " + c.practice : "") }))}
           placeholder="Type to search dentists..."
           autoFocus={!estimate}
+          autoOpen={true}
+          onAddNew={(name) => {
+            setNewClientName(name);
+            setShowNewClientModal(true);
+          }}
         />
         <Input
           label="Estimate Date"
@@ -307,5 +317,22 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange }
         </button>
       </div>
     </div>
+
+    {showNewClientModal && onSaveClient && (
+      <Modal open={true} onClose={() => setShowNewClientModal(false)} title="Add New Dentist">
+        <ClientForm
+          client={null}
+          clients={data.clients}
+          onSave={(newClient) => {
+            const saved = onSaveClient(newClient);
+            s("clientId", saved.id);
+            setShowNewClientModal(false);
+          }}
+          onCancel={() => setShowNewClientModal(false)}
+          prefillName={newClientName}
+        />
+      </Modal>
+    )}
+    </>
   );
 }

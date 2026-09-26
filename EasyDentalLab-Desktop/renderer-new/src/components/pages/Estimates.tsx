@@ -62,6 +62,18 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
     setFormIsDirty(false);
   };
 
+  const saveClient = (form: any) => {
+    const newClient = {
+      ...form,
+      id: genId()
+    };
+    setData(prev => ({
+      ...prev,
+      clients: [...prev.clients, newClient]
+    }));
+    return newClient;
+  };
+
   const handleCloseAttempt = (onClose: () => void) => {
     if (formIsDirty) {
       pendingClose.current = onClose;
@@ -188,6 +200,7 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
             });
           }}
           onDirtyChange={setFormIsDirty}
+          onSaveClient={saveClient}
         />
       </Modal>
 

@@ -200,6 +200,7 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
       >
         <ClientForm
           client={editing}
+          clients={data.clients}
           onSave={save}
           onCancel={() => {
             handleCloseAttempt(() => {

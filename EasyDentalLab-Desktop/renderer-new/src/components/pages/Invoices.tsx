@@ -63,6 +63,18 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
     setFormIsDirty(false);
   };
 
+  const saveClient = (form: any) => {
+    const newClient = {
+      ...form,
+      id: genId()
+    };
+    setData(prev => ({
+      ...prev,
+      clients: [...prev.clients, newClient]
+    }));
+    return newClient;
+  };
+
   const handleCloseAttempt = (onClose: () => void) => {
     if (formIsDirty) {
       pendingClose.current = onClose;
@@ -202,6 +214,7 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
             });
           }}
           onDirtyChange={setFormIsDirty}
+          onSaveClient={saveClient}
         />
       </Modal>
 

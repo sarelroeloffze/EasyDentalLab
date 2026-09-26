@@ -4,14 +4,16 @@ import { Input } from '../ui';
 
 interface ClientFormProps {
   client: Client | null;
+  clients: Client[];
   onSave: (formData: any) => void;
   onCancel: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  prefillName?: string;
 }
 
-export function ClientForm({ client, onSave, onCancel, onDirtyChange }: ClientFormProps) {
+export function ClientForm({ client, clients, onSave, onCancel, onDirtyChange, prefillName }: ClientFormProps) {
   const initialFormData = client || {
-    name: "",
+    name: prefillName || "",
     practice: "",
     phone: "",
     email: "",
