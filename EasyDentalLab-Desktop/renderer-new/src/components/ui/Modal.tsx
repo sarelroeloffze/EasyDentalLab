@@ -9,9 +9,10 @@ interface ModalProps {
   width?: number;
   wide?: boolean;
   onCloseAttempt?: (onClose: () => void) => void; // Callback that receives onClose
+  autoFocus?: boolean; // Auto-focus overlay when modal opens (default: true)
 }
 
-export function Modal({ isOpen, open, onClose, title, children, width, wide, onCloseAttempt }: ModalProps) {
+export function Modal({ isOpen, open, onClose, title, children, width, wide, onCloseAttempt, autoFocus = true }: ModalProps) {
   const windowJustFocusedRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const modalOpen = open ?? isOpen ?? false;
@@ -29,12 +30,18 @@ export function Modal({ isOpen, open, onClose, title, children, width, wide, onC
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  // Auto-focus modal when it opens
+  // Auto-focus modal when it opens (unless disabled for pickers with search inputs)
   useEffect(() => {
-    if (modalOpen && overlayRef.current) {
-      overlayRef.current.focus();
+    if (autoFocus && modalOpen && overlayRef.current) {
+      // Small delay to let child inputs claim focus first
+      const timer = setTimeout(() => {
+        if (overlayRef.current && document.activeElement?.tagName !== 'INPUT') {
+          overlayRef.current.focus();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
     }
-  }, [modalOpen]);
+  }, [autoFocus, modalOpen]);
 
   const handleClose = () => {
     if (onCloseAttempt) {
