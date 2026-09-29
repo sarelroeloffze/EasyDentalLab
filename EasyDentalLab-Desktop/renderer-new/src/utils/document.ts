@@ -284,7 +284,7 @@ export const buildPDFBlob = async (doc: Document, data: AppData, type: DocumentT
     styles: { fontSize: fs, cellPadding: 1, lineColor: [0, 0, 0], lineWidth: 0.2, textColor: [0, 0, 0], font: 'helvetica' },
     columnStyles: { 0: { cellWidth: 35 }, 1: { cellWidth: 43 } },
   });
-  y = Math.max(ly, pdf.lastAutoTable.finalY) + 3;
+  y = Math.max(ly, pdf.lastAutoTable.finalY) + 8;
 
   // ROW 2: Referring provider (left) + Patient/member (right)
   const row2Y = y;

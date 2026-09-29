@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.34 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.34 aligns PDF layout with old version
+### Current Version: Desktop App v3.0.35 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.35 fixes PDF table spacing
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -252,12 +252,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** PDF layout now matches old version exactly — correct font sizes, logo size, footer messages, and row counts
   - Desktop only
 
-### Available Installers (v3.0.34)
+- ✅ **v3.0.35 Update** (September 29, 2026) — **FIX PDF TABLE SPACING**
+  - **Problem:** Patient/member details table was slightly overlapping with the document info table above it (that ends with "Page 1 of 1")
+  - **Root cause:** Gap between ROW 1 and ROW 2 was only 3mm, but patient/member table started at `row2Y - 5`, resulting in overlap
+  - **Solution:** Increased gap from 3mm to 8mm in `buildPDFBlob` function (line 287: `+ 3` → `+ 8`)
+  - **Result:** Proper spacing between document info table and patient/member details table — no more overlap
+  - Desktop only
+
+### Available Installers (v3.0.35)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.34.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.35.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -271,7 +278,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.34 ready** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
+- 🔄 **v3.0.35 ready** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)
+- ✅ **v3.0.34 published** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
 - ✅ **v3.0.33 published** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
 - ✅ **v3.0.32 published** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
 - ✅ **v2.3.60 published** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
