@@ -2,7 +2,7 @@
 // Document Utilities - Print & PDF Generation
 // ============================================================
 
-import jsPDF from 'jspdf';
+import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import type { Invoice, Estimate, AppData, LineItem } from '../types';
 import { fmt, fmtDate, escHtml, descForLang } from './helpers';
