@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.32 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.32 restores all missing functionality to new TypeScript version
+### Current Version: Desktop App v3.0.33 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.33 fixes PDF generation error
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -233,12 +233,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete feature parity restored — all functionality from old version now working in new TypeScript version
   - Desktop only
 
-### Available Installers (v3.0.32)
+- ✅ **v3.0.33 Update** (September 29, 2026) — **FIX PDF GENERATION ERROR**
+  - **Problem:** Clicking Download PDF button showed error "Could not create PDF: b.autoTable is not a function"
+  - **Root cause:** jsPDF 4.2.1 was incompatible with jspdf-autotable 5.0.8 in renderer-new package.json
+  - **Solution:** Updated to jsPDF 2.5.1 + jspdf-autotable 3.8.2 (matching versions from old working version)
+  - **Result:** PDF generation now works correctly for Download PDF, WhatsApp sharing, and print functionality
+  - Desktop only
+
+### Available Installers (v3.0.33)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab Setup 3.0.32.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.33.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -252,7 +259,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.32 ready** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
+- 🔄 **v3.0.33 ready** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
+- ✅ **v3.0.32 published** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
 - ✅ **v2.3.60 published** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
 - ✅ **v2.3.59 published** (September 3, 2026) — Fixed code selection bug (clicked code not registering when typing then clicking different code)
 - ✅ **v2.3.48 published** (July 29, 2026) — Fixed code selection bug (Down Arrow after click) + input freeze bug (windowJustFocused timeout)
