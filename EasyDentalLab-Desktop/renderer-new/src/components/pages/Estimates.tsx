@@ -316,13 +316,8 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   // Sorting
   const handleSort = (column: SortColumn) => {
     if (sortBy === column) {
-      // Cycle through: asc → desc → null
-      if (sortOrder === 'asc') {
-        setSortOrder('desc');
-      } else if (sortOrder === 'desc') {
-        setSortBy(null);
-        setSortOrder(null);
-      }
+      // Toggle between asc and desc
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(column);
       setSortOrder('asc');

@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.36 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.36 adds sortable columns to Invoices & Estimates
+### Current Version: Desktop App v3.0.37 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.37 simplifies sorting to 2-state toggle
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -270,12 +270,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Users can now click column headings to sort tables — essential for finding invoices/estimates quickly
   - Desktop only
 
-### Available Installers (v3.0.36)
+- ✅ **v3.0.37 Update** (September 29, 2026) — **SIMPLIFY SORTING TO 2-STATE TOGGLE**
+  - **Problem:** Tri-state sorting (asc → desc → default) was unnecessary — users only need ascending/descending toggle
+  - **Solution:** Changed `handleSort()` to toggle between ascending and descending only (removed null/default state)
+  - **Result:** Simpler UX — first click = ascending (↑), second click = descending (↓), third click = ascending again
+  - Desktop only
+
+### Available Installers (v3.0.37)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.36.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.37.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -289,7 +295,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.36 ready** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
+- 🔄 **v3.0.37 ready** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
+- ✅ **v3.0.36 published** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
 - ✅ **v3.0.35 published** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)
 - ✅ **v3.0.34 published** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
 - ✅ **v3.0.33 published** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
