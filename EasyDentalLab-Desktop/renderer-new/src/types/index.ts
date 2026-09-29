@@ -42,6 +42,7 @@ export interface Estimate {
   clientId: string;
   clientName: string;
   date: string;
+  validUntil?: string;    // YYYY-MM-DD
   patientTitle: string;
   patientSurname: string;
   patientName: string;

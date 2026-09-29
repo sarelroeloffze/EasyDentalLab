@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-09-25)
+## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v2.3.60 + Web App v2.3.60 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v2.3.60 fixes arrow navigation double-pick bug + improves keyboard UX
+### Current Version: Desktop App v3.0.32 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.32 restores all missing functionality to new TypeScript version
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -220,14 +220,25 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Help updated:** "Tips & Keyboard Shortcuts" section rewritten with complete keyboard navigation guide
   - Both versions
 
-### Available Installers (v2.3.60)
+- ✅ **v3.0.32 Update** (September 29, 2026) — **RESTORE ALL MISSING FUNCTIONALITY TO NEW TYPESCRIPT VERSION**
+  - **Problem:** New TypeScript version (`renderer-new/`) was incomplete — only had Edit buttons on Estimates and Invoices pages, missing 8+ action buttons per page
+  - **Root cause:** App was upgraded to new React + TypeScript architecture but functionality was never ported from old single-file version
+  - **Solution:** Complete port of all missing features:
+    - Created `src/utils/document.ts` with print/PDF/WhatsApp functions (`buildDocumentHTML`, `printDocument`, `buildPDFBlob`, `savePDFDocument`, `whatsappDocument`)
+    - Created `src/components/ui/CopyModal.tsx` with 3-mode copy (Copy All / Patient Only / Detail Only)
+    - Updated `src/components/pages/Estimates.tsx` — added 8 action buttons per row: Print, Download PDF, WhatsApp, Convert to Invoice, Copy, Save as Macro, Edit, Delete
+    - Updated `src/components/pages/Invoices.tsx` — added 9 action buttons per row: CLAIM/UNCLAIM, Print, Download PDF, WhatsApp, Toggle Paid, Copy, Save as Macro, Edit, Delete
+    - Added `validUntil` field to Estimate type (was missing)
+    - Added `.icon-btn` CSS styles for action button hover effects
+  - **Result:** Complete feature parity restored — all functionality from old version now working in new TypeScript version
+  - Desktop only
+
+### Available Installers (v3.0.32)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.2.3.60.exe` | ~73 MB | x64 (Intel/AMD) |
-| **macOS** | `EasyDentalLab-2.3.60-arm64.dmg` | ~91 MB | ARM64 (M1/M2/M3) |
-| **Linux** | `EasyDentalLab-2.3.60-arm64.AppImage` | ~101 MB | ARM64 |
+| **Windows** | `EasyDentalLab Setup 3.0.32.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -241,7 +252,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v2.3.60 ready** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
+- 🔄 **v3.0.32 ready** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
+- ✅ **v2.3.60 published** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
 - ✅ **v2.3.59 published** (September 3, 2026) — Fixed code selection bug (clicked code not registering when typing then clicking different code)
 - ✅ **v2.3.48 published** (July 29, 2026) — Fixed code selection bug (Down Arrow after click) + input freeze bug (windowJustFocused timeout)
 - ✅ **v2.3.47 published** (July 28, 2026) — Discount settings preserved when copying/converting estimates & invoices
