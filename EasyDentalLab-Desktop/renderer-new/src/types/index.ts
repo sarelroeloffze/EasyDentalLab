@@ -112,11 +112,16 @@ export interface MedicalAid {
 
 export interface LayoutSettings {
   logoPosition: 'left' | 'right' | 'center';
-  logoSize: number;
-  fontSize: number;
+  logoMaxHeight: number;
+  businessFontSize: number;
+  bodyFontSize: number;
+  minItemRows: number;
   printCopies: number;
-  footerMessage: string;
-  confirmationMessage: string;
+  footerMsg1: string;
+  footerMsg2: string;
+  footerMsg3: string;
+  confirmMsg1: string;
+  confirmMsg2: string;
   statementSendMethod: 'print' | 'whatsapp' | 'both';
   statementFormat: 'pdf' | 'browser';
   monthEndMode: 'individual' | 'batch' | 'both';

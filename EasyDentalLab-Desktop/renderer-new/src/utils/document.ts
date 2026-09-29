@@ -63,37 +63,37 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
     <td style="text-align:right">R&nbsp;&nbsp;${((parseFloat(String(i.qty)) || 0) * (parseFloat(String(i.price)) || 0)).toFixed(2)}</td>
   </tr>`).join('');
 
-  const emptyCount = Math.max(0, 18 - items.length);
+  const emptyCount = Math.max(0, (L.minItemRows || 18) - items.length);
   const emptyRows = Array(emptyCount).fill(`<tr>
     <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
   </tr>`).join('');
 
-  const logoHtml = p.logo ? `<img src="${p.logo}" style="max-height:${L.logoSize || 60}px;max-width:200px;object-fit:contain"/>` : '';
+  const logoHtml = p.logo ? `<img src="${p.logo}" style="max-height:${L.logoMaxHeight || 60}px;max-width:200px;object-fit:contain"/>` : '';
   const headerAlign = L.logoPosition === 'left' ? 'flex-start' : L.logoPosition === 'center' ? 'center' : 'flex-end';
 
   const html = `<!DOCTYPE html><html><head><title>${title} #${doc.number}</title>
   <style>
     @page { size: A4 portrait; margin: 0; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: ${L.fontSize || 11}px; line-height: 1.35; }
+    body { font-family: Arial, Helvetica, sans-serif; color: #000; font-size: ${L.bodyFontSize || 11}px; line-height: 1.35; }
     @media screen {
       body { padding: 20px; background: #d0d0d0; }
       .page { background: white; width: 210mm; margin: 0 auto; padding: 12mm 14mm; box-shadow: 0 2px 20px rgba(0,0,0,0.2); min-height: 297mm; position: relative; }
     }
     @media print { .no-print { display: none !important; } .page { padding: 12mm 14mm; min-height: auto; } }
     table { border-collapse: collapse; }
-    .c { padding: 3px 6px; border: 1px solid #000; font-size: ${L.fontSize || 11}px; vertical-align: top; }
-    .ch { padding: 3px 6px; border: 1px solid #000; font-size: ${L.fontSize || 11}px; font-weight: bold; vertical-align: top; }
-    .nb { padding: 2px 0; font-size: ${L.fontSize || 11}px; vertical-align: top; border: none; }
+    .c { padding: 3px 6px; border: 1px solid #000; font-size: ${L.bodyFontSize || 11}px; vertical-align: top; }
+    .ch { padding: 3px 6px; border: 1px solid #000; font-size: ${L.bodyFontSize || 11}px; font-weight: bold; vertical-align: top; }
+    .nb { padding: 2px 0; font-size: ${L.bodyFontSize || 11}px; vertical-align: top; border: none; }
     .items-table { border: 1px solid #000; }
-    .items-table th { padding: 3px 6px; font-size: ${L.fontSize || 11}px; font-weight: bold; vertical-align: top; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000; }
+    .items-table th { padding: 3px 6px; font-size: ${L.bodyFontSize || 11}px; font-weight: bold; vertical-align: top; border-left: 1px solid #000; border-right: 1px solid #000; border-bottom: 1px solid #000; }
     .items-table th:first-child { border-left: none; }
     .items-table th:last-child { border-right: none; }
-    .items-table td { padding: 3px 6px; font-size: ${L.fontSize || 11}px; vertical-align: top; border: none; border-left: 1px solid #000; border-right: 1px solid #000; }
+    .items-table td { padding: 3px 6px; font-size: ${L.bodyFontSize || 11}px; vertical-align: top; border: none; border-left: 1px solid #000; border-right: 1px solid #000; }
     .items-table td:first-child { border-left: none; }
     .items-table td:last-child { border-right: none; }
     .totals-table { border: 1px solid #000; width: 100%; }
-    .totals-table td { padding: 3px 6px; font-size: ${L.fontSize || 11}px; vertical-align: top; border: none; }
+    .totals-table td { padding: 3px 6px; font-size: ${L.bodyFontSize || 11}px; vertical-align: top; border: none; }
   </style></head><body>
   <div class="page">
     ${logoHtml ? `<div style="display:flex;justify-content:${headerAlign};margin-bottom:6px">${logoHtml}</div>` : ''}
@@ -102,13 +102,13 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
       <div style="font-size:16px;font-weight:bold;margin-top:1px">${title}</div>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
-      <div style="font-size:${L.fontSize || 11}px;line-height:1.4;max-width:55%">
+      <div style="font-size:${L.bodyFontSize || 11}px;line-height:1.4;max-width:55%">
         <div style="font-weight:normal;margin-bottom:1px">${escHtml(p.businessName || 'EasyDentalLab')}</div>
         ${p.address ? `<div style="white-space:pre-line">${escHtml(p.address)}</div>` : ''}
         ${p.phone ? `<div>Tel: ${escHtml(p.phone)}</div>` : ''}
         ${p.email ? `<div>${escHtml(p.email)}</div>` : ''}
       </div>
-      <table style="font-size:${L.fontSize || 11}px">
+      <table style="font-size:${L.bodyFontSize || 11}px">
         <tr><td class="c">Date</td><td class="c">${fmtDate(doc.date)}</td></tr>
         <tr><td class="c">${isInv ? 'Invoice' : 'Estimate'}</td><td class="c">${escHtml(doc.number)}</td></tr>
         ${p.vatNumber ? `<tr><td class="c">VAT registration</td><td class="c">${escHtml(p.vatNumber)}</td></tr>` : ''}
@@ -120,14 +120,14 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
       </table>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:3px">
-      <div style="font-size:${L.fontSize || 11}px;line-height:1.4;max-width:55%">
+      <div style="font-size:${L.bodyFontSize || 11}px;line-height:1.4;max-width:55%">
         <div>Referring provider: <strong>${escHtml(client?.name || doc.clientName)}</strong>${client?.practice ? ' — ' + escHtml(client.practice) : ''}</div>
         ${client?.pcns ? `<div>Referring PCNS: ${escHtml(client.pcns)}</div>` : ''}
         ${client?.address ? `<div style="white-space:pre-line">${escHtml(client.address)}</div>` : ''}
         ${client?.phone ? `<div>Tel: ${escHtml(client.phone)}</div>` : ''}
         ${client?.email ? `<div>${escHtml(client.email)}</div>` : ''}
       </div>
-      <table style="font-size:${L.fontSize || 11}px">
+      <table style="font-size:${L.bodyFontSize || 11}px">
         <tr><th class="ch" colspan="2">Patient/member details</th></tr>
         <tr><td class="c">Medical fund</td><td class="c">${escHtml(doc.medicalAidName)}</td></tr>
         <tr><td class="c">Membership</td><td class="c">${escHtml(doc.medicalAidNumber)}</td></tr>
@@ -135,7 +135,7 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
         <tr><td class="c">Patient</td><td class="c">${escHtml(patientFull)}</td></tr>
       </table>
     </div>
-    ${bd ? `<div style="border:1px solid #000;padding:3px 6px;margin-bottom:3px;font-size:${L.fontSize || 11}px">Bank details: ${escHtml(bd)}</div>` : ''}
+    ${bd ? `<div style="border:1px solid #000;padding:3px 6px;margin-bottom:3px;font-size:${L.bodyFontSize || 11}px">Bank details: ${escHtml(bd)}</div>` : ''}
     <table class="items-table" style="width:100%;margin-bottom:3px">
       <thead><tr>
         <th style="width:12%">Code</th>
@@ -146,15 +146,18 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
       </tr></thead>
       <tbody>${rows}${emptyRows}</tbody>
     </table>
-    ${doc.notes ? `<div style="border:1px solid #000;padding:3px 6px;margin-bottom:3px;font-size:${L.fontSize || 11}px"><strong>Notes:</strong> ${escHtml(doc.notes)}</div>` : ''}
+    ${doc.notes ? `<div style="border:1px solid #000;padding:3px 6px;margin-bottom:3px;font-size:${L.bodyFontSize || 11}px"><strong>Notes:</strong> ${escHtml(doc.notes)}</div>` : ''}
     <table class="totals-table">
       <tr><td style="text-align:right;font-weight:bold">Subtotal:</td><td style="width:100px;text-align:right;font-weight:bold">${fmt(subtotal)}</td></tr>
       ${discountEnabled ? `<tr><td style="text-align:right;color:#dc2626">Discount (${discountPercent.toFixed(1)}%):</td><td style="text-align:right;color:#dc2626">- ${fmt(discountAmount)}</td></tr>` : ''}
-      ${vatRate > 0 ? `<tr><td style="text-align:right;font-size:${(L.fontSize || 11) - 1}px;color:#666">VAT at ${vatRate}% included:</td><td style="text-align:right;font-size:${(L.fontSize || 11) - 1}px;color:#666">${fmt(vatAmount)}</td></tr>` : ''}
-      <tr><td style="text-align:right;font-weight:bold;font-size:${(L.fontSize || 11) + 2}px;border-top:1px solid #000;padding-top:4px">${isInv ? 'Invoice' : 'Estimate'} total ${vatRate > 0 ? '(incl. VAT at ' + vatRate + '%)' : '(no VAT)'}:</td><td style="text-align:right;font-weight:bold;font-size:${(L.fontSize || 11) + 2}px;border-top:1px solid #000;padding-top:4px">${fmt(afterDiscount)}</td></tr>
+      ${vatRate > 0 ? `<tr><td style="text-align:right;font-size:${(L.bodyFontSize || 11) - 1}px;color:#666">VAT at ${vatRate}% included:</td><td style="text-align:right;font-size:${(L.bodyFontSize || 11) - 1}px;color:#666">${fmt(vatAmount)}</td></tr>` : ''}
+      <tr><td style="text-align:right;font-weight:bold;font-size:${(L.bodyFontSize || 11) + 2}px;border-top:1px solid #000;padding-top:4px">${isInv ? 'Invoice' : 'Estimate'} total ${vatRate > 0 ? '(incl. VAT at ' + vatRate + '%)' : '(no VAT)'}:</td><td style="text-align:right;font-weight:bold;font-size:${(L.bodyFontSize || 11) + 2}px;border-top:1px solid #000;padding-top:4px">${fmt(afterDiscount)}</td></tr>
     </table>
-    ${L.footerMessage ? `<div style="margin-top:8px;font-size:${(L.fontSize || 11) - 1}px;color:#666">${escHtml(L.footerMessage)}</div>` : ''}
-    ${L.confirmationMessage ? `<div style="margin-top:8px;font-size:${(L.fontSize || 11) - 1}px;font-style:italic">${escHtml(L.confirmationMessage)}</div>` : ''}
+    ${L.footerMsg1 ? `<div style="margin-top:8px;font-size:${(L.bodyFontSize || 11) - 1}px;color:#666">${escHtml(L.footerMsg1)}</div>` : ''}
+    ${L.footerMsg2 ? `<div style="margin-top:2px;font-size:${(L.bodyFontSize || 11) - 1}px;color:#666">${escHtml(L.footerMsg2)}</div>` : ''}
+    ${L.footerMsg3 ? `<div style="margin-top:2px;font-size:${(L.bodyFontSize || 11) - 1}px;color:#666">${escHtml(L.footerMsg3)}</div>` : ''}
+    ${L.confirmMsg1 ? `<div style="margin-top:8px;font-size:${(L.bodyFontSize || 11) - 1}px;font-style:italic">${escHtml(L.confirmMsg1)}</div>` : ''}
+    ${L.confirmMsg2 ? `<div style="margin-top:2px;font-size:${(L.bodyFontSize || 11) - 1}px;font-style:italic">${escHtml(L.confirmMsg2)}</div>` : ''}
   </div>
   <div class="no-print" style="text-align:center;margin:20px">
     <button onclick="window.print()" style="padding:12px 24px;font-size:16px;cursor:pointer;background:#2563eb;color:white;border:none;border-radius:6px">Print ${title}</button>
@@ -226,7 +229,7 @@ export const buildPDFBlob = async (doc: Document, data: AppData, type: DocumentT
   // Logo
   if (p.logo) {
     try {
-      const logoMaxH = Math.min((L.logoSize || 60) * 0.265, 16);
+      const logoMaxH = Math.min((L.logoMaxHeight || 60) * 0.265, 16);
       const logoW = 50;
       const logoAlign = L.logoPosition || 'right';
       let lx = ml;
@@ -409,19 +412,43 @@ export const buildPDFBlob = async (doc: Document, data: AppData, type: DocumentT
   y = pdf.lastAutoTable.finalY + 2;
 
   // Footer messages
-  if (L.footerMessage) {
+  if (L.footerMsg1) {
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(fs - 1);
     pdf.setTextColor(102, 102, 102);
-    const footerLines = pdf.splitTextToSize(L.footerMessage, cw);
+    const footerLines = pdf.splitTextToSize(L.footerMsg1, cw);
     pdf.text(footerLines, ml, y);
     y += footerLines.length * lh;
   }
-  if (L.confirmationMessage) {
+  if (L.footerMsg2) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(fs - 1);
+    pdf.setTextColor(102, 102, 102);
+    const footerLines = pdf.splitTextToSize(L.footerMsg2, cw);
+    pdf.text(footerLines, ml, y);
+    y += footerLines.length * lh;
+  }
+  if (L.footerMsg3) {
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(fs - 1);
+    pdf.setTextColor(102, 102, 102);
+    const footerLines = pdf.splitTextToSize(L.footerMsg3, cw);
+    pdf.text(footerLines, ml, y);
+    y += footerLines.length * lh;
+  }
+  if (L.confirmMsg1) {
     pdf.setFont('helvetica', 'italic');
     pdf.setFontSize(fs - 1);
     pdf.setTextColor(0, 0, 0);
-    const confLines = pdf.splitTextToSize(L.confirmationMessage, cw);
+    const confLines = pdf.splitTextToSize(L.confirmMsg1, cw);
+    pdf.text(confLines, ml, y);
+    y += confLines.length * lh;
+  }
+  if (L.confirmMsg2) {
+    pdf.setFont('helvetica', 'italic');
+    pdf.setFontSize(fs - 1);
+    pdf.setTextColor(0, 0, 0);
+    const confLines = pdf.splitTextToSize(L.confirmMsg2, cw);
     pdf.text(confLines, ml, y);
   }
 

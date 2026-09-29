@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.33 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.33 fixes PDF generation error
+### Current Version: Desktop App v3.0.34 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.34 aligns PDF layout with old version
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -240,12 +240,24 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** PDF generation now works correctly for Download PDF, WhatsApp sharing, and print functionality
   - Desktop only
 
-### Available Installers (v3.0.33)
+- ✅ **v3.0.34 Update** (September 29, 2026) — **ALIGN PDF LAYOUT WITH OLD VERSION**
+  - **Problem:** PDF layout used wrong field names — new TypeScript version had `fontSize`, `logoSize`, `footerMessage`, `confirmationMessage` but old version used more detailed fields
+  - **Root cause:** Type definitions and initial data didn't match the old version's layout structure
+  - **Solution:** 
+    - Updated `LayoutSettings` interface in `types/index.ts` to match old version: `logoMaxHeight`, `businessFontSize`, `bodyFontSize`, `minItemRows`, `footerMsg1/2/3`, `confirmMsg1/2`
+    - Updated `INITIAL_DATA` in `constants/initialData.ts` with correct default values from old version
+    - Updated `utils/document.ts` to use correct field names throughout both HTML and PDF generation functions
+    - Changed footer/confirmation messages from single fields to three footer lines + two confirmation lines
+    - Changed minimum item rows from hardcoded 18 to configurable `L.minItemRows || 18`
+  - **Result:** PDF layout now matches old version exactly — correct font sizes, logo size, footer messages, and row counts
+  - Desktop only
+
+### Available Installers (v3.0.34)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.33.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.34.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -259,7 +271,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.33 ready** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
+- 🔄 **v3.0.34 ready** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
+- ✅ **v3.0.33 published** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
 - ✅ **v3.0.32 published** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
 - ✅ **v2.3.60 published** (September 25, 2026) — Fixed arrow navigation double-pick bug + improved keyboard UX (ArrowDown now navigates in dropdown, Ctrl+Enter adds new line)
 - ✅ **v2.3.59 published** (September 3, 2026) — Fixed code selection bug (clicked code not registering when typing then clicking different code)

@@ -4,7 +4,7 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.33';
+export const APP_VERSION = '3.0.34';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
@@ -25,12 +25,17 @@ export const INITIAL_DATA: AppData = {
     bankBranch: '',
     logo: '',
     layout: {
-      logoPosition: 'left',
-      logoSize: 80,
-      fontSize: 12,
+      logoPosition: 'right',
+      logoMaxHeight: 60,
+      businessFontSize: 22,
+      bodyFontSize: 11,
+      minItemRows: 18,
       printCopies: 2,
-      footerMessage: 'Thank you for your business',
-      confirmationMessage: 'I confirm that the work described above has been completed.',
+      footerMsg1: 'Thank you for your support',
+      footerMsg2: 'Outstanding invoices more than 60 days will be handed over for collection',
+      footerMsg3: 'Conforms to scale of benefits',
+      confirmMsg1: 'Please confirm details and acknowledge that the work is complete',
+      confirmMsg2: 'The patient agrees to our terms of trade and liability for the payment',
       statementSendMethod: 'print',
       statementFormat: 'pdf',
       monthEndMode: 'individual'
