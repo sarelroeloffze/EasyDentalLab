@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import type { AppData, Estimate } from '../../types';
 import { Button, Modal, ConfirmModal, CopyModal } from '../ui';
 import type { CopyMode } from '../ui/CopyModal';
@@ -14,6 +14,9 @@ interface EstimatesProps {
   onFormOpened?: () => void;
 }
 
+type SortColumn = 'number' | 'date' | 'client' | 'patient' | 'total' | null;
+type SortOrder = 'asc' | 'desc' | null;
+
 export function Estimates({ data, setData, openFormOnMount, onFormOpened }: EstimatesProps) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Estimate | null>(null);
@@ -23,6 +26,8 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   const [copyingEstimate, setCopyingEstimate] = useState<Estimate | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingEstimate, setDeletingEstimate] = useState<Estimate | null>(null);
+  const [sortBy, setSortBy] = useState<SortColumn>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -308,6 +313,66 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
     setDeletingEstimate(null);
   };
 
+  // Sorting
+  const handleSort = (column: SortColumn) => {
+    if (sortBy === column) {
+      // Cycle through: asc → desc → null
+      if (sortOrder === 'asc') {
+        setSortOrder('desc');
+      } else if (sortOrder === 'desc') {
+        setSortBy(null);
+        setSortOrder(null);
+      }
+    } else {
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
+
+  const sortedEstimates = useMemo(() => {
+    if (!sortBy || !sortOrder) return data.estimates;
+
+    const sorted = [...data.estimates].sort((a, b) => {
+      let aVal: any, bVal: any;
+
+      switch (sortBy) {
+        case 'number':
+          aVal = a.number;
+          bVal = b.number;
+          break;
+        case 'date':
+          aVal = a.date;
+          bVal = b.date;
+          break;
+        case 'client':
+          aVal = (a.clientName || '').toLowerCase();
+          bVal = (b.clientName || '').toLowerCase();
+          break;
+        case 'patient':
+          aVal = `${a.patientSurname} ${a.patientName}`.toLowerCase();
+          bVal = `${b.patientSurname} ${b.patientName}`.toLowerCase();
+          break;
+        case 'total':
+          aVal = a.total || 0;
+          bVal = b.total || 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [data.estimates, sortBy, sortOrder]);
+
+  const getSortIndicator = (column: SortColumn) => {
+    if (sortBy !== column) return ' ↕';
+    return sortOrder === 'asc' ? ' ↑' : ' ↓';
+  };
+
   return (
     <div style={{ padding: '32px' }}>
       <div style={{
@@ -347,23 +412,33 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
               background: 'var(--c-surface2)',
               borderBottom: '1px solid var(--c-border)'
             }}>
-              <th style={tableHeaderStyle}>No.</th>
-              <th style={tableHeaderStyle}>Date</th>
-              <th style={tableHeaderStyle}>Client</th>
-              <th style={tableHeaderStyle}>Patient</th>
-              <th style={tableHeaderStyle}>Total</th>
+              <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('number')}>
+                No.{getSortIndicator('number')}
+              </th>
+              <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('date')}>
+                Date{getSortIndicator('date')}
+              </th>
+              <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('client')}>
+                Client{getSortIndicator('client')}
+              </th>
+              <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('patient')}>
+                Patient{getSortIndicator('patient')}
+              </th>
+              <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('total')}>
+                Total{getSortIndicator('total')}
+              </th>
               <th style={{ ...tableHeaderStyle, textAlign: 'right', minWidth: 400 }}>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {data.estimates.length === 0 ? (
+            {sortedEstimates.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: 'var(--c-text3)' }}>
                   No estimates yet. Click "New Estimate" to create one.
                 </td>
               </tr>
             ) : (
-              data.estimates.map((est) => (
+              sortedEstimates.map((est) => (
                 <tr key={est.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
                   <td style={tableCellStyle}>{est.number}</td>
                   <td style={tableCellStyle}>{fmtDate(est.date)}</td>

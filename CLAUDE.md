@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.35 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.35 fixes PDF table spacing
+### Current Version: Desktop App v3.0.36 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.36 adds sortable columns to Invoices & Estimates
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -259,12 +259,23 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Proper spacing between document info table and patient/member details table — no more overlap
   - Desktop only
 
-### Available Installers (v3.0.35)
+- ✅ **v3.0.36 Update** (September 29, 2026) — **SORTABLE COLUMNS ON INVOICES & ESTIMATES**
+  - **Problem:** Invoices and Estimates tables had no sorting functionality — couldn't sort by number, date, client, patient, or total
+  - **Solution:**
+    - Added sorting state (`sortBy`, `sortOrder`) to both Invoices and Estimates components
+    - Implemented tri-state sorting: ascending → descending → default (click column header to cycle)
+    - Created `handleSort()` function and `sortedInvoices`/`sortedEstimates` memoized arrays
+    - Updated table headers to be clickable with visual indicators (↕ ↑ ↓)
+    - Sorting works on: No., Date, Client, Patient, Total (Status also on Invoices)
+  - **Result:** Users can now click column headings to sort tables — essential for finding invoices/estimates quickly
+  - Desktop only
+
+### Available Installers (v3.0.36)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.35.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.36.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -278,7 +289,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.35 ready** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)
+- 🔄 **v3.0.36 ready** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
+- ✅ **v3.0.35 published** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)
 - ✅ **v3.0.34 published** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
 - ✅ **v3.0.33 published** (September 29, 2026) — Fixed PDF generation error (jsPDF version incompatibility)
 - ✅ **v3.0.32 published** (September 29, 2026) — Restored all missing functionality to new TypeScript version (Print, PDF, WhatsApp, Copy, Macro, CLAIM buttons)
