@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import type { AppData, Invoice } from '../../types';
-import { Button, Modal, ConfirmModal, CopyModal } from '../ui';
+import type { AppData, Invoice, Estimate } from '../../types';
+import { Button, Modal, ConfirmModal, CopyModal, EstimateViewer } from '../ui';
 import type { CopyMode } from '../ui/CopyModal';
 import { InvoiceForm } from '../forms/InvoiceForm';
 import { fmt, fmtDate, genId, today } from '../../utils/helpers';
@@ -28,6 +28,7 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null);
   const [sortBy, setSortBy] = useState<SortColumn>(null);
   const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [viewingEstimate, setViewingEstimate] = useState<Estimate | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -281,6 +282,16 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
     alert(`Macro "${macroName.trim()}" created with ${macroCodes.length} codes!`);
   };
 
+  // View original estimate
+  const handleViewEstimate = (estimateNumber: number) => {
+    const estimate = data.estimates.find(e => e.number === estimateNumber);
+    if (estimate) {
+      setViewingEstimate(estimate);
+    } else {
+      alert('Estimate not found. It may have been deleted.');
+    }
+  };
+
   // Delete invoice
   const handleDeleteClick = (inv: Invoice) => {
     setDeletingInvoice(inv);
@@ -462,14 +473,28 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
                         </span>
                       )}
                       {inv.estimateRef && (
-                        <span style={{
-                          padding: '4px 8px',
-                          borderRadius: 4,
-                          fontSize: 12,
-                          fontWeight: 500,
-                          background: '#e9d5ff',
-                          color: '#6b21a8'
-                        }}>
+                        <span
+                          onClick={() => handleViewEstimate(inv.estimateRef!)}
+                          style={{
+                            padding: '4px 8px',
+                            borderRadius: 4,
+                            fontSize: 12,
+                            fontWeight: 500,
+                            background: '#e9d5ff',
+                            color: '#6b21a8',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#c084fc';
+                            e.currentTarget.style.color = 'white';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = '#e9d5ff';
+                            e.currentTarget.style.color = '#6b21a8';
+                          }}
+                          title="Click to view original estimate"
+                        >
                           Est #{inv.estimateRef}
                         </span>
                       )}
@@ -603,6 +628,21 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
         onCancel={handleCancelDelete}
         danger={true}
       />
+
+      {viewingEstimate && (
+        <Modal
+          open={true}
+          onClose={() => setViewingEstimate(null)}
+          title="View Estimate"
+          wide
+        >
+          <EstimateViewer
+            estimate={viewingEstimate}
+            data={data}
+            onClose={() => setViewingEstimate(null)}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

@@ -301,7 +301,13 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
     if (deletingEstimate) {
       setData(prev => ({
         ...prev,
-        estimates: prev.estimates.filter(e => e.id !== deletingEstimate.id)
+        estimates: prev.estimates.filter(e => e.id !== deletingEstimate.id),
+        // Remove estimate reference from any invoices
+        invoices: prev.invoices.map(inv =>
+          inv.estimateRef === deletingEstimate.number
+            ? { ...inv, estimateRef: null }
+            : inv
+        )
       }));
     }
     setConfirmDelete(false);

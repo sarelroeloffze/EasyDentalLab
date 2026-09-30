@@ -7,3 +7,4 @@ export { Button } from './Button';
 export { CodeInput } from './CodeInput';
 export { SearchSelect } from './SearchSelect';
 export { MedicalAidSelect } from './MedicalAidSelect';
+export { EstimateViewer } from './EstimateViewer';

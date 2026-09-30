@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-09-29)
 
-### Current Version: Desktop App v3.0.37 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.37 simplifies sorting to 2-state toggle
+### Current Version: Desktop App v3.0.38 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.38 adds clickable estimate references on invoices
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -276,6 +276,16 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Simpler UX — first click = ascending (↑), second click = descending (↓), third click = ascending again
   - Desktop only
 
+- ✅ **v3.0.38 Update** (September 30, 2026) — **CLICKABLE ESTIMATE REFERENCES ON INVOICES**
+  - **Problem:** When viewing invoices, the estimate reference badge (e.g., "Est #123") was static text — users couldn't view the original estimate
+  - **Solution:**
+    - Created new `EstimateViewer` component (`src/components/ui/EstimateViewer.tsx`) — read-only display of estimate with Print/PDF/WhatsApp buttons
+    - Made estimate reference badge clickable on Invoices page with hover effect (purple → brighter purple on hover)
+    - Added `viewingEstimate` state and `handleViewEstimate()` function to Invoices page
+    - Auto-cleanup: when deleting an estimate, all invoices with `estimateRef === estimateNumber` now set `estimateRef = null` (prevents orphaned links)
+  - **Result:** Users can now click "Est #123" badge to view original estimate in read-only modal with all action buttons; deleted estimates automatically clean up references
+  - Desktop only
+
 ### Available Installers (v3.0.37)
 **Location:** `EasyDentalLab-Desktop/build/`
 
@@ -295,7 +305,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.37 ready** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
+- 🔄 **v3.0.38 ready** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
+- ✅ **v3.0.37 published** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
 - ✅ **v3.0.36 published** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
 - ✅ **v3.0.35 published** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)
 - ✅ **v3.0.34 published** (September 29, 2026) — PDF layout aligned with old version (correct font sizes, footer messages, row counts)
@@ -794,6 +805,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Clicked code not applied to invoice | When typing a code to navigate dropdown (e.g., "9600"), then clicking a different code from the filtered list (e.g., "9602"), the typed code "9600" appeared on the invoice instead of the clicked code "9602". Root cause: Input's onChange handler called parent's onChange on every keystroke, setting item.code to the typed value; when user clicked a different code, onSelect was called but the typed value had already been saved to parent state. Fix: Removed `onChange(e.target.value)` call from input's onChange handler (line 1806 desktop, 1821 web) - typing now only updates local query state; onSelect handles ALL code updates when user clicks or confirms a selection. Added enhanced blur handler that auto-selects exact code match when user types and tabs away without clicking. Lines ~1623 (handleBlur desktop), ~1639 (handleBlur web), ~1806 (input onChange desktop), ~1821 (input onChange web). Result: Clicking a code from dropdown now correctly registers that code on invoice/estimate, not the typed search query. Both versions. |
 | **v2.3.60 Update** | **Arrow Navigation Double-Pick Bug + Improved Keyboard UX** |
 | Arrow navigation selects wrong code | When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected. Root cause: **Double-pick race condition** - Enter and Down Arrow handlers called `pick()` twice (first using `filtered[hlIdx]` from arrow navigation, then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code). Also, ArrowDown couldn't navigate DOWN in dropdown (only ArrowUp worked), creating asymmetric UX. Fix: Refactored to single-pick pattern - removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` (just moves focus) and `confirmAndAddLine()` (picks once + adds line) helpers; Enter now picks once using `filtered[hlIdx]` then calls `moveToQtyField()`; Ctrl+Enter calls `confirmAndAddLine()`; ArrowDown when dropdown open now navigates down (`setHlIdx(prev => Math.min(prev + 1, filtered.length - 1))`); ArrowDown when closed confirms and adds line (legacy behavior). Updated tooltip to show all shortcuts. Rewrote Help section "Tips & Keyboard Shortcuts" with complete navigation guide. Lines ~1677-1761 (CodeInput in web), ~1677-1746 (desktop), ~1854 (tooltip web), ~1839 (tooltip desktop), ~5713-5721 (Help web), ~5770-5778 (Help desktop). Result: Clean, predictable navigation - ArrowUp/ArrowDown navigate within dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions). Both versions. |
+| **v3.0.38 Update** | **Clickable Estimate References on Invoices** |
+| Clickable estimate reference | When viewing invoices converted from estimates, the estimate reference badge showed "Est #123" as static text — users couldn't view the original estimate. Root cause: No interactivity on the badge. Solution: Created new `EstimateViewer` component (`src/components/ui/EstimateViewer.tsx`) displaying read-only estimate with Print/PDF/WhatsApp buttons; made estimate reference badge clickable with hover effect (purple background → brighter purple on hover); added `viewingEstimate` state and `handleViewEstimate()` function to Invoices page; updated Estimates page `handleConfirmDelete()` to clean up invoice references when estimate is deleted (`estimateRef = null`). Result: Users can click "Est #123" badge to view original estimate in modal; deleted estimates automatically remove orphaned references. Desktop only (TypeScript version). |
 
 ## License System
 
