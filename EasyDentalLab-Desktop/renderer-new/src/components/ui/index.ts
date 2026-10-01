@@ -11,3 +11,4 @@ export { EstimateViewer } from './EstimateViewer';
 export { AutoBackupCard } from './AutoBackupCard';
 export { SupportCard } from './SupportCard';
 export { HelpSection } from './HelpSection';
+export { PaymentModal } from './PaymentModal';
