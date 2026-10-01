@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.43 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.43 adds native application menu with Help section in Help menu
+### Current Version: Desktop App v3.0.44 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.44 shows all 364 tariffs on Tariffs page
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -330,12 +330,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Professional native menu bar; Help accessible via standard Help menu location; follows OS conventions for application menus
   - Desktop only
 
-### Available Installers (v3.0.43)
+- ✅ **v3.0.44 Update** (October 1, 2026) — **SHOW ALL TARIFFS**
+  - **Problem:** Tariffs page only displayed 50 of 364 tariffs — no way to see remaining codes without manually scrolling past limit
+  - **Root cause:** `.slice(0, 50)` hardcoded limit in `Tariffs.tsx` line 152; "Showing 50 of {total} tariffs" message implied pagination that didn't exist
+  - **Solution:** Removed `.slice(0, 50)` limit; removed "Showing 50 of..." message (lines 186-190); all 364 tariffs now render in single table
+  - **Result:** Complete tariff list visible — users can scroll through all codes, search/filter works on full dataset, no artificial display limit
+  - Desktop only
+
+### Available Installers (v3.0.44)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.43.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.44.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -349,6 +356,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.44 published** (October 1, 2026) — Show all 364 tariffs on Tariffs page (removed 50 tariff display limit)
 - ✅ **v3.0.43 published** (October 1, 2026) — Native application menu with Help section in Help menu (File/Edit/View/Window/Help)
 - ✅ **v3.0.42 published** (October 1, 2026) — Help section moved to top menu (❓ button in top-right corner for better visibility)
 - ✅ **v3.0.41 published** (October 1, 2026) — Keyboard navigation fix (Enter/ArrowDown from any field moves to next line — complete Excel-like workflow)
