@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.41 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.41 completes keyboard navigation workflow (Enter/ArrowDown from any field moves to next line)
+### Current Version: Desktop App v3.0.42 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.42 moves Help section to dedicated top menu button
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -317,12 +317,18 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Keyboard navigation fully functional — combined with v3.0.40's auto-blank-line, creates complete Excel-like data entry experience
   - Desktop only
 
-### Available Installers (v3.0.41)
+- ✅ **v3.0.42 Update** (October 1, 2026) — **HELP SECTION RELOCATED TO TOP MENU**
+  - **Change:** Moved Help section from bottom of Settings page to dedicated **❓ Help button** in top-right corner (next to dark mode toggle)
+  - **Implementation:** Created new `Help.tsx` page component; added Help button to top bar in `App.tsx`; removed `HelpSection` from Settings page
+  - **Result:** Better visibility for Help documentation; cleaner Settings page; full-page display with all 16 accordion topics; easier access via always-visible button
+  - Desktop only
+
+### Available Installers (v3.0.42)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.41.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.42.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -336,6 +342,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.42 published** (October 1, 2026) — Help section moved to top menu (❓ button in top-right corner for better visibility)
 - ✅ **v3.0.41 published** (October 1, 2026) — Keyboard navigation fix (Enter/ArrowDown from any field moves to next line — complete Excel-like workflow)
 - ✅ **v3.0.40 published** (October 1, 2026) — Auto-blank-line fix (seamless code entry) + Complete Payment System (PaymentModal, statements, receipts, age analysis, payment history)
 - ✅ **v3.0.39 published** (October 1, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
