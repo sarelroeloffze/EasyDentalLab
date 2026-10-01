@@ -182,6 +182,7 @@ export interface ElectronAPI {
   onUpdateAvailable: (callback: (version: string) => void) => void;
   onUpdateDownloaded: (callback: () => void) => void;
   installUpdate: () => Promise<void>;
+  onOpenHelp: (callback: () => void) => void;
 }
 
 declare global {

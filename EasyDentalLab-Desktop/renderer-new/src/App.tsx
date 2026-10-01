@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useData } from './hooks/useData';
 import { useDarkMode } from './hooks/useDarkMode';
 import { useElectron } from './hooks/useElectron';
@@ -28,6 +28,15 @@ function App() {
     setCurrentPage(page);
     setOpenFormOnMount(true);
   };
+
+  // Listen for Help menu click from Electron menu
+  useEffect(() => {
+    if (window.electronAPI?.onOpenHelp) {
+      window.electronAPI.onOpenHelp(() => {
+        setCurrentPage('help');
+      });
+    }
+  }, []);
 
   if (!loaded) {
     return (
@@ -184,27 +193,6 @@ function App() {
               ⬇️ Downloading update...
             </div>
           )}
-
-          {/* Help Button */}
-          <button
-            onClick={() => setCurrentPage('help')}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 8,
-              border: '1px solid var(--c-border)',
-              background: currentPage === 'help' ? 'var(--c-sel)' : 'var(--c-surface2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 20,
-              transition: 'all 0.2s'
-            }}
-            title="Help & Documentation"
-          >
-            ❓
-          </button>
 
           {/* Dark Mode Toggle */}
           <button

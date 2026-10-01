@@ -27,5 +27,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
   // External URL opener
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
-  platform: process.platform // 'win32', 'darwin', 'linux'
+  platform: process.platform, // 'win32', 'darwin', 'linux'
+  // Menu actions
+  onOpenHelp: (callback) => ipcRenderer.on('open-help', () => callback())
 });
