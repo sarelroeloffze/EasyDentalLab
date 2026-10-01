@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-09-30)
+## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.39 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.39 restores complete Help section to new TypeScript version
+### Current Version: Desktop App v3.0.40 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.40 adds auto-blank-line fix + complete Payment System implementation
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -297,12 +297,25 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete user documentation now accessible in Settings; all features explained with step-by-step instructions; accordion UI allows quick topic navigation
   - Desktop only
 
-### Available Installers (v3.0.37)
+- ✅ **v3.0.40 Update** (October 1, 2026) — **AUTO-BLANK-LINE FIX + COMPLETE PAYMENT SYSTEM**
+  - **Code Entry Fix:**
+    - **Problem:** After entering code + clicking qty field, no blank row available for next code entry; users had to manually click "Custom" or "From Tariff" button between codes
+    - **Solution:** Added auto-blank-line feature to `LineItemEditor.tsx` — automatically creates new blank row whenever all current rows have codes filled
+    - **Result:** Seamless code entry workflow — type code → select → enter qty → new blank row appears automatically → continue entering codes
+  - **Payment System (Complete Implementation):**
+    - Created `src/utils/payments.ts` with helper functions: `getInvoiceAmountPaid`, `getInvoiceBalance`, `getInvoiceDisplayStatus`, `getClientCredit`, `getClientAging`, `getClientOutstandingInvoices`, `formatCurrency`
+    - Created `src/components/ui/PaymentModal.tsx` — full payment recording modal with manual/auto allocation to invoices (oldest-first), over-allocation validation, receipt method selection (Print/WhatsApp/Both), edit mode support
+    - Updated `src/utils/documents.ts` with statement and receipt generation: `buildStatementHTML`, `printStatement`, `whatsappStatement`, `buildReceiptHTML`, `printReceipt`, `whatsappReceipt`
+    - Completely rewrote `src/components/pages/Clients.tsx` — added age analysis columns (Current 0-30 days, 30 Days 31-60 days, 60+ Days), + Payment button, credit badge display, Print/WhatsApp statement buttons (conditional based on settings), expandable payment history panel per client, re-print/re-send receipts from history, edit payments from history
+  - **Result:** Full payment tracking system operational — record payments with auto-allocation, generate statements/receipts (print + WhatsApp), view age analysis per client, track credit balances, manage payment history
+  - Desktop only
+
+### Available Installers (v3.0.40)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.37.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.40.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -316,6 +329,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.40 published** (October 1, 2026) — Auto-blank-line fix (seamless code entry) + Complete Payment System (PaymentModal, statements, receipts, age analysis, payment history)
 - ✅ **v3.0.39 published** (October 1, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
 - ✅ **v3.0.38 published** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
 - ✅ **v3.0.37 published** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
