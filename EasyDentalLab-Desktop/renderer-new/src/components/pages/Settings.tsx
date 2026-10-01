@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import type { AppData, Profile } from '../../types';
-import { Input, Button, AutoBackupCard, SupportCard, HelpSection } from '../ui';
+import { Input, Button, AutoBackupCard, SupportCard } from '../ui';
 import { APP_VERSION } from '../../constants/initialData';
 import { INITIAL_DATA } from '../../constants/initialData';
 
@@ -407,9 +407,6 @@ export function Settings({ data, setData }: SettingsProps) {
 
       {/* Support Card */}
       <SupportCard />
-
-      {/* Help Section */}
-      <HelpSection />
     </div>
   );
 }

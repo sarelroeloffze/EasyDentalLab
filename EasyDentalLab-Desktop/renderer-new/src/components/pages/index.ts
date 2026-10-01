@@ -6,3 +6,4 @@ export { Clients } from './Clients';
 export { Tariffs } from './Tariffs';
 export { Macros } from './Macros';
 export { Settings } from './Settings';
+export { Help } from './Help';

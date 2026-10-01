@@ -11,7 +11,8 @@ import {
   Clients,
   Tariffs,
   Macros,
-  Settings
+  Settings,
+  Help
 } from './components/pages';
 import './App.css';
 
@@ -67,6 +68,8 @@ function App() {
           data={data}
           setData={setData}
         />;
+      case 'help':
+        return <Help />;
       default:
         return <Dashboard data={data} setData={setData} />;
     }
@@ -181,6 +184,27 @@ function App() {
               ⬇️ Downloading update...
             </div>
           )}
+
+          {/* Help Button */}
+          <button
+            onClick={() => setCurrentPage('help')}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 8,
+              border: '1px solid var(--c-border)',
+              background: currentPage === 'help' ? 'var(--c-sel)' : 'var(--c-surface2)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 20,
+              transition: 'all 0.2s'
+            }}
+            title="Help & Documentation"
+          >
+            ❓
+          </button>
 
           {/* Dark Mode Toggle */}
           <button
