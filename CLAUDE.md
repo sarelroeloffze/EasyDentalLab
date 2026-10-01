@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.40 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.40 adds auto-blank-line fix + complete Payment System implementation
+### Current Version: Desktop App v3.0.41 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.41 completes keyboard navigation workflow (Enter/ArrowDown from any field moves to next line)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -310,12 +310,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Full payment tracking system operational — record payments with auto-allocation, generate statements/receipts (print + WhatsApp), view age analysis per client, track credit balances, manage payment history
   - Desktop only
 
-### Available Installers (v3.0.40)
+- ✅ **v3.0.41 Update** (October 1, 2026) — **KEYBOARD NAVIGATION COMPLETION**
+  - **Problem:** After entering quantity, pressing Enter or ArrowDown didn't move to next line — users stuck in qty field, couldn't continue data entry without clicking
+  - **Solution:** Added `onKeyDown` handlers to qty, description, and price input fields in `LineItemEditor.tsx` — all fields now detect Enter/ArrowDown and move focus to next row's code field
+  - **Complete Excel-like workflow:** Type code → Enter → qty field → type quantity → Enter/ArrowDown → next row's code field → auto-blank-line ensures row exists → seamless data entry without mouse
+  - **Result:** Keyboard navigation fully functional — combined with v3.0.40's auto-blank-line, creates complete Excel-like data entry experience
+  - Desktop only
+
+### Available Installers (v3.0.41)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.40.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.41.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -329,6 +336,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.41 published** (October 1, 2026) — Keyboard navigation fix (Enter/ArrowDown from any field moves to next line — complete Excel-like workflow)
 - ✅ **v3.0.40 published** (October 1, 2026) — Auto-blank-line fix (seamless code entry) + Complete Payment System (PaymentModal, statements, receipts, age analysis, payment history)
 - ✅ **v3.0.39 published** (October 1, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
 - ✅ **v3.0.38 published** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
