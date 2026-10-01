@@ -6,16 +6,42 @@ import type { Client, Tariff, Macro, Payment, MedicalAid, Invoice } from '../typ
 
 /**
  * Parse Client CSV
+ * Format: Name,Practice,Email,Phone,WhatsApp,Address,Webpage,Notes,ReferringPCNS
  */
 export function parseClientCSV(csv: string): Client[] {
-  const lines = csv.split('\n').filter(l => l.trim());
+  const lines = csv.trim().split('\n');
   if (lines.length < 2) return [];
-  
-  const rows = lines.slice(1); // skip header
-  return rows.map(row => {
-    const [id, name, practice, phone, email, pcns, address, city, postalCode] = row.split(',').map(s => s.trim());
-    return { id, name, practice, phone, email, pcns, address, city, postalCode };
-  });
+
+  const clients: Client[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row: string[] = [];
+    let field = '', inQuote = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { row.push(field.trim()); field = ''; }
+      else { field += ch; }
+    }
+    row.push(field.trim());
+
+    if (row.length >= 1 && row[0]) {
+      clients.push({
+        id: 'csv_c_' + i,
+        name: row[0] || '',
+        practice: row[1] || '',
+        email: row[2] || '',
+        phone: row[3] || '',
+        whatsapp: row[4] || '',
+        address: row[5] || '',
+        webpage: row[6] || '',
+        notes: row[7] || '',
+        pcns: row[8] || '',
+        city: '',
+        postalCode: ''
+      });
+    }
+  }
+  return clients;
 }
 
 /**
@@ -81,13 +107,25 @@ export function parseMedicalAidsCSV(csv: string): MedicalAid[] {
 
 /**
  * Build Clients CSV
+ * Format: Name,Practice,Email,Phone,WhatsApp,Address,Webpage,Notes,ReferringPCNS
  */
 export function buildClientsCSV(clients: Client[]): string {
-  const header = 'ID,Name,Practice,Phone,Email,PCNS,Address,City,PostalCode';
-  const rows = clients.map(c => 
-    `${c.id},${c.name},${c.practice},${c.phone},${c.email},${c.pcns},${c.address},${c.city},${c.postalCode}`
-  );
-  return [header, ...rows].join('\n');
+  const esc = (s: string | undefined) => '"' + (s || '').replace(/"/g, '""') + '"';
+  let csv = "Name,Practice,Email,Phone,WhatsApp,Address,Webpage,Notes,ReferringPCNS\n";
+  clients.filter(c => !c.archived).forEach(c => {
+    csv += [
+      esc(c.name),
+      esc(c.practice),
+      esc(c.email),
+      esc(c.phone),
+      esc(c.whatsapp),
+      esc(c.address),
+      esc(c.webpage),
+      esc(c.notes),
+      esc(c.pcns)
+    ].join(',') + '\n';
+  });
+  return csv;
 }
 
 /**

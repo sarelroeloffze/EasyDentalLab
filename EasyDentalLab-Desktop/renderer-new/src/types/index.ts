@@ -62,9 +62,12 @@ export interface Client {
   name: string;
   practice: string;
   phone: string;
+  whatsapp: string;      // WhatsApp number (separate from phone)
   email: string;
-  pcns: string;
+  pcns: string;          // Referring PCNS
   address: string;
+  webpage: string;
+  notes: string;
   city: string;
   postalCode: string;
   archived?: boolean;
@@ -77,6 +80,7 @@ export interface Tariff {
   description: string;
   descriptionAFR: string;
   price: number;
+  prevYearPrice?: number; // Previous year price for tracking increases
   category: string;
   measure: string;
 }
@@ -129,6 +133,7 @@ export interface LayoutSettings {
 
 export interface Profile {
   businessName: string;
+  owner: string;          // Owner/proprietor name
   address: string;
   city: string;
   postalCode: string;
@@ -137,13 +142,16 @@ export interface Profile {
   vatNumber: string;
   vatPercent: number;
   labNumber: string;
-  pcns: string;
+  pcns: string;           // Laboratory PCNS
   bankName: string;
   bankAccount: string;
   bankBranch: string;
+  accountType: string;    // Account type (Cheque/Savings)
   logo: string;           // base64 encoded image
   layout: LayoutSettings;
   backupPassword?: string;
+  claudeApiKey?: string;       // AI Assistant API key
+  claudeServerUrl?: string;    // AI server URL
 }
 
 export interface AppData {

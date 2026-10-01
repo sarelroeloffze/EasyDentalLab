@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-09-29)
+## 🎯 PROJECT STATUS (Updated 2026-09-30)
 
-### Current Version: Desktop App v3.0.38 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.38 adds clickable estimate references on invoices
+### Current Version: Desktop App v3.0.39 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.39 restores complete Help section to new TypeScript version
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -286,6 +286,17 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Users can now click "Est #123" badge to view original estimate in read-only modal with all action buttons; deleted estimates automatically clean up references
   - Desktop only
 
+- ✅ **v3.0.39 Update** (September 30, 2026) — **COMPLETE HELP SECTION RESTORATION**
+  - **Problem:** New TypeScript version (`renderer-new/`) had no Help section — critical user documentation missing
+  - **Solution:**
+    - Created comprehensive `HelpSection` component (`src/components/ui/HelpSection.tsx`) with all 16 accordion-style topics from old version
+    - Updated Help content for new architecture: keyboard shortcuts reflect v2.3.60 changes (ArrowDown navigates in dropdown when open, Ctrl+Enter adds new line); discount feature mentions preservation when copying/converting (v2.3.47+); invoice status badges include "partial" status
+    - Topics cover: Getting Started, Dashboard, Invoices, Estimates, Direct Claiming, Dentist/Practice, Tariffs, Macros, Backup, Printing/PDF/WhatsApp, Month-End, VAT, Numbering, Accounting Export, Tips & Keyboard Shortcuts, Dark Mode
+    - Integrated Help section at bottom of Settings page (matches old version layout)
+    - Exported from `src/components/ui/index.ts` for reusability
+  - **Result:** Complete user documentation now accessible in Settings; all features explained with step-by-step instructions; accordion UI allows quick topic navigation
+  - Desktop only
+
 ### Available Installers (v3.0.37)
 **Location:** `EasyDentalLab-Desktop/build/`
 
@@ -305,7 +316,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.38 ready** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
+- 🔄 **v3.0.39 ready** (September 30, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
+- ✅ **v3.0.38 published** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
 - ✅ **v3.0.37 published** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
 - ✅ **v3.0.36 published** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
 - ✅ **v3.0.35 published** (September 29, 2026) — Fixed PDF table spacing (patient/member details no longer overlaps document info table)

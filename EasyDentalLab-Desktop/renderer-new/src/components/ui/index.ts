@@ -8,3 +8,6 @@ export { CodeInput } from './CodeInput';
 export { SearchSelect } from './SearchSelect';
 export { MedicalAidSelect } from './MedicalAidSelect';
 export { EstimateViewer } from './EstimateViewer';
+export { AutoBackupCard } from './AutoBackupCard';
+export { SupportCard } from './SupportCard';
+export { HelpSection } from './HelpSection';

@@ -4,13 +4,14 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.38';
+export const APP_VERSION = '3.0.39';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
 export const INITIAL_DATA: AppData = {
   profile: {
     businessName: '',
+    owner: '',
     address: '',
     city: '',
     postalCode: '',
@@ -23,6 +24,7 @@ export const INITIAL_DATA: AppData = {
     bankName: '',
     bankAccount: '',
     bankBranch: '',
+    accountType: '',
     logo: '',
     layout: {
       logoPosition: 'right',
@@ -36,10 +38,13 @@ export const INITIAL_DATA: AppData = {
       footerMsg3: 'Conforms to scale of benefits',
       confirmMsg1: 'Please confirm details and acknowledge that the work is complete',
       confirmMsg2: 'The patient agrees to our terms of trade and liability for the payment',
-      statementSendMethod: 'print',
+      statementSendMethod: 'both',
       statementFormat: 'pdf',
-      monthEndMode: 'individual'
-    }
+      monthEndMode: 'both'
+    },
+    backupPassword: '',
+    claudeApiKey: '',
+    claudeServerUrl: 'http://localhost:5765'
   },
   clients: [],
   tariffs: [],

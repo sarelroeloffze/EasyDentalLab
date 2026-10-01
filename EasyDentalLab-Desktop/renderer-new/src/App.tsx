@@ -65,7 +65,7 @@ function App() {
       case 'settings':
         return <Settings
           data={data}
-          onSave={(profile) => setData({ ...data, profile })}
+          setData={setData}
         />;
       default:
         return <Dashboard data={data} setData={setData} />;
