@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.42 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.42 moves Help section to dedicated top menu button
+### Current Version: Desktop App v3.0.43 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.43 adds native application menu with Help section in Help menu
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -323,12 +323,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Better visibility for Help documentation; cleaner Settings page; full-page display with all 16 accordion topics; easier access via always-visible button
   - Desktop only
 
-### Available Installers (v3.0.42)
+- ✅ **v3.0.43 Update** (October 1, 2026) — **NATIVE APPLICATION MENU WITH HELP**
+  - **Change:** Added native application menu bar (File/Edit/View/Window/Help); Help section now accessible via Help → "Help & Documentation" menu item
+  - **Implementation:** Created menu template in `main.js` with all standard menus; added `onOpenHelp` IPC event in `preload.js`; added `useEffect` listener in `App.tsx` to handle menu clicks; removed ❓ Help button from top bar
+  - **Menus added:** File (Quit), Edit (Undo/Redo/Cut/Copy/Paste/Select All), View (Reload/Zoom/Fullscreen), Window (Minimize/Close), Help (Help & Documentation)
+  - **Result:** Professional native menu bar; Help accessible via standard Help menu location; follows OS conventions for application menus
+  - Desktop only
+
+### Available Installers (v3.0.43)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.42.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.43.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -342,6 +349,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.43 published** (October 1, 2026) — Native application menu with Help section in Help menu (File/Edit/View/Window/Help)
 - ✅ **v3.0.42 published** (October 1, 2026) — Help section moved to top menu (❓ button in top-right corner for better visibility)
 - ✅ **v3.0.41 published** (October 1, 2026) — Keyboard navigation fix (Enter/ArrowDown from any field moves to next line — complete Excel-like workflow)
 - ✅ **v3.0.40 published** (October 1, 2026) — Auto-blank-line fix (seamless code entry) + Complete Payment System (PaymentModal, statements, receipts, age analysis, payment history)
