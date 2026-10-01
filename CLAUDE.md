@@ -316,7 +316,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
-- 🔄 **v3.0.39 ready** (September 30, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
+- ✅ **v3.0.39 published** (October 1, 2026) — Complete Help section restoration (16 accordion topics with full user documentation in Settings)
 - ✅ **v3.0.38 published** (September 30, 2026) — Clickable estimate references on invoices (click "Est #123" badge to view original estimate)
 - ✅ **v3.0.37 published** (September 29, 2026) — Simplified sorting to 2-state toggle (ascending ↔ descending, no default state)
 - ✅ **v3.0.36 published** (September 29, 2026) — Sortable columns on Invoices & Estimates (click headers to sort by number, date, client, patient, total, status)
