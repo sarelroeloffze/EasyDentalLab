@@ -83,6 +83,8 @@ export function HelpSection() {
         <P>Apply a percentage discount to the invoice total before VAT calculation. Tick the <strong>Discount</strong> checkbox at the bottom of the form, then enter a percentage (default 15%, maximum 100%). The discount is deducted from the subtotal before VAT is calculated. The discount line appears on both the form and the printed invoice/PDF. <strong>Since v2.3.47:</strong> When you convert an estimate to an invoice or copy an invoice, the discount settings are preserved automatically.</P>
         <H>Searching &amp; Filtering</H>
         <P>Type in the search box to filter by client name or invoice number. Use the status dropdown to show only Unpaid or Paid invoices.</P>
+        <H>Sorting</H>
+        <P>Click any column header (No., Date, Client, Patient, Total, Status) to sort the table. First click sorts ascending (↑), second click sorts descending (↓), third click returns to ascending. The sort indicator appears next to the column name.</P>
       </div>
     )},
 
@@ -102,6 +104,8 @@ export function HelpSection() {
         <P>Click the <strong>⧉ Copy button</strong> (or <strong>right-click</strong> the estimate row) to create a duplicate estimate. You'll see 3 options: <em>Copy All</em> (patient + line items with current prices), <em>Patient Only</em> (patient &amp; dentist info, blank line items), or <em>Detail Only</em> (line items with current prices, blank patient info). Discount settings are preserved when copying. Useful for creating similar estimates for different patients or reusing tariff lists.</P>
         <H>Discount Feature</H>
         <P>Apply a percentage discount to the estimate total before VAT calculation. Tick the <strong>Discount</strong> checkbox at the bottom of the form, then enter a percentage (default 15%, maximum 100%). The discount is deducted from the subtotal before VAT is calculated. The discount line appears on both the form and the printed estimate/PDF. <strong>Since v2.3.47:</strong> When you convert an estimate to an invoice or copy an estimate, the discount settings are preserved automatically.</P>
+        <H>Sorting</H>
+        <P>Click any column header (No., Date, Client, Patient, Total, Status) to sort the table. First click sorts ascending (↑), second click sorts descending (↓), third click returns to ascending. The sort indicator appears next to the column name.</P>
       </div>
     )},
 
