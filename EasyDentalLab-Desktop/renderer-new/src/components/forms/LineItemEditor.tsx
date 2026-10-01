@@ -197,16 +197,52 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                       title="Item description — auto-filled from tariff or type your own"
                       value={item.description}
                       onChange={e => update(item.id, "description", e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const currentRow = (e.target as HTMLInputElement).closest('tr');
+                          if (!currentRow) return;
+                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                          if (nextRow) {
+                            const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
+                            if (nextCodeInput) {
+                              nextCodeInput.focus();
+                              nextCodeInput.select();
+                            }
+                          }
+                        }
+                      }}
                       style={{ padding: '4px 6px', fontSize: 12 }}
                     />
                   </td>
                   <td style={{ padding: '4px 8px' }}>
                     <input
                       className="input-field"
+                      data-field="qty"
+                      data-row={item.id}
                       title="Quantity"
                       type="number"
                       value={item.qty}
                       onChange={e => update(item.id, "qty", e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          // Find current row
+                          const currentRow = (e.target as HTMLInputElement).closest('tr');
+                          if (!currentRow) return;
+
+                          // Find next row
+                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                          if (nextRow) {
+                            // Focus on next row's code input
+                            const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
+                            if (nextCodeInput) {
+                              nextCodeInput.focus();
+                              nextCodeInput.select();
+                            }
+                          }
+                        }
+                      }}
                       min="1"
                       style={{ padding: '4px 6px', fontSize: 12, textAlign: 'center' }}
                     />
@@ -214,10 +250,27 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                   <td style={{ padding: '4px 8px' }}>
                     <input
                       className="input-field"
+                      data-field="price"
+                      data-row={item.id}
                       title="Unit price — auto-filled from tariff or type your own"
                       type="number"
                       value={item.price}
                       onChange={e => update(item.id, "price", e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                          e.preventDefault();
+                          const currentRow = (e.target as HTMLInputElement).closest('tr');
+                          if (!currentRow) return;
+                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                          if (nextRow) {
+                            const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
+                            if (nextCodeInput) {
+                              nextCodeInput.focus();
+                              nextCodeInput.select();
+                            }
+                          }
+                        }
+                      }}
                       step="0.01"
                       style={{ padding: '4px 6px', fontSize: 12, textAlign: 'right' }}
                     />
