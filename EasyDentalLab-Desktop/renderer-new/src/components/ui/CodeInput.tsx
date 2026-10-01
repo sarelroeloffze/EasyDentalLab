@@ -11,14 +11,14 @@ interface CodeInputProps {
   rowId?: string;
 }
 
-export function CodeInput({ 
-  value, 
-  // onChange, 
-  onSelect, 
-  onAddLine, 
-  tariffs, 
+export function CodeInput({
+  value,
+  // onChange,  // Not used - onSelect handles code updates
+  onSelect,
+  onAddLine,
+  tariffs,
   inputStyle,
-  rowId 
+  rowId
 }: CodeInputProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');

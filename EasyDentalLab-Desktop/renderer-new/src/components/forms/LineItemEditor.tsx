@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import type { LineItem, Tariff, Macro } from '../../types';
 import { CodeInput, Modal } from '../ui';
 import { SvgIcon, ICO } from '../../utils/icons';
@@ -19,6 +19,17 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
   const [mSearch, setMSearch] = useState("");
   const fromTariffButtonRef = useRef<HTMLButtonElement>(null);
   const fromMacroButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Ensure there's always one blank line at the end
+  useEffect(() => {
+    const allFilled = items.length > 0 && items.every(item => item.code && item.code.trim() !== '');
+
+    if (allFilled) {
+      // All current lines have codes - add a blank line
+      const id = `auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      setItems(prev => [...prev, { id, code: "", description: "", qty: 1, price: 0 }]);
+    }
+  }, [items]);
 
   const addBlank = () => {
     const id = genId();
