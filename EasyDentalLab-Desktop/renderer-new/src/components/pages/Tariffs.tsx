@@ -149,7 +149,7 @@ export function Tariffs({ data, setData }: TariffsProps) {
                 </td>
               </tr>
             ) : (
-              data.tariffs.slice(0, 50).map((tariff) => (
+              data.tariffs.map((tariff) => (
                 <tr key={tariff.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
                   <td style={tableCellStyle}>
                     <span style={{ fontFamily: 'monospace', color: '#2563eb', fontWeight: 600 }}>
@@ -183,11 +183,6 @@ export function Tariffs({ data, setData }: TariffsProps) {
             )}
           </tbody>
         </table>
-        {data.tariffs.length > 50 && (
-          <div style={{ padding: 16, textAlign: 'center', color: 'var(--c-text3)' }}>
-            Showing 50 of {data.tariffs.length} tariffs
-          </div>
-        )}
       </div>
 
       <Modal
