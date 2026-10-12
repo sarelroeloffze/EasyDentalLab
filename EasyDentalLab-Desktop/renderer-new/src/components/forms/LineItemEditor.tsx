@@ -202,8 +202,23 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           e.preventDefault();
                           const currentRow = (e.target as HTMLInputElement).closest('tr');
                           if (!currentRow) return;
-                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
-                          if (nextRow) {
+                          let nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+
+                          // If no next row exists, create one
+                          if (!nextRow) {
+                            addBlank();
+                            // Wait for React to render the new row
+                            setTimeout(() => {
+                              const updatedNextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                              if (updatedNextRow) {
+                                const nextCodeInput = updatedNextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
+                                if (nextCodeInput) {
+                                  nextCodeInput.focus();
+                                  nextCodeInput.select();
+                                }
+                              }
+                            }, 10);
+                          } else {
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();
@@ -261,8 +276,23 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           e.preventDefault();
                           const currentRow = (e.target as HTMLInputElement).closest('tr');
                           if (!currentRow) return;
-                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
-                          if (nextRow) {
+                          let nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+
+                          // If no next row exists, create one
+                          if (!nextRow) {
+                            addBlank();
+                            // Wait for React to render the new row
+                            setTimeout(() => {
+                              const updatedNextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                              if (updatedNextRow) {
+                                const nextCodeInput = updatedNextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
+                                if (nextCodeInput) {
+                                  nextCodeInput.focus();
+                                  nextCodeInput.select();
+                                }
+                              }
+                            }, 10);
+                          } else {
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();

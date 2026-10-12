@@ -148,7 +148,26 @@ export function Macros({ data, setData }: MacrosProps) {
                 <tr key={macro.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
                   <td style={tableCellStyle}>{macro.name}</td>
                   <td style={tableCellStyle}>
-                    {macro.codes.map(c => c.code).join(', ')}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      {macro.codes.map((c, idx) => {
+                        const tariff = data.tariffs.find(t => t.code === c.code);
+                        return (
+                          <div key={idx} style={{ fontSize: 13 }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: 600, color: '#2563eb' }}>
+                              {c.code}
+                            </span>
+                            {tariff && (
+                              <span style={{ color: 'var(--c-text2)', marginLeft: 8 }}>
+                                — {tariff.description}
+                              </span>
+                            )}
+                            <span style={{ color: 'var(--c-text3)', marginLeft: 8 }}>
+                              (×{c.qty})
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </td>
                   <td style={tableCellStyle}>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -197,6 +216,7 @@ export function Macros({ data, setData }: MacrosProps) {
             });
           }}
           onDirtyChange={setFormIsDirty}
+          data={data}
         />
       </Modal>
 

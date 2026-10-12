@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Macro } from '../../types';
+import type { Macro, AppData } from '../../types';
 import { Input } from '../ui';
 import { genId } from '../../utils/helpers';
 
@@ -8,6 +8,7 @@ interface MacroFormProps {
   onSave: (formData: any) => void;
   onCancel: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
+  data: AppData;
 }
 
 interface MacroCode {
@@ -16,7 +17,7 @@ interface MacroCode {
   qty: number;
 }
 
-export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormProps) {
+export function MacroForm({ macro, onSave, onCancel, onDirtyChange, data }: MacroFormProps) {
   const getInitialCodes = (): MacroCode[] => {
     if (macro && Array.isArray(macro.codes)) {
       return macro.codes.map(c => ({ id: genId(), code: c.code, qty: c.qty }));
@@ -116,8 +117,11 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
         <table style={{ width: '100%', borderCollapse: 'collapse', border: '1px solid var(--c-border)' }}>
           <thead>
             <tr style={{ background: 'var(--c-surface2)' }}>
-              <th style={{ padding: '8px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text2)' }}>
+              <th style={{ padding: '8px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text2)', width: 120 }}>
                 Code
+              </th>
+              <th style={{ padding: '8px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text2)' }}>
+                Description
               </th>
               <th style={{ padding: '8px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: 'var(--c-text2)', width: 100 }}>
                 Qty
@@ -126,59 +130,71 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange }: MacroFormP
             </tr>
           </thead>
           <tbody>
-            {codes.map((item) => (
-              <tr key={item.id} style={{ borderTop: '1px solid var(--c-border2)' }}>
-                <td style={{ padding: '8px' }}>
-                  <input
-                    type="text"
-                    value={item.code}
-                    onChange={e => updateCode(item.id, 'code', e.target.value)}
-                    placeholder="e.g. 9704"
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      border: '1px solid var(--c-border)',
-                      borderRadius: 4,
-                      fontSize: 13,
-                      fontFamily: 'monospace'
-                    }}
-                  />
-                </td>
-                <td style={{ padding: '8px' }}>
-                  <input
-                    type="number"
-                    min="1"
-                    value={item.qty}
-                    onChange={e => updateCode(item.id, 'qty', parseInt(e.target.value) || 1)}
-                    style={{
-                      width: '100%',
-                      padding: '6px 8px',
-                      border: '1px solid var(--c-border)',
-                      borderRadius: 4,
-                      fontSize: 13
-                    }}
-                  />
-                </td>
-                <td style={{ padding: '8px', textAlign: 'center' }}>
-                  {codes.length > 1 && (
-                    <button
-                      onClick={() => removeCode(item.id)}
+            {codes.map((item) => {
+              const tariff = data.tariffs.find(t => t.code === item.code);
+              return (
+                <tr key={item.id} style={{ borderTop: '1px solid var(--c-border2)' }}>
+                  <td style={{ padding: '8px' }}>
+                    <input
+                      type="text"
+                      value={item.code}
+                      onChange={e => updateCode(item.id, 'code', e.target.value)}
+                      placeholder="e.g. 9704"
                       style={{
-                        background: 'transparent',
-                        border: 'none',
-                        color: '#dc2626',
-                        cursor: 'pointer',
-                        fontSize: 16,
-                        padding: 4
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid var(--c-border)',
+                        borderRadius: 4,
+                        fontSize: 13,
+                        fontFamily: 'monospace'
                       }}
-                      title="Remove"
-                    >
-                      ✕
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
+                    />
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <div style={{
+                      fontSize: 13,
+                      color: tariff ? 'var(--c-text2)' : 'var(--c-text3)',
+                      fontStyle: tariff ? 'normal' : 'italic'
+                    }}>
+                      {tariff ? tariff.description : (item.code ? 'Code not found' : '—')}
+                    </div>
+                  </td>
+                  <td style={{ padding: '8px' }}>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.qty}
+                      onChange={e => updateCode(item.id, 'qty', parseInt(e.target.value) || 1)}
+                      style={{
+                        width: '100%',
+                        padding: '6px 8px',
+                        border: '1px solid var(--c-border)',
+                        borderRadius: 4,
+                        fontSize: 13
+                      }}
+                    />
+                  </td>
+                  <td style={{ padding: '8px', textAlign: 'center' }}>
+                    {codes.length > 1 && (
+                      <button
+                        onClick={() => removeCode(item.id)}
+                        style={{
+                          background: 'transparent',
+                          border: 'none',
+                          color: '#dc2626',
+                          cursor: 'pointer',
+                          fontSize: 16,
+                          padding: 4
+                        }}
+                        title="Remove"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
 

@@ -362,8 +362,8 @@ export function HelpSection() {
         <UL>
           <li><strong>Type</strong> to search — code dropdown shows sequential codes; as you type, the closest match is highlighted.</li>
           <li><strong>↑ Up Arrow</strong> — navigate up in the dropdown when it's open.</li>
-          <li><strong>↓ Down Arrow</strong> when dropdown is <strong>open</strong> — navigate down to the next code in the list.</li>
-          <li><strong>↓ Down Arrow</strong> when dropdown is <strong>closed</strong> — confirms the highlighted code and adds a new blank line below (fast workflow for sequential entry).</li>
+          <li><strong>↓ Down Arrow</strong> when dropdown is <strong>open</strong> — navigate down to the next code in the list; if typed code matches exactly, confirms and adds new line (fast sequential entry).</li>
+          <li><strong>↓ Down Arrow</strong> when code is <strong>already selected</strong> — moves to Qty field.</li>
           <li><strong>Enter</strong> — confirms the highlighted code, fills in description and price, moves to Qty field.</li>
           <li><strong>Ctrl+Enter</strong> (Windows) or <strong>Cmd+Enter</strong> (Mac) — confirms code and adds a new blank line below (alternative fast workflow).</li>
           <li><strong>Tab</strong> — confirms the highlighted code and moves to next field naturally.</li>

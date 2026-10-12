@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.44 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.44 shows all 364 tariffs on Tariffs page
+### Current Version: Desktop App v3.0.45 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.45 fixes Down Arrow creating extra blank lines
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -337,12 +337,27 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete tariff list visible — users can scroll through all codes, search/filter works on full dataset, no artificial display limit
   - Desktop only
 
-### Available Installers (v3.0.44)
+- ✅ **v3.0.45 Update** (October 12, 2026) — **FIX DOWN ARROW NAVIGATION BUGS + MACROS DISPLAY**
+  - **Problem 1:** After selecting a code, pressing Down Arrow created an extra empty line instead of moving to the qty field
+  - **Root cause 1:** CodeInput Down Arrow handler checked `else if (filtered.length > 0)` when dropdown closed and called `confirmAndAddLine()`, which added a new line even though code was already selected
+  - **Solution 1:** Changed Down Arrow behavior when dropdown closed — if code already selected (`value && value.trim()`), move to qty field via `moveToQtyField()` instead of adding new line
+  - **Problem 2:** After entering a code and moving to qty field, pressing Down Arrow did nothing (stuck) if no next row existed yet
+  - **Root cause 2:** LineItemEditor's qty/description/price field Down Arrow handlers only moved to next row `if (nextRow)` — if auto-blank-line `useEffect` hadn't run yet, no next row existed
+  - **Solution 2:** Updated all three field handlers to check if next row exists; if not, call `addBlank()` and wait 10ms for React render before moving focus
+  - **Problem 3:** Macros page only displayed codes (e.g., "9600, 9602") without descriptions, unlike Invoices/Estimates which show full details
+  - **Solution 3:** Updated Macros.tsx to display each code on its own line with code (monospace/bold/blue), description (looked up from tariffs), and quantity (×N)
+  - **Problem 4:** MacroForm (edit/create form) only had Code and Qty columns, no Description column to verify codes being entered
+  - **Solution 4:** Added Description column to MacroForm table that auto-fills from tariffs when valid code is entered; shows "Code not found" if invalid
+  - **Result:** Complete Down Arrow navigation flow now works — select code → Down Arrow → qty field → Down Arrow → next line (auto-created if needed); fast Excel-like data entry workflow; Macros page and MacroForm now show Code, Description, and Qty for all tariff codes (matching Invoices/Estimates layout)
+  - **Help updated:** Updated "Line Item Entry Shortcuts" to reflect corrected Down Arrow behavior
+  - Desktop only
+
+### Available Installers (v3.0.45)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.44.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.45.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -356,6 +371,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.45 published** (October 12, 2026) — Fix Down Arrow creating extra blank lines after code selection
 - ✅ **v3.0.44 published** (October 1, 2026) — Show all 364 tariffs on Tariffs page (removed 50 tariff display limit)
 - ✅ **v3.0.43 published** (October 1, 2026) — Native application menu with Help section in Help menu (File/Edit/View/Window/Help)
 - ✅ **v3.0.42 published** (October 1, 2026) — Help section moved to top menu (❓ button in top-right corner for better visibility)

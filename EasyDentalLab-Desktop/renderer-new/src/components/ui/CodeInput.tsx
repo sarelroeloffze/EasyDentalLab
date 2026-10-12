@@ -191,11 +191,11 @@ export function CodeInput({
           // Otherwise navigate down in dropdown
           setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));
         }
-      } else if (filtered.length > 0) {
-        // Dropdown closed but matches exist: confirm and add new line
-        confirmAndAddLine();
+      } else if (value && value.trim()) {
+        // Dropdown closed and code already selected: move to qty field
+        moveToQtyField();
       }
-      // If filtered.length === 0, do nothing (no matches for this code)
+      // If no value or filtered.length === 0, do nothing
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       if (open && filtered.length > 0) {
