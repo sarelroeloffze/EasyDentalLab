@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.48 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.48 fixes Macro form code entry + version display
+### Current Version: Desktop App v3.0.49 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.49 fixes Down Arrow navigation on last row
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -373,12 +373,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Macro form now has autocomplete dropdown (type to search, arrow keys navigate, Enter selects); consistent UX across all forms; easier macro creation
   - Desktop only
 
-### Available Installers (v3.0.48)
+- ✅ **v3.0.49 Update** (October 13, 2026) — **FIX DOWN ARROW NAVIGATION ON LAST ROW**
+  - **Problem:** When on last row, pressing Down Arrow did nothing — users felt "stuck", couldn't add new line to enter next code
+  - **Root cause:** v3.0.46 removed too much — lost the last-row line creation behavior users expected
+  - **Solution:** Restored smart line creation only when Down Arrow pressed on last row (qty/description/price fields); only triggers on explicit user action (no automatic race conditions)
+  - **Result:** Natural workflow restored — enter data → Down Arrow → new line appears + code field focused; no more feeling stuck
+  - Desktop only
+
+### Available Installers (v3.0.49)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.48.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.49.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -392,6 +399,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.49 published** (October 13, 2026) — Fix Down Arrow on last row creating new line (no more feeling stuck)
 - ✅ **v3.0.48 published** (October 13, 2026) — Fix Macro form code entry (CodeInput with autocomplete dropdown)
 - ✅ **v3.0.47 published** (October 13, 2026) — CRITICAL: Fix version display stuck at v3.0.44 (proper TypeScript build process)
 - ✅ **v3.0.46 published** (October 13, 2026) — Fix keyboard navigation race conditions (removed auto-blank-line, simplified Down Arrow behavior, Ctrl+Enter to add lines)
