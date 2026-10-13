@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.46 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.46 fixes keyboard navigation race conditions
+### Current Version: Desktop App v3.0.47 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.47 fixes keyboard navigation race conditions + updated Help docs
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -359,12 +359,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Predictable, race-condition-free navigation — type code → Down Arrow → qty field → Down Arrow → next row (if exists) OR Ctrl+Enter to create new line → type next code; no more stuck fields, no more duplicate blank lines, full user control over when lines are added
   - Desktop only
 
-### Available Installers (v3.0.46)
+- ✅ **v3.0.47 Update** (October 13, 2026) — **UPDATE HELP DOCUMENTATION**
+  - **Change:** Updated "Line Item Entry Shortcuts" section in Help to reflect v3.0.46 keyboard navigation changes
+  - **Clarified:** Down Arrow when dropdown open now confirms selection and moves to qty (no longer adds new line)
+  - **Emphasized:** Ctrl+Enter is the ONLY keyboard shortcut that creates new lines; alternative is clicking "Custom" or "From Tariff" buttons
+  - **Result:** Help documentation now accurately describes the simplified navigation system
+  - Desktop only
+
+### Available Installers (v3.0.47)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.46.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.47.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -378,6 +385,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.47 published** (October 13, 2026) — Updated Help documentation to reflect v3.0.46 keyboard navigation changes
 - ✅ **v3.0.46 published** (October 13, 2026) — Fix keyboard navigation race conditions (removed auto-blank-line, simplified Down Arrow behavior, Ctrl+Enter to add lines)
 - ✅ **v3.0.45 published** (October 12, 2026) — Fix Down Arrow creating extra blank lines after code selection
 - ✅ **v3.0.44 published** (October 1, 2026) — Show all 364 tariffs on Tariffs page (removed 50 tariff display limit)
