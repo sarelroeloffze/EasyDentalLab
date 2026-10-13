@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
-import type { Macro, AppData } from '../../types';
-import { Input } from '../ui';
+import type { Macro, AppData, Tariff } from '../../types';
+import { Input, CodeInput } from '../ui';
 import { genId } from '../../utils/helpers';
 
 interface MacroFormProps {
@@ -135,16 +135,17 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange, data }: Macr
               return (
                 <tr key={item.id} style={{ borderTop: '1px solid var(--c-border2)' }}>
                   <td style={{ padding: '8px' }}>
-                    <input
-                      type="text"
+                    <CodeInput
                       value={item.code}
-                      onChange={e => updateCode(item.id, 'code', e.target.value)}
-                      placeholder="e.g. 9704"
-                      style={{
+                      onChange={v => updateCode(item.id, 'code', v)}
+                      onSelect={(t: Tariff) => {
+                        updateCode(item.id, 'code', t.code);
+                      }}
+                      tariffs={data.tariffs}
+                      rowId={item.id}
+                      inputStyle={{
                         width: '100%',
                         padding: '6px 8px',
-                        border: '1px solid var(--c-border)',
-                        borderRadius: 4,
                         fontSize: 13,
                         fontFamily: 'monospace'
                       }}
@@ -165,6 +166,18 @@ export function MacroForm({ macro, onSave, onCancel, onDirtyChange, data }: Macr
                       min="1"
                       value={item.qty}
                       onChange={e => updateCode(item.id, 'qty', parseInt(e.target.value) || 1)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addCode();
+                          // Focus on the new code input after it's added
+                          setTimeout(() => {
+                            const inputs = document.querySelectorAll('input[placeholder="e.g. 9704"]');
+                            const lastInput = inputs[inputs.length - 1] as HTMLInputElement;
+                            if (lastInput) lastInput.focus();
+                          }, 50);
+                        }
+                      }}
                       style={{
                         width: '100%',
                         padding: '6px 8px',

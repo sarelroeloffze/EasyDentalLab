@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import type { LineItem, Tariff, Macro } from '../../types';
 import { CodeInput, Modal } from '../ui';
 import { SvgIcon, ICO } from '../../utils/icons';
