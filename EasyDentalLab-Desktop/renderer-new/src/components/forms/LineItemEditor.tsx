@@ -195,15 +195,28 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           if (!currentRow) return;
                           const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
 
-                          // Move to next row if it exists
                           if (nextRow) {
+                            // Move to next row if it exists
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();
                               nextCodeInput.select();
                             }
+                          } else {
+                            // On last row - add new blank line
+                            addBlank();
+                            setTimeout(() => {
+                              const table = (e.target as HTMLInputElement).closest('table');
+                              if (table) {
+                                const allCodeInputs = table.querySelectorAll('input[data-field="code"]');
+                                const lastCodeInput = allCodeInputs[allCodeInputs.length - 1] as HTMLInputElement;
+                                if (lastCodeInput) {
+                                  lastCodeInput.focus();
+                                  lastCodeInput.select();
+                                }
+                              }
+                            }, 50);
                           }
-                          // If no next row, do nothing - use Ctrl+Enter in code field to add new line
                         }
                       }}
                       style={{ padding: '4px 6px', fontSize: 12 }}
@@ -234,6 +247,20 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                               nextCodeInput.focus();
                               nextCodeInput.select();
                             }
+                          } else {
+                            // On last row - add new blank line
+                            addBlank();
+                            setTimeout(() => {
+                              const table = (e.target as HTMLInputElement).closest('table');
+                              if (table) {
+                                const allCodeInputs = table.querySelectorAll('input[data-field="code"]');
+                                const lastCodeInput = allCodeInputs[allCodeInputs.length - 1] as HTMLInputElement;
+                                if (lastCodeInput) {
+                                  lastCodeInput.focus();
+                                  lastCodeInput.select();
+                                }
+                              }
+                            }, 50);
                           }
                         }
                       }}
@@ -257,15 +284,28 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           if (!currentRow) return;
                           const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
 
-                          // Move to next row if it exists
                           if (nextRow) {
+                            // Move to next row if it exists
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();
                               nextCodeInput.select();
                             }
+                          } else {
+                            // On last row - add new blank line
+                            addBlank();
+                            setTimeout(() => {
+                              const table = (e.target as HTMLInputElement).closest('table');
+                              if (table) {
+                                const allCodeInputs = table.querySelectorAll('input[data-field="code"]');
+                                const lastCodeInput = allCodeInputs[allCodeInputs.length - 1] as HTMLInputElement;
+                                if (lastCodeInput) {
+                                  lastCodeInput.focus();
+                                  lastCodeInput.select();
+                                }
+                              }
+                            }, 50);
                           }
-                          // If no next row, do nothing - use Ctrl+Enter in code field to add new line
                         }
                       }}
                       step="0.01"
