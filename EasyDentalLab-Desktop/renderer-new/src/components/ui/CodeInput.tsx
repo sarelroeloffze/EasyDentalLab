@@ -183,10 +183,11 @@ export function CodeInput({
         const q = (query || value || '').toLowerCase().trim();
         const highlighted = filtered[hlIdx];
 
-        // If typed code exactly matches highlighted code, confirm and add new line
-        // This enables fast data entry: type code, press Down, type next code
+        // If typed code exactly matches highlighted code, confirm and move to qty
+        // This enables fast data entry: type code, press Down, enter qty, repeat
         if (highlighted && q === highlighted.code.toLowerCase()) {
-          confirmAndAddLine();
+          pick(highlighted);
+          moveToQtyField();
         } else {
           // Otherwise navigate down in dropdown
           setHlIdx(prev => Math.min(prev + 1, filtered.length - 1));

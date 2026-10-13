@@ -20,16 +20,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
   const fromTariffButtonRef = useRef<HTMLButtonElement>(null);
   const fromMacroButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Ensure there's always one blank line at the end
-  useEffect(() => {
-    const allFilled = items.length > 0 && items.every(item => item.code && item.code.trim() !== '');
-
-    if (allFilled) {
-      // All current lines have codes - add a blank line
-      const id = `auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      setItems(prev => [...prev, { id, code: "", description: "", qty: 1, price: 0 }]);
-    }
-  }, [items]);
+  // No auto-blank-line - users control when to add lines via Ctrl+Enter or buttons
 
   const addBlank = () => {
     const id = genId();
@@ -202,29 +193,17 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           e.preventDefault();
                           const currentRow = (e.target as HTMLInputElement).closest('tr');
                           if (!currentRow) return;
-                          let nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
 
-                          // If no next row exists, create one
-                          if (!nextRow) {
-                            addBlank();
-                            // Wait for React to render the new row
-                            setTimeout(() => {
-                              const updatedNextRow = currentRow.nextElementSibling as HTMLTableRowElement;
-                              if (updatedNextRow) {
-                                const nextCodeInput = updatedNextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
-                                if (nextCodeInput) {
-                                  nextCodeInput.focus();
-                                  nextCodeInput.select();
-                                }
-                              }
-                            }, 10);
-                          } else {
+                          // Move to next row if it exists
+                          if (nextRow) {
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();
                               nextCodeInput.select();
                             }
                           }
+                          // If no next row, do nothing - use Ctrl+Enter in code field to add new line
                         }
                       }}
                       style={{ padding: '4px 6px', fontSize: 12 }}
@@ -276,29 +255,17 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                           e.preventDefault();
                           const currentRow = (e.target as HTMLInputElement).closest('tr');
                           if (!currentRow) return;
-                          let nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
+                          const nextRow = currentRow.nextElementSibling as HTMLTableRowElement;
 
-                          // If no next row exists, create one
-                          if (!nextRow) {
-                            addBlank();
-                            // Wait for React to render the new row
-                            setTimeout(() => {
-                              const updatedNextRow = currentRow.nextElementSibling as HTMLTableRowElement;
-                              if (updatedNextRow) {
-                                const nextCodeInput = updatedNextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
-                                if (nextCodeInput) {
-                                  nextCodeInput.focus();
-                                  nextCodeInput.select();
-                                }
-                              }
-                            }, 10);
-                          } else {
+                          // Move to next row if it exists
+                          if (nextRow) {
                             const nextCodeInput = nextRow.querySelector('input[data-field="code"]') as HTMLInputElement;
                             if (nextCodeInput) {
                               nextCodeInput.focus();
                               nextCodeInput.select();
                             }
                           }
+                          // If no next row, do nothing - use Ctrl+Enter in code field to add new line
                         }
                       }}
                       step="0.01"

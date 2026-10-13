@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-01)
 
-### Current Version: Desktop App v3.0.45 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.45 fixes Down Arrow creating extra blank lines
+### Current Version: Desktop App v3.0.46 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.46 fixes keyboard navigation race conditions
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -352,12 +352,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Help updated:** Updated "Line Item Entry Shortcuts" to reflect corrected Down Arrow behavior
   - Desktop only
 
-### Available Installers (v3.0.45)
+- ✅ **v3.0.46 Update** (October 13, 2026) — **FIX KEYBOARD NAVIGATION RACE CONDITIONS**
+  - **Problem:** Keyboard navigation unpredictable — sometimes got stuck and couldn't move to next line, sometimes Down Arrow created extra blank lines, inconsistent behavior across different fields
+  - **Root cause:** Multiple systems racing to create blank lines: (1) auto-blank-line useEffect triggered on every items change, (2) CodeInput Down Arrow called confirmAndAddLine() which manually added lines, (3) description/price fields also tried to create blanks, (4) all racing against each other with async timeouts creating unpredictable state
+  - **Solution:** Complete simplification — removed auto-blank-line useEffect entirely; CodeInput Down Arrow now just confirms selection and moves to qty (no line creation); description/price/qty fields only move to next row if exists (no line creation); **Ctrl+Enter is now the ONLY keyboard shortcut to add new lines**; users can also click "Custom" or "From Tariff" buttons
+  - **Result:** Predictable, race-condition-free navigation — type code → Down Arrow → qty field → Down Arrow → next row (if exists) OR Ctrl+Enter to create new line → type next code; no more stuck fields, no more duplicate blank lines, full user control over when lines are added
+  - Desktop only
+
+### Available Installers (v3.0.46)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.45.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.46.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -371,6 +378,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.46 published** (October 13, 2026) — Fix keyboard navigation race conditions (removed auto-blank-line, simplified Down Arrow behavior, Ctrl+Enter to add lines)
 - ✅ **v3.0.45 published** (October 12, 2026) — Fix Down Arrow creating extra blank lines after code selection
 - ✅ **v3.0.44 published** (October 1, 2026) — Show all 364 tariffs on Tariffs page (removed 50 tariff display limit)
 - ✅ **v3.0.43 published** (October 1, 2026) — Native application menu with Help section in Help menu (File/Edit/View/Window/Help)
