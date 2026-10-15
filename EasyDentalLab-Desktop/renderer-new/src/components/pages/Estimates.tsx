@@ -26,8 +26,8 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   const [copyingEstimate, setCopyingEstimate] = useState<Estimate | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingEstimate, setDeletingEstimate] = useState<Estimate | null>(null);
-  const [sortBy, setSortBy] = useState<SortColumn>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [sortBy, setSortBy] = useState<SortColumn>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -363,7 +363,9 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
 
       if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
+
+      // Secondary sort by number descending (newest first) when primary values are equal
+      return b.number - a.number;
     });
 
     return sorted;

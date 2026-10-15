@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-10-01)
+## 🎯 PROJECT STATUS (Updated 2026-10-15)
 
-### Current Version: Desktop App v3.0.49 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.49 fixes Down Arrow navigation on last row
+### Current Version: Desktop App v3.0.50 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.50 adds default date sorting (newest first)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -380,12 +380,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Natural workflow restored — enter data → Down Arrow → new line appears + code field focused; no more feeling stuck
   - Desktop only
 
-### Available Installers (v3.0.49)
+- ✅ **v3.0.50 Update** (October 15, 2026) — **DEFAULT DATE SORTING (NEWEST FIRST)**
+  - **Problem:** Invoices and Estimates opened unsorted, newest entries appeared at bottom requiring manual sorting or scrolling to find recent work
+  - **Solution:** Changed default sort to date descending (newest on top) with secondary sort by creation order (invoice/estimate number descending) when dates are equal
+  - **Implementation:** Updated `Invoices.tsx` and `Estimates.tsx` — changed initial `sortBy` state from `null` to `'date'` and `sortOrder` from `null` to `'desc'`; added secondary tiebreaker `return b.number - a.number` in sort comparator
+  - **Result:** When opening Invoices or Estimates page, newest entries appear on top by default; same-date entries ordered by creation time (newest first); users can still manually sort by any column
+  - Desktop only
+
+### Available Installers (v3.0.50)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.49.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.50.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -399,6 +406,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.50 published** (October 15, 2026) — Default date sorting (newest first) + creation order tiebreaker for same-date entries
 - ✅ **v3.0.49 published** (October 13, 2026) — Fix Down Arrow on last row creating new line (no more feeling stuck)
 - ✅ **v3.0.48 published** (October 13, 2026) — Fix Macro form code entry (CodeInput with autocomplete dropdown)
 - ✅ **v3.0.47 published** (October 13, 2026) — CRITICAL: Fix version display stuck at v3.0.44 (proper TypeScript build process)

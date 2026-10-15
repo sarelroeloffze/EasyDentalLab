@@ -84,7 +84,8 @@ export function HelpSection() {
         <H>Searching &amp; Filtering</H>
         <P>Type in the search box to filter by client name or invoice number. Use the status dropdown to show only Unpaid or Paid invoices.</P>
         <H>Sorting</H>
-        <P>Click any column header (No., Date, Client, Patient, Total, Status) to sort the table. First click sorts ascending (↑), second click sorts descending (↓), third click returns to ascending. The sort indicator appears next to the column name.</P>
+        <P><strong>Default sort:</strong> Invoices are sorted by date descending (newest first). If multiple invoices have the same date, they are ordered by creation time (newest first).</P>
+        <P>Click any column header (No., Date, Client, Patient, Total, Status) to sort the table. First click sorts ascending (↑), second click sorts descending (↓). Click again to toggle back. The sort indicator appears next to the column name.</P>
       </div>
     )},
 
@@ -105,7 +106,8 @@ export function HelpSection() {
         <H>Discount Feature</H>
         <P>Apply a percentage discount to the estimate total before VAT calculation. Tick the <strong>Discount</strong> checkbox at the bottom of the form, then enter a percentage (default 15%, maximum 100%). The discount is deducted from the subtotal before VAT is calculated. The discount line appears on both the form and the printed estimate/PDF. <strong>Since v2.3.47:</strong> When you convert an estimate to an invoice or copy an estimate, the discount settings are preserved automatically.</P>
         <H>Sorting</H>
-        <P>Click any column header (No., Date, Client, Patient, Total, Status) to sort the table. First click sorts ascending (↑), second click sorts descending (↓), third click returns to ascending. The sort indicator appears next to the column name.</P>
+        <P><strong>Default sort:</strong> Estimates are sorted by date descending (newest first). If multiple estimates have the same date, they are ordered by creation time (newest first).</P>
+        <P>Click any column header (No., Date, Client, Patient, Total) to sort the table. First click sorts ascending (↑), second click sorts descending (↓). Click again to toggle back. The sort indicator appears next to the column name.</P>
       </div>
     )},
 

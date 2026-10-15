@@ -26,8 +26,8 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   const [copyingInvoice, setCopyingInvoice] = useState<Invoice | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingInvoice, setDeletingInvoice] = useState<Invoice | null>(null);
-  const [sortBy, setSortBy] = useState<SortColumn>(null);
-  const [sortOrder, setSortOrder] = useState<SortOrder>(null);
+  const [sortBy, setSortBy] = useState<SortColumn>('date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [viewingEstimate, setViewingEstimate] = useState<Estimate | null>(null);
   const pendingClose = useRef<(() => void) | null>(null);
 
@@ -362,7 +362,9 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
 
       if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-      return 0;
+
+      // Secondary sort by number descending (newest first) when primary values are equal
+      return b.number - a.number;
     });
 
     return sorted;
