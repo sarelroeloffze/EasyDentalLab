@@ -201,15 +201,15 @@ function setupAutoUpdater() {
     }
   });
 
-  // Check on startup (after a short delay so UI loads first)
-  setTimeout(() => {
+  // Helper function to check for updates
+  const checkForUpdatesNow = () => {
     try {
       const log = (msg, data) => {
         console.log(msg, data || '');
         if (global.sendLogToRenderer) global.sendLogToRenderer(msg, data);
       };
 
-      log('🔔 setTimeout fired - starting update check...');
+      log('🔔 Starting update check...');
 
       // Notify renderer that update check is starting
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -238,12 +238,24 @@ function setupAutoUpdater() {
           }
         });
     } catch (error) {
-      console.error('🔔 FATAL ERROR in setTimeout callback:', error);
+      console.error('🔔 FATAL ERROR in update check:', error);
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.send('update-check-failed', { error: error.message });
       }
     }
+  };
+
+  // Check on startup (after a short delay so UI loads first)
+  setTimeout(() => {
+    checkForUpdatesNow();
   }, 5000); // 5 second delay
+
+  // PERIODIC UPDATE CHECK: Check every hour while app is running
+  // This ensures updates are detected even if app stays open for days
+  setInterval(() => {
+    console.log('🔔 Periodic update check (runs every hour)...');
+    checkForUpdatesNow();
+  }, 3600000); // 1 hour = 3600000ms
 }
 
 // IPC: Install update (called by renderer when user clicks "Restart Now")

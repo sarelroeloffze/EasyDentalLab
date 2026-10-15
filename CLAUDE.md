@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-15)
 
-### Current Version: Desktop App v3.0.50 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.50 adds default date sorting (newest first)
+### Current Version: Desktop App v3.0.51 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.51 adds hourly automatic update checks (no restart needed)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -387,12 +387,20 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** When opening Invoices or Estimates page, newest entries appear on top by default; same-date entries ordered by creation time (newest first); users can still manually sort by any column
   - Desktop only
 
-### Available Installers (v3.0.50)
+- ✅ **v3.0.51 Update** (October 15, 2026) — **HOURLY AUTOMATIC UPDATE CHECKS (CRITICAL FIX)**
+  - **Problem:** Auto-update only checked on app startup; if app stayed open when update was published, users wouldn't receive updates until manual restart; unacceptable for non-technical dental lab users who leave app running for days
+  - **Root cause:** `setupAutoUpdater()` in main.js only called `checkForUpdates()` once on startup (5-second delay); no periodic checks during app session
+  - **Solution:** Added automatic hourly update checks using `setInterval(checkForUpdatesNow, 3600000)` in main.js; refactored update check logic into reusable `checkForUpdatesNow()` helper function; checks run every hour (1 hour = 3600000ms) while app is running
+  - **Result:** Updates are now detected automatically even if app runs continuously for days; no manual intervention ever required; blue download banner appears within 1 hour of new release; seamless for non-technical users
+  - **CRITICAL:** This fix ensures dental labs receive updates automatically without requiring computer skills or manual downloads
+  - Desktop only
+
+### Available Installers (v3.0.51)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.50.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.51.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -406,6 +414,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.51 published** (October 15, 2026) — **CRITICAL:** Hourly automatic update checks (no restart needed) - seamless for non-technical users
 - ✅ **v3.0.50 published** (October 15, 2026) — Default date sorting (newest first) + creation order tiebreaker for same-date entries
 - ✅ **v3.0.49 published** (October 13, 2026) — Fix Down Arrow on last row creating new line (no more feeling stuck)
 - ✅ **v3.0.48 published** (October 13, 2026) — Fix Macro form code entry (CodeInput with autocomplete dropdown)
