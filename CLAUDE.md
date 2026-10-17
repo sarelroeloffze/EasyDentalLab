@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.57 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.57 fixes Medical Aids + implements CSV backup system
+### Current Version: Desktop App v3.0.58 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.58 fixes Medical Aids edit + adds plans hierarchy + CSV support
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -473,12 +473,27 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Medical Aids fully functional; CSV backup system operational for all data types; Excel-editable MedicalAids.csv like Tariffs.csv
   - Desktop only
 
-### Available Installers (v3.0.57)
+- ✅ **v3.0.58 Update** (October 17, 2026) — **FIX MEDICAL AIDS EDIT (ROOT CAUSE)**
+  - **CRITICAL BUG FIXED:** Medical Aids edit button didn't work - clicking Edit → making changes → Save did nothing
+  - **Root cause:** `genId()` was regenerating random IDs on every component render
+    - User clicked Edit button → component re-rendered → all medical aids got NEW random IDs
+    - When user clicked Save, `editing.id` (from previous render) never matched `m.id` (from current render)
+    - The `.map(m => m.id === editing.id ? {...} : m)` always returned false → no update happened
+  - **Solution:** Three-part fix:
+    1. **One-time migration via useEffect** - converts old data to new structure with STABLE IDs (based on name + timestamp + index, NOT random)
+    2. **Removed redundant normalization** - no more `genId()` calls on every render
+    3. **Simplified save/delete** - just use the migrated data directly from state
+  - **Files modified:** MedicalAids.tsx (complete rewrite of ID handling)
+  - **Migration safety:** useEffect runs once, checks if data needs migration, converts legacy strings to {id, name, plans: []} objects, sets `migrated` flag
+  - **Result:** Edit, delete, and plans display now work correctly; stable IDs prevent render-cycle bugs
+  - Desktop only
+
+### Available Installers (v3.0.58)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.57.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.58.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -492,6 +507,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.58 published** (October 17, 2026) — Medical Aids edit fix (CRITICAL: stable IDs prevent render-cycle bugs) + plans hierarchy + CSV support (MedicalAids.csv)
 - ✅ **v3.0.57 published** (October 17, 2026) — Medical Aids fixes (edit/delete/plans visibility) + CSV backup system (auto-writes MedicalAids.csv + all CSVs with 2s debounce)
 - ✅ **v3.0.56 published** (October 17, 2026) — **PHASE 1 COMPLETE:** Search/Filter system (Invoices/Estimates/Clients) + 5-column age analysis (0-30/31-60/61-90/91-120/120+) with red styling for overdue
 - ✅ **v3.0.55 published** (October 17, 2026) — Medical Aids fix (edit works) + plans hierarchy + CSV support (MedicalAids.csv like Tariffs.csv)
@@ -1013,6 +1029,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Arrow navigation selects wrong code | When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected. Root cause: **Double-pick race condition** - Enter and Down Arrow handlers called `pick()` twice (first using `filtered[hlIdx]` from arrow navigation, then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code). Also, ArrowDown couldn't navigate DOWN in dropdown (only ArrowUp worked), creating asymmetric UX. Fix: Refactored to single-pick pattern - removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` (just moves focus) and `confirmAndAddLine()` (picks once + adds line) helpers; Enter now picks once using `filtered[hlIdx]` then calls `moveToQtyField()`; Ctrl+Enter calls `confirmAndAddLine()`; ArrowDown when dropdown open now navigates down (`setHlIdx(prev => Math.min(prev + 1, filtered.length - 1))`); ArrowDown when closed confirms and adds line (legacy behavior). Updated tooltip to show all shortcuts. Rewrote Help section "Tips & Keyboard Shortcuts" with complete navigation guide. Lines ~1677-1761 (CodeInput in web), ~1677-1746 (desktop), ~1854 (tooltip web), ~1839 (tooltip desktop), ~5713-5721 (Help web), ~5770-5778 (Help desktop). Result: Clean, predictable navigation - ArrowUp/ArrowDown navigate within dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions). Both versions. |
 | **v3.0.38 Update** | **Clickable Estimate References on Invoices** |
 | Clickable estimate reference | When viewing invoices converted from estimates, the estimate reference badge showed "Est #123" as static text — users couldn't view the original estimate. Root cause: No interactivity on the badge. Solution: Created new `EstimateViewer` component (`src/components/ui/EstimateViewer.tsx`) displaying read-only estimate with Print/PDF/WhatsApp buttons; made estimate reference badge clickable with hover effect (purple background → brighter purple on hover); added `viewingEstimate` state and `handleViewEstimate()` function to Invoices page; updated Estimates page `handleConfirmDelete()` to clean up invoice references when estimate is deleted (`estimateRef = null`). Result: Users can click "Est #123" badge to view original estimate in modal; deleted estimates automatically remove orphaned references. Desktop only (TypeScript version). |
+| **v3.0.58 Fix** | **Medical Aids Edit - Root Cause Fixed** |
+| Medical Aids edit button broken | **Critical bug:** Clicking Edit on a medical aid, making changes, and clicking Save did nothing - changes weren't saved. **Root cause:** `genId()` was regenerating random IDs on every component render. When user clicked Edit, component re-rendered, all medical aids got NEW random IDs. When user clicked Save, `editing.id` (from previous render) never matched `m.id` (from current render), so the `.map(m => m.id === editing.id ? {...} : m)` always returned false and no update happened. **Solution:** Three-part fix: (1) One-time migration via useEffect converts old data to new structure with STABLE IDs (based on name + timestamp + index, NOT random genId), (2) Removed redundant normalization that was calling genId() on every render, (3) Simplified save/delete functions to just use the migrated data directly from state. **Migration safety:** useEffect runs once, checks if data needs migration (`typeof item === 'string' \|\| !item.id \|\| !Array.isArray(item.plans)`), converts legacy strings to `{id, name, plans: []}` objects, sets `migrated` flag to prevent re-running. **Files modified:** MedicalAids.tsx (complete rewrite of ID handling). **Result:** Edit, delete, and plans display now work correctly; stable IDs prevent render-cycle bugs. Desktop only. |
 
 ## License System
 
