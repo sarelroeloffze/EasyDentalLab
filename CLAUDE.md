@@ -9,10 +9,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
 - These three rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-10-15)
+## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.51 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.51 adds hourly automatic update checks (no restart needed)
+### Current Version: Desktop App v3.0.53 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.53 fixes UX issues: Lab Slip placeholder, macro empty line, Afrikaans titles
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -395,12 +395,35 @@ Portable single-file dental laboratory invoicing application for South African d
   - **CRITICAL:** This fix ensures dental labs receive updates automatically without requiring computer skills or manual downloads
   - Desktop only
 
-### Available Installers (v3.0.51)
+- ✅ **v3.0.52 Update** (October 17, 2026) — **LAB SLIP NUMBER FIELD (SYNERGY FEATURE #1)**
+  - **Feature:** Added Lab Slip Number field to track dentist's lab slip numbers on invoices and estimates
+  - **Implementation:**
+    - Added `labSlipNumber?: string` to Invoice and Estimate type definitions
+    - Added input field to InvoiceForm and EstimateForm (after client selection, before patient details)
+    - Added "Lab Slip" column to Invoices and Estimates tables (between No. and Date columns)
+    - Added to print HTML and PDF output with bilingual label: "Lab Slip / Lab Strokie"
+    - Updated toInvoice() conversion to carry over lab slip number from estimate
+  - **UI:** Optional text field with placeholder "e.g. LS-12345"
+  - **Backward compatible:** Optional field with empty string default; existing invoices/estimates show blank lab slip
+  - **Files modified:** types/index.ts, InvoiceForm.tsx, EstimateForm.tsx, Invoices.tsx, Estimates.tsx, document.ts, initialData.ts
+  - **Migration:** None needed (optional field)
+  - **First feature from Synergy migration plan** (11 features total)
+  - Desktop only
+
+- ✅ **v3.0.53 Update** (October 17, 2026) — **UX FIXES (LAB SLIP, MACROS, TITLES)**
+  - **Fix 1 - Lab Slip placeholder:** Changed from "e.g. LS-12345" to "e.g. 12345" (number-only format, no prefix)
+  - **Fix 2 - Macro empty line:** Fixed macro pulling creating empty first line when adding codes from macros (LineItemEditor now filters out empty lines before consolidating)
+  - **Fix 3 - Afrikaans titles:** Added Afrikaans titles to patient title dropdown: Mnr (Meneer), Mev (Mevrou), Me (Mejuffrou) — appear below English titles
+  - **Files modified:** InvoiceForm.tsx, EstimateForm.tsx (placeholder + titles), LineItemEditor.tsx (macro filter), initialData.ts (version)
+  - **Result:** Better UX for bilingual South African users; cleaner macro workflow; correct number-only lab slip format
+  - Desktop only
+
+### Available Installers (v3.0.53)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.51.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.53.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -414,6 +437,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.53 published** (October 17, 2026) — UX fixes: Lab Slip placeholder (number-only), macro empty line, Afrikaans titles (Mnr/Mev/Me)
+- ✅ **v3.0.52 published** (October 17, 2026) — Lab Slip Number field (Synergy Feature #1) - track dentist's lab slip numbers
 - ✅ **v3.0.51 published** (October 15, 2026) — **CRITICAL:** Hourly automatic update checks (no restart needed) - seamless for non-technical users
 - ✅ **v3.0.50 published** (October 15, 2026) — Default date sorting (newest first) + creation order tiebreaker for same-date entries
 - ✅ **v3.0.49 published** (October 13, 2026) — Fix Down Arrow on last row creating new line (no more feeling stuck)
