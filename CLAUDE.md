@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.53 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.53 fixes UX issues: Lab Slip placeholder, macro empty line, Afrikaans titles
+### Current Version: Desktop App v3.0.54 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.54 adds Afrikaans dropdown support + Medical Aids management page
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -418,12 +418,21 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Better UX for bilingual South African users; cleaner macro workflow; correct number-only lab slip format
   - Desktop only
 
-### Available Installers (v3.0.53)
+- ✅ **v3.0.54 Update** (October 17, 2026) — **AFRIKAANS DROPDOWN SUPPORT + MEDICAL AIDS PAGE**
+  - **Fix 1 - Mej title:** Added "Mej" (Miss in Afrikaans) to patient title dropdown (InvoiceForm + EstimateForm)
+  - **Fix 2 - Afrikaans code dropdown:** Code autocomplete dropdown now shows Afrikaans descriptions when Afrikaans language is selected (CodeInput accepts `lang` prop, uses `descForLang()` helper)
+  - **Fix 3 - Macro blank line:** Adding a macro now automatically creates blank line at end for easy code continuation (LineItemEditor)
+  - **Feature - Medical Aids page:** New management page (💊 icon in nav) with add/edit/delete/search functionality; medical aids now editable via UI instead of CSV file only
+  - **Files modified:** InvoiceForm.tsx, EstimateForm.tsx (Mej title), CodeInput.tsx (lang prop + descForLang), LineItemEditor.tsx (lang prop + blank line), MedicalAids.tsx (new), App.tsx (route), initialData.ts (NAV + version), pages/index.ts (export)
+  - **Result:** Full Afrikaans support in code entry workflow; easy medical aid management; better UX for adding codes after macros
+  - Desktop only
+
+### Available Installers (v3.0.54)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.53.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.54.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -437,6 +446,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.54 published** (October 17, 2026) — Afrikaans dropdown support + Medical Aids page (💊 icon) - add/edit/delete medical aids via UI
 - ✅ **v3.0.53 published** (October 17, 2026) — UX fixes: Lab Slip placeholder (number-only), macro empty line, Afrikaans titles (Mnr/Mev/Me)
 - ✅ **v3.0.52 published** (October 17, 2026) — Lab Slip Number field (Synergy Feature #1) - track dentist's lab slip numbers
 - ✅ **v3.0.51 published** (October 15, 2026) — **CRITICAL:** Hourly automatic update checks (no restart needed) - seamless for non-technical users
