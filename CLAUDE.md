@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.55 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.55 fixes Medical Aids edit + adds plans hierarchy + CSV support
+### Current Version: Desktop App v3.0.56 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.56 completes Phase 1: Search/Filter + 5-Column Age Analysis
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -437,12 +437,31 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Full medical aid management with plans; Excel-editable CSV file; backward compatible with legacy string format
   - Desktop only
 
-### Available Installers (v3.0.55)
+- ✅ **v3.0.56 Update** (October 17, 2026) — **PHASE 1 COMPLETE: SEARCH/FILTER + 5-COLUMN AGE ANALYSIS**
+  - **Feature 1 - Search & Filter System:** Critical for managing 10,000+ invoices, huge usability improvement
+    - **Invoices page:** Search by patient, dentist, invoice#, lab slip, amount; filter by date range, dentist dropdown, status (paid/unpaid/partial)
+    - **Estimates page:** Search by patient, dentist, estimate#, lab slip, amount; filter by date range, dentist dropdown
+    - **Clients page:** Search by name, practice, email, phone
+    - All pages show live result counts with clear buttons
+  - **Feature 2 - 5-Column Age Analysis:** Better cash flow tracking with detailed aging buckets
+    - Changed from 3 columns (Current/30/60+) to 5 detailed columns:
+      - Current (0-30 days)
+      - 30 Days (31-60 days)
+      - 60 Days (61-90 days) - RED 🔴
+      - 90 Days (91-120 days) - RED 🔴
+      - 120+ Days - RED 🔴
+    - Overdue amounts (60+ days) highlighted in red for urgent visibility
+    - Updated Clients table and statement printing (HTML)
+  - **Files modified:** payments.ts (getClientAging returns 5 buckets), Clients.tsx (5-column table + red styling), documents.ts (5 aging rows in statement), Invoices.tsx (search/filter logic), Estimates.tsx (search/filter logic)
+  - **Result:** Complete Phase 1 of Synergy migration plan — Lab Slip Number + Search/Filter + 5-Column Age Analysis all delivered
+  - Desktop only
+
+### Available Installers (v3.0.56)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.55.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.56.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -456,6 +475,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.56 published** (October 17, 2026) — **PHASE 1 COMPLETE:** Search/Filter system (Invoices/Estimates/Clients) + 5-column age analysis (0-30/31-60/61-90/91-120/120+) with red styling for overdue
 - ✅ **v3.0.55 published** (October 17, 2026) — Medical Aids fix (edit works) + plans hierarchy + CSV support (MedicalAids.csv like Tariffs.csv)
 - ✅ **v3.0.54 published** (October 17, 2026) — Afrikaans dropdown support + Medical Aids page (💊 icon) - add/edit/delete medical aids via UI
 - ✅ **v3.0.53 published** (October 17, 2026) — UX fixes: Lab Slip placeholder (number-only), macro empty line, Afrikaans titles (Mnr/Mev/Me)
