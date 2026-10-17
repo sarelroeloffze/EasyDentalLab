@@ -417,6 +417,9 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
               <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('number')}>
                 No.{getSortIndicator('number')}
               </th>
+              <th style={{ ...tableHeaderStyle }}>
+                Lab Slip
+              </th>
               <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('date')}>
                 Date{getSortIndicator('date')}
               </th>
@@ -446,6 +449,7 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
               sortedInvoices.map((inv) => (
                 <tr key={inv.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
                   <td style={tableCellStyle}>{inv.number}</td>
+                  <td style={tableCellStyle}>{inv.labSlipNumber || ''}</td>
                   <td style={tableCellStyle}>{fmtDate(inv.date)}</td>
                   <td style={tableCellStyle}>{inv.clientName}</td>
                   <td style={tableCellStyle}>{inv.patientSurname} {inv.patientName}</td>

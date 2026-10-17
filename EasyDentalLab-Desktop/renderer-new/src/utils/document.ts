@@ -111,6 +111,7 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
       <table style="font-size:${L.bodyFontSize || 11}px">
         <tr><td class="c">Date</td><td class="c">${fmtDate(doc.date)}</td></tr>
         <tr><td class="c">${isInv ? 'Invoice' : 'Estimate'}</td><td class="c">${escHtml(doc.number)}</td></tr>
+        ${doc.labSlipNumber ? `<tr><td class="c">Lab Slip / Lab Strokie</td><td class="c">${escHtml(doc.labSlipNumber)}</td></tr>` : ''}
         ${p.vatNumber ? `<tr><td class="c">VAT registration</td><td class="c">${escHtml(p.vatNumber)}</td></tr>` : ''}
         ${p.labNumber ? `<tr><td class="c">Laboratory</td><td class="c">${escHtml(p.labNumber)}</td></tr>` : ''}
         ${!isInv && 'validUntil' in doc && doc.validUntil ? `<tr><td class="c">Valid until</td><td class="c">${fmtDate((doc as Estimate).validUntil || '')}</td></tr>` : ''}
@@ -267,6 +268,7 @@ export const buildPDFBlob = async (doc: Document, data: AppData, type: DocumentT
   const infoRows: any[] = [];
   infoRows.push(['Date', fmtDate(doc.date)]);
   infoRows.push([isInv ? 'Invoice' : 'Estimate', String(doc.number)]);
+  if (doc.labSlipNumber) infoRows.push(['Lab Slip / Lab Strokie', doc.labSlipNumber]);
   if (p.vatNumber) infoRows.push(['VAT registration', p.vatNumber]);
   if (p.labNumber) infoRows.push(['Laboratory', p.labNumber]);
   if (!isInv && 'validUntil' in doc && doc.validUntil) infoRows.push(['Valid until', fmtDate((doc as Estimate).validUntil || '')]);

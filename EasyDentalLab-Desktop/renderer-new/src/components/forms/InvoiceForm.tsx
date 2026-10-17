@@ -24,6 +24,7 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
     ? { ...invoice, items: getInitialItems() }
     : {
         clientId: "",
+        labSlipNumber: "",
         patientTitle: "",
         patientSurname: "",
         patientName: "",
@@ -124,6 +125,16 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
           value={f.date}
           onChange={v => s("date", v)}
           type="date"
+        />
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 16 }}>
+        <Input
+          label="Lab Slip Number / Laboratorium Strokie Nommer"
+          value={f.labSlipNumber || ''}
+          onChange={v => s("labSlipNumber", v)}
+          placeholder="e.g. LS-12345"
+          title="The dentist's lab slip number (optional)"
         />
       </div>
 

@@ -130,6 +130,7 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
             clientId: est.clientId,
             clientName: est.clientName,
             date: today(),
+            labSlipNumber: est.labSlipNumber,
             patientTitle: est.patientTitle,
             patientSurname: est.patientSurname,
             patientName: est.patientName,
@@ -418,6 +419,9 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
               <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('number')}>
                 No.{getSortIndicator('number')}
               </th>
+              <th style={{ ...tableHeaderStyle }}>
+                Lab Slip
+              </th>
               <th style={{ ...tableHeaderStyle, cursor: 'pointer', userSelect: 'none' }} onClick={() => handleSort('date')}>
                 Date{getSortIndicator('date')}
               </th>
@@ -444,6 +448,7 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
               sortedEstimates.map((est) => (
                 <tr key={est.id} style={{ borderBottom: '1px solid var(--c-border2)' }}>
                   <td style={tableCellStyle}>{est.number}</td>
+                  <td style={tableCellStyle}>{est.labSlipNumber || ''}</td>
                   <td style={tableCellStyle}>{fmtDate(est.date)}</td>
                   <td style={tableCellStyle}>{est.clientName}</td>
                   <td style={tableCellStyle}>{est.patientSurname} {est.patientName}</td>

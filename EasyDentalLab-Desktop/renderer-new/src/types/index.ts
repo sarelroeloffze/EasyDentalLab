@@ -17,6 +17,7 @@ export interface Invoice {
   clientId: string;
   clientName: string;
   date: string;           // YYYY-MM-DD
+  labSlipNumber?: string; // Dentist's lab slip number
   patientTitle: string;
   patientSurname: string;
   patientName: string;
@@ -43,6 +44,7 @@ export interface Estimate {
   clientName: string;
   date: string;
   validUntil?: string;    // YYYY-MM-DD
+  labSlipNumber?: string; // Dentist's lab slip number
   patientTitle: string;
   patientSurname: string;
   patientName: string;
