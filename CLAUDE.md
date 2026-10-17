@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.54 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.54 adds Afrikaans dropdown support + Medical Aids management page
+### Current Version: Desktop App v3.0.55 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.55 fixes Medical Aids edit + adds plans hierarchy + CSV support
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -427,12 +427,22 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Full Afrikaans support in code entry workflow; easy medical aid management; better UX for adding codes after macros
   - Desktop only
 
-### Available Installers (v3.0.54)
+- ✅ **v3.0.55 Update** (October 17, 2026) — **MEDICAL AIDS FIX + PLANS + CSV SUPPORT**
+  - **Fix 1 - Edit function:** Fixed stable IDs issue - edit now works correctly (IDs no longer regenerated on every render)
+  - **Feature 1 - Plans hierarchy:** Medical aids can now have multiple plans under each main medical aid (e.g., Discovery Health → KeyCare Plus, Classic Smart, Executive)
+  - **Feature 2 - CSV support:** MedicalAids.csv file with format "MedicalAid,Plan" for easy Excel editing (like Tariffs.csv)
+  - **Feature 3 - Dropdown format:** Medical aid dropdown shows "Medical Aid - Plan" format when plans exist (e.g., "Discovery Health - KeyCare Plus")
+  - **UI enhancement:** Expandable/collapsible plans in Medical Aids page (click arrow to expand/collapse); plan count badge
+  - **Files modified:** MedicalAids.tsx (complete rewrite), csv.ts (parseMedicalAidsCSV + buildMedicalAidsCSV), InvoiceForm.tsx, EstimateForm.tsx (flatMap plans to options)
+  - **Result:** Full medical aid management with plans; Excel-editable CSV file; backward compatible with legacy string format
+  - Desktop only
+
+### Available Installers (v3.0.55)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.54.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.55.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -446,6 +456,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.55 published** (October 17, 2026) — Medical Aids fix (edit works) + plans hierarchy + CSV support (MedicalAids.csv like Tariffs.csv)
 - ✅ **v3.0.54 published** (October 17, 2026) — Afrikaans dropdown support + Medical Aids page (💊 icon) - add/edit/delete medical aids via UI
 - ✅ **v3.0.53 published** (October 17, 2026) — UX fixes: Lab Slip placeholder (number-only), macro empty line, Afrikaans titles (Mnr/Mev/Me)
 - ✅ **v3.0.52 published** (October 17, 2026) — Lab Slip Number field (Synergy Feature #1) - track dentist's lab slip numbers
