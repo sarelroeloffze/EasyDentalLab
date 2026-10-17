@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.56 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.56 completes Phase 1: Search/Filter + 5-Column Age Analysis
+### Current Version: Desktop App v3.0.57 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.57 fixes Medical Aids + implements CSV backup system
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -456,12 +456,29 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete Phase 1 of Synergy migration plan — Lab Slip Number + Search/Filter + 5-Column Age Analysis all delivered
   - Desktop only
 
-### Available Installers (v3.0.56)
+- ✅ **v3.0.57 Update** (October 17, 2026) — **MEDICAL AIDS FIXES + CSV BACKUP SYSTEM**
+  - **Fix 1 - Edit function:** Fixed critical bug where editing medical aids didn't save changes (was using local normalized variable instead of prev.medicalAids state)
+  - **Fix 2 - Delete function:** Same fix - now properly saves deletions to state
+  - **Fix 3 - Type definitions:** Updated MedicalAid interface to include id, name, and plans[] structure; added MedicalAidPlan interface
+  - **Fix 4 - Plans visibility:** Plans now properly visible in invoice/estimate dropdowns in "Medical Aid - Plan" format (e.g., "Discovery Health - KeyCare Plus")
+  - **Feature 1 - CSV Backup System:** Implemented complete auto-backup system
+    - Created useBackup hook - auto-backs up all CSVs 2 seconds after data changes
+    - Writes: Clients.csv, Tariffs.csv, Macros.csv, Payments.csv, **MedicalAids.csv**, EasyDentalLab-backup.json
+    - Desktop-only (uses Electron IPC)
+    - Integrated into useData hook - runs automatically
+    - Warns user if backup pending on window close
+  - **Feature 2 - Manual Backup:** Fixed AutoBackupCard "Save Now" button to actually write CSV files (was placeholder timeout)
+  - **MedicalAids.csv Format:** One row per plan; medical aids without plans get one row with empty plan field
+  - **Files modified:** MedicalAids.tsx (fixed edit/delete), types/index.ts (added MedicalAidPlan + updated MedicalAid), useBackup.ts (new hook), useData.ts (integrated useBackup), AutoBackupCard.tsx (implemented CSV writing)
+  - **Result:** Medical Aids fully functional; CSV backup system operational for all data types; Excel-editable MedicalAids.csv like Tariffs.csv
+  - Desktop only
+
+### Available Installers (v3.0.57)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture |
 |----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.56.exe` | ~73 MB | x64 (Intel/AMD) |
+| **Windows** | `EasyDentalLab.Setup.3.0.57.exe` | ~73 MB | x64 (Intel/AMD) |
 
 **Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
@@ -475,6 +492,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.57 published** (October 17, 2026) — Medical Aids fixes (edit/delete/plans visibility) + CSV backup system (auto-writes MedicalAids.csv + all CSVs with 2s debounce)
 - ✅ **v3.0.56 published** (October 17, 2026) — **PHASE 1 COMPLETE:** Search/Filter system (Invoices/Estimates/Clients) + 5-column age analysis (0-30/31-60/61-90/91-120/120+) with red styling for overdue
 - ✅ **v3.0.55 published** (October 17, 2026) — Medical Aids fix (edit works) + plans hierarchy + CSV support (MedicalAids.csv like Tariffs.csv)
 - ✅ **v3.0.54 published** (October 17, 2026) — Afrikaans dropdown support + Medical Aids page (💊 icon) - add/edit/delete medical aids via UI
