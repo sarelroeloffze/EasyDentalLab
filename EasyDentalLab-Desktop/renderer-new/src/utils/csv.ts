@@ -93,16 +93,38 @@ export function parseMacroCSV(csv: string): Macro[] {
 
 /**
  * Parse MedicalAids CSV
+ * Format: MedicalAid,Plan
+ * Multiple rows with same medical aid name = multiple plans
  */
 export function parseMedicalAidsCSV(csv: string): MedicalAid[] {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
-  
+
   const rows = lines.slice(1); // skip header
-  return rows.map(row => {
-    const [name] = row.split(',').map(s => s.trim());
-    return { name };
+  const aidMap = new Map<string, { id: string; name: string; plans: { id: string; name: string }[] }>();
+
+  rows.forEach((row, idx) => {
+    const [medicalAidName, planName] = row.split(',').map(s => s.trim());
+    if (!medicalAidName) return;
+
+    if (!aidMap.has(medicalAidName)) {
+      aidMap.set(medicalAidName, {
+        id: 'csv_ma_' + Date.now() + '_' + idx,
+        name: medicalAidName,
+        plans: []
+      });
+    }
+
+    if (planName) {
+      const aid = aidMap.get(medicalAidName)!;
+      aid.plans.push({
+        id: 'csv_plan_' + Date.now() + '_' + idx,
+        name: planName
+      });
+    }
   });
+
+  return Array.from(aidMap.values());
 }
 
 /**
@@ -182,9 +204,28 @@ export function buildPaymentsCSV(payments: Payment[], invoices: Invoice[]): stri
 
 /**
  * Build MedicalAids CSV
+ * Format: MedicalAid,Plan
+ * One row per plan; medical aids with no plans get one row with empty plan field
  */
-export function buildMedicalAidsCSV(medicalAids: MedicalAid[]): string {
-  const header = 'Name';
-  const rows = medicalAids.map(m => m.name);
+export function buildMedicalAidsCSV(medicalAids: any[]): string {
+  const header = 'MedicalAid,Plan';
+  const rows: string[] = [];
+
+  medicalAids.forEach(aid => {
+    const aidName = aid.name || aid;
+    const plans = aid.plans || [];
+
+    if (plans.length === 0) {
+      // Medical aid with no plans
+      rows.push(`${aidName},`);
+    } else {
+      // One row per plan
+      plans.forEach((plan: any) => {
+        const planName = plan.name || plan;
+        rows.push(`${aidName},${planName}`);
+      });
+    }
+  });
+
   return [header, ...rows].join('\n');
 }

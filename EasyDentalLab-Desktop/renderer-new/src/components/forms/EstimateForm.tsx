@@ -183,7 +183,18 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
           label="Medical Aid"
           value={f.medicalAidName}
           onChange={v => s("medicalAidName", v)}
-          options={(data.medicalAids || []).map((n: any) => ({ value: n.name || n, label: n.name || n }))}
+          options={(data.medicalAids || []).flatMap((aid: any) => {
+            const aidName = aid.name || aid;
+            const plans = aid.plans || [];
+            if (plans.length === 0) {
+              return [{ value: aidName, label: aidName }];
+            }
+            return plans.map((plan: any) => {
+              const planName = plan.name || plan;
+              const fullName = `${aidName} - ${planName}`;
+              return { value: fullName, label: fullName };
+            });
+          })}
         />
       </div>
 
