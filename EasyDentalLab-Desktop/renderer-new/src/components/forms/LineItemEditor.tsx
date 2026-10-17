@@ -74,10 +74,12 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
         price: t?.price || 0
       };
     });
-    // Filter out empty lines before consolidating
+    // Filter out empty lines before consolidating, then add blank line at end
     setItems(prev => {
       const nonEmptyPrev = prev.filter(item => item.code && item.code.trim() !== "");
-      return consolidateItems(nonEmptyPrev, newItems);
+      const consolidated = consolidateItems(nonEmptyPrev, newItems);
+      // Add blank line at end so user can immediately add more codes
+      return [...consolidated, { id: genId(), code: "", description: "", qty: 1, price: 0 }];
     });
     setShowMacroPicker(false);
     setMSearch("");
@@ -180,6 +182,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
                       })}
                       onAddLine={addBlank}
                       tariffs={tariffs}
+                      lang={lang}
                       rowId={item.id}
                       inputStyle={{ padding: '4px 6px', fontSize: 12, fontFamily: 'monospace' }}
                     />

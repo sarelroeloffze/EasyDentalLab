@@ -4,7 +4,7 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.53';
+export const APP_VERSION = '3.0.54';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
@@ -65,6 +65,7 @@ export const NAV = [
   { id: 'directclaimed', label: 'Direct Claimed', icon: '🏥' },
   { id: 'clients', label: 'Dentist/Practice', icon: '👨‍⚕️' },
   { id: 'tariffs', label: 'Tariffs', icon: '💰' },
+  { id: 'medicalAids', label: 'Medical Aids', icon: '💊' },
   { id: 'macros', label: 'Macros', icon: '⚡' },
   { id: 'settings', label: 'Settings', icon: '⚙️' }
 ];

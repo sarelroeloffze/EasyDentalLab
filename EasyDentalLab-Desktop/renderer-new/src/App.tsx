@@ -10,6 +10,7 @@ import {
   DirectClaimed,
   Clients,
   Tariffs,
+  MedicalAids,
   Macros,
   Settings,
   Help
@@ -70,6 +71,8 @@ function App() {
         return <Clients data={data} setData={setData} openFormOnMount={openFormOnMount} onFormOpened={() => setOpenFormOnMount(false)} />;
       case 'tariffs':
         return <Tariffs data={data} setData={setData} />;
+      case 'medicalAids':
+        return <MedicalAids data={data} setData={setData} />;
       case 'macros':
         return <Macros data={data} setData={setData} />;
       case 'settings':

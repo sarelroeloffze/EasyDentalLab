@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { Tariff } from '../../types';
+import { descForLang } from '../../utils/helpers';
 
 interface CodeInputProps {
   value: string;
@@ -7,6 +8,7 @@ interface CodeInputProps {
   onSelect: (tariff: Tariff) => void;
   onAddLine?: () => void;
   tariffs: Tariff[];
+  lang?: 'en' | 'af';
   inputStyle?: React.CSSProperties;
   rowId?: string;
 }
@@ -17,6 +19,7 @@ export function CodeInput({
   onSelect,
   onAddLine,
   tariffs,
+  lang = 'en',
   inputStyle,
   rowId
 }: CodeInputProps) {
@@ -329,7 +332,7 @@ export function CodeInput({
                     whiteSpace: 'nowrap',
                     fontSize: 12
                   }}>
-                    {t.description}
+                    {descForLang(t, lang)}
                   </span>
                 </div>
                 <span style={{

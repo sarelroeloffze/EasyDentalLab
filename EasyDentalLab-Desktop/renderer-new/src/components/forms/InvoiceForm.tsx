@@ -151,7 +151,8 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
             { value: "Prof", label: "Prof" },
             { value: "Mnr", label: "Mnr" },
             { value: "Mev", label: "Mev" },
-            { value: "Me", label: "Me" }
+            { value: "Me", label: "Me" },
+            { value: "Mej", label: "Mej" }
           ]}
           placeholder="Select..."
           title="Patient title — optional"

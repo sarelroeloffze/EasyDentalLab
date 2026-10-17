@@ -151,7 +151,8 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
             { value: "Prof", label: "Prof" },
             { value: "Mnr", label: "Mnr" },
             { value: "Mev", label: "Mev" },
-            { value: "Me", label: "Me" }
+            { value: "Me", label: "Me" },
+            { value: "Mej", label: "Mej" }
           ]}
           placeholder="Select..."
           title="Patient title — optional"
