@@ -112,8 +112,15 @@ export interface Category {
   name: string;
 }
 
-export interface MedicalAid {
+export interface MedicalAidPlan {
+  id: string;
   name: string;
+}
+
+export interface MedicalAid {
+  id: string;
+  name: string;
+  plans: MedicalAidPlan[];
 }
 
 export interface LayoutSettings {

@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import type { AppData } from '../../types';
 import { Button } from './Button';
+import { buildClientsCSV, buildTariffsCSV, buildMacrosCSV, buildPaymentsCSV, buildMedicalAidsCSV } from '../../utils/csv';
 
 interface AutoBackupCardProps {
   data: AppData;
   setData?: (data: AppData | ((prev: AppData) => AppData)) => void;
 }
 
-export function AutoBackupCard({ data: _data, setData: _setData }: AutoBackupCardProps) {
+export function AutoBackupCard({ data, setData: _setData }: AutoBackupCardProps) {
   const [backupPath, setBackupPath] = useState<string | null>(null);
   const [lastBackup, setLastBackup] = useState<string>('');
   const [backupStatus, setBackupStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
@@ -48,13 +49,35 @@ export function AutoBackupCard({ data: _data, setData: _setData }: AutoBackupCar
 
     setBackupStatus('saving');
 
-    // Trigger immediate backup by calling the same logic App.tsx uses
-    // This would need to be wired up properly in the actual implementation
-    setTimeout(() => {
+    try {
+      // Build CSVs
+      const clientsCSV = buildClientsCSV(data.clients);
+      const tariffsCSV = buildTariffsCSV(data.tariffs);
+      const macrosCSV = buildMacrosCSV(data.macros);
+      const paymentsCSV = buildPaymentsCSV(data.payments || [], data.invoices);
+      const medicalAidsCSV = buildMedicalAidsCSV(data.medicalAids || []);
+
+      // Write all CSV files
+      await Promise.all([
+        window.electronAPI.writeBackupFile('Clients.csv', clientsCSV),
+        window.electronAPI.writeBackupFile('Tariffs.csv', tariffsCSV),
+        window.electronAPI.writeBackupFile('Macros.csv', macrosCSV),
+        window.electronAPI.writeBackupFile('Payments.csv', paymentsCSV),
+        window.electronAPI.writeBackupFile('MedicalAids.csv', medicalAidsCSV),
+      ]);
+
+      // Write JSON backup
+      const jsonBackup = JSON.stringify(data, null, 2);
+      await window.electronAPI.writeBackupFile('EasyDentalLab-backup.json', jsonBackup);
+
       setBackupStatus('success');
       setLastBackup(new Date().toLocaleString());
       setTimeout(() => setBackupStatus('idle'), 2000);
-    }, 500);
+    } catch (error) {
+      console.error('Manual backup error:', error);
+      setBackupStatus('error');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    }
   };
 
   const downloadCSV = async (filename: string) => {

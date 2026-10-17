@@ -84,17 +84,27 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
     if (!formName.trim()) return;
 
     setData(prev => {
+      // Normalize prev.medicalAids to the correct structure
+      const prevMedicalAids: MedicalAid[] = (prev.medicalAids || []).map((item: any) => {
+        if (item.id && item.name && Array.isArray(item.plans)) {
+          return item;
+        }
+        const name = typeof item === 'string' ? item : (item.name || item);
+        const id = (typeof item === 'object' && item.id) ? item.id : genId();
+        return { id, name, plans: [] };
+      });
+
       let updated: MedicalAid[];
       if (editing) {
         // Update existing
-        updated = medicalAids.map(m =>
+        updated = prevMedicalAids.map(m =>
           m.id === editing.id
             ? { ...m, name: formName.trim(), plans: formPlans }
             : m
         );
       } else {
         // Add new
-        updated = [...medicalAids, {
+        updated = [...prevMedicalAids, {
           id: genId(),
           name: formName.trim(),
           plans: formPlans
@@ -116,10 +126,22 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
-      setData(prev => ({
-        ...prev,
-        medicalAids: medicalAids.filter(m => m.id !== deleteTarget.id)
-      }));
+      setData(prev => {
+        // Normalize prev.medicalAids to the correct structure
+        const prevMedicalAids: MedicalAid[] = (prev.medicalAids || []).map((item: any) => {
+          if (item.id && item.name && Array.isArray(item.plans)) {
+            return item;
+          }
+          const name = typeof item === 'string' ? item : (item.name || item);
+          const id = (typeof item === 'object' && item.id) ? item.id : genId();
+          return { id, name, plans: [] };
+        });
+
+        return {
+          ...prev,
+          medicalAids: prevMedicalAids.filter(m => m.id !== deleteTarget.id)
+        };
+      });
     }
     setDeleteTarget(null);
     setConfirmDelete(false);

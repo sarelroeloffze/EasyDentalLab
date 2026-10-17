@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import type { AppData } from '../types';
 import { INITIAL_DATA, STORAGE_KEY } from '../constants/initialData';
+import { useBackup } from './useBackup';
 
 /**
  * Custom hook for managing app data with localStorage persistence
@@ -12,6 +13,9 @@ import { INITIAL_DATA, STORAGE_KEY } from '../constants/initialData';
 export function useData() {
   const [data, setDataState] = useState<AppData>(INITIAL_DATA);
   const [loaded, setLoaded] = useState(false);
+
+  // Auto-backup CSV files (2-second debounce)
+  useBackup(data, loaded);
 
   // Load data from localStorage on mount
   useEffect(() => {
