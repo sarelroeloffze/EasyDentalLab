@@ -28,22 +28,40 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
   const [deleteTarget, setDeleteTarget] = useState<MedicalAid | null>(null);
   const [search, setSearch] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [migrated, setMigrated] = useState(false);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
   }
 
-  // Normalize medicalAids data structure
-  const medicalAids: MedicalAid[] = (data.medicalAids || []).map((item: any) => {
-    // If it's already the correct structure, use it
-    if (item.id && item.name && Array.isArray(item.plans)) {
-      return item;
+  // One-time migration: convert old string format to new structure
+  React.useEffect(() => {
+    if (migrated || !data.medicalAids || data.medicalAids.length === 0) return;
+
+    const needsMigration = data.medicalAids.some((item: any) =>
+      typeof item === 'string' || !item.id || !Array.isArray(item.plans)
+    );
+
+    if (needsMigration) {
+      setData(prev => ({
+        ...prev,
+        medicalAids: (prev.medicalAids || []).map((item: any, index: number) => {
+          if (item.id && item.name && Array.isArray(item.plans)) {
+            return item;
+          }
+          const name = typeof item === 'string' ? item : (item.name || item);
+          const id = (typeof item === 'object' && item.id)
+            ? item.id
+            : `ma_${name.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${index}`;
+          return { id, name, plans: [] };
+        })
+      }));
+      setMigrated(true);
     }
-    // Legacy format: string or {id, name} - convert to new format
-    const name = typeof item === 'string' ? item : (item.name || item);
-    const id = (typeof item === 'object' && item.id) ? item.id : genId();
-    return { id, name, plans: [] };
-  });
+  }, [data.medicalAids, migrated, setData]);
+
+  // Use medicalAids data (migration happens in useEffect above)
+  const medicalAids: MedicalAid[] = (data.medicalAids || []) as MedicalAid[];
 
   const filteredAids = search
     ? medicalAids.filter(m =>
@@ -84,27 +102,19 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
     if (!formName.trim()) return;
 
     setData(prev => {
-      // Normalize prev.medicalAids to the correct structure
-      const prevMedicalAids: MedicalAid[] = (prev.medicalAids || []).map((item: any) => {
-        if (item.id && item.name && Array.isArray(item.plans)) {
-          return item;
-        }
-        const name = typeof item === 'string' ? item : (item.name || item);
-        const id = (typeof item === 'object' && item.id) ? item.id : genId();
-        return { id, name, plans: [] };
-      });
+      const prevMedicalAids = prev.medicalAids || [];
 
       let updated: MedicalAid[];
       if (editing) {
         // Update existing
-        updated = prevMedicalAids.map(m =>
+        updated = (prevMedicalAids as MedicalAid[]).map(m =>
           m.id === editing.id
             ? { ...m, name: formName.trim(), plans: formPlans }
             : m
         );
       } else {
         // Add new
-        updated = [...prevMedicalAids, {
+        updated = [...(prevMedicalAids as MedicalAid[]), {
           id: genId(),
           name: formName.trim(),
           plans: formPlans
@@ -126,22 +136,10 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
 
   const handleConfirmDelete = () => {
     if (deleteTarget) {
-      setData(prev => {
-        // Normalize prev.medicalAids to the correct structure
-        const prevMedicalAids: MedicalAid[] = (prev.medicalAids || []).map((item: any) => {
-          if (item.id && item.name && Array.isArray(item.plans)) {
-            return item;
-          }
-          const name = typeof item === 'string' ? item : (item.name || item);
-          const id = (typeof item === 'object' && item.id) ? item.id : genId();
-          return { id, name, plans: [] };
-        });
-
-        return {
-          ...prev,
-          medicalAids: prevMedicalAids.filter(m => m.id !== deleteTarget.id)
-        };
-      });
+      setData(prev => ({
+        ...prev,
+        medicalAids: (prev.medicalAids as MedicalAid[] || []).filter(m => m.id !== deleteTarget.id)
+      }));
     }
     setDeleteTarget(null);
     setConfirmDelete(false);
