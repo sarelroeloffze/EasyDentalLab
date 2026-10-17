@@ -74,7 +74,11 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
         price: t?.price || 0
       };
     });
-    setItems(prev => consolidateItems(prev, newItems));
+    // Filter out empty lines before consolidating
+    setItems(prev => {
+      const nonEmptyPrev = prev.filter(item => item.code && item.code.trim() !== "");
+      return consolidateItems(nonEmptyPrev, newItems);
+    });
     setShowMacroPicker(false);
     setMSearch("");
   };

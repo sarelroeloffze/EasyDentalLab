@@ -133,7 +133,7 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
           label="Lab Slip Number / Laboratorium Strokie Nommer"
           value={f.labSlipNumber || ''}
           onChange={v => s("labSlipNumber", v)}
-          placeholder="e.g. LS-12345"
+          placeholder="e.g. 12345"
           title="The dentist's lab slip number (optional)"
         />
       </div>
@@ -148,7 +148,10 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
             { value: "Mrs", label: "Mrs" },
             { value: "Miss", label: "Miss" },
             { value: "Dr", label: "Dr" },
-            { value: "Prof", label: "Prof" }
+            { value: "Prof", label: "Prof" },
+            { value: "Mnr", label: "Mnr" },
+            { value: "Mev", label: "Mev" },
+            { value: "Me", label: "Me" }
           ]}
           placeholder="Select..."
           title="Patient title — optional"
