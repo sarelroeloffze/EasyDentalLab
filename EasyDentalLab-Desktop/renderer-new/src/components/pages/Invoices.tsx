@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { AppData, Invoice, Estimate } from '../../types';
-import { Button, Modal, ConfirmModal, CopyModal, EstimateViewer } from '../ui';
+import { Button, Modal, ConfirmModal, CopyModal, EstimateViewer, Input, Select } from '../ui';
 import type { CopyMode } from '../ui/CopyModal';
 import { InvoiceForm } from '../forms/InvoiceForm';
 import { fmt, fmtDate, genId, today } from '../../utils/helpers';
 import { printDocument, savePDFDocument, whatsappDocument } from '../../utils/document';
+import { getInvoiceDisplayStatus } from '../../utils/payments';
 import { ICO, SvgIcon } from '../../utils/icons';
 
 interface InvoicesProps {
@@ -29,6 +30,11 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   const [sortBy, setSortBy] = useState<SortColumn>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [viewingEstimate, setViewingEstimate] = useState<Estimate | null>(null);
+  const [searchText, setSearchText] = useState('');
+  const [filterClient, setFilterClient] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'unpaid' | 'partial'>('all');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -326,9 +332,52 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   };
 
   const sortedInvoices = useMemo(() => {
-    if (!sortBy || !sortOrder) return data.invoices;
+    // Step 1: Filter invoices
+    let filtered = [...data.invoices];
 
-    const sorted = [...data.invoices].sort((a, b) => {
+    // Search filter (matches patient name, dentist, invoice number, lab slip, amount)
+    if (searchText.trim()) {
+      const search = searchText.toLowerCase();
+      filtered = filtered.filter(inv => {
+        const patient = `${inv.patientSurname} ${inv.patientName}`.toLowerCase();
+        const client = (inv.clientName || '').toLowerCase();
+        const invNum = inv.number.toString();
+        const labSlip = (inv.labSlipNumber || '').toLowerCase();
+        const total = (inv.total || 0).toString();
+
+        return patient.includes(search) ||
+               client.includes(search) ||
+               invNum.includes(search) ||
+               labSlip.includes(search) ||
+               total.includes(search);
+      });
+    }
+
+    // Client filter
+    if (filterClient) {
+      filtered = filtered.filter(inv => inv.clientId === filterClient);
+    }
+
+    // Status filter
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(inv => {
+        const status = getInvoiceDisplayStatus(inv, data.payments || []);
+        return status === filterStatus;
+      });
+    }
+
+    // Date range filter
+    if (filterDateFrom) {
+      filtered = filtered.filter(inv => inv.date >= filterDateFrom);
+    }
+    if (filterDateTo) {
+      filtered = filtered.filter(inv => inv.date <= filterDateTo);
+    }
+
+    // Step 2: Sort filtered results
+    if (!sortBy || !sortOrder) return filtered;
+
+    const sorted = [...filtered].sort((a, b) => {
       let aVal: any, bVal: any;
 
       switch (sortBy) {
@@ -368,7 +417,7 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
     });
 
     return sorted;
-  }, [data.invoices, sortBy, sortOrder]);
+  }, [data.invoices, data.payments, sortBy, sortOrder, searchText, filterClient, filterStatus, filterDateFrom, filterDateTo]);
 
   const getSortIndicator = (column: SortColumn) => {
     if (sortBy !== column) return ' ↕';
@@ -400,6 +449,86 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
         >
           New Invoice
         </Button>
+      </div>
+
+      {/* Search and Filter Panel */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: 16,
+        marginBottom: 16
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 12, marginBottom: 12 }}>
+          <Input
+            value={searchText}
+            onChange={setSearchText}
+            placeholder="Search by patient, dentist, invoice #, lab slip, or amount..."
+            style={{ width: '100%' }}
+          />
+          <Select
+            value={filterClient}
+            onChange={setFilterClient}
+            options={[
+              { value: '', label: 'All Dentists' },
+              ...data.clients.filter(c => !c.archived).map(c => ({
+                value: c.id,
+                label: c.name
+              }))
+            ]}
+          />
+          <Select
+            value={filterStatus}
+            onChange={(v: any) => setFilterStatus(v)}
+            options={[
+              { value: 'all', label: 'All Statuses' },
+              { value: 'paid', label: 'Paid' },
+              { value: 'partial', label: 'Partial' },
+              { value: 'unpaid', label: 'Unpaid' }
+            ]}
+          />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
+          <Input
+            type="date"
+            value={filterDateFrom}
+            onChange={setFilterDateFrom}
+            placeholder="From date"
+          />
+          <Input
+            type="date"
+            value={filterDateTo}
+            onChange={setFilterDateTo}
+            placeholder="To date"
+          />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--c-text3)' }}>
+              Showing {sortedInvoices.length} of {data.invoices.length} invoices
+            </span>
+            {(searchText || filterClient || filterStatus !== 'all' || filterDateFrom || filterDateTo) && (
+              <button
+                onClick={() => {
+                  setSearchText('');
+                  setFilterClient('');
+                  setFilterStatus('all');
+                  setFilterDateFrom('');
+                  setFilterDateTo('');
+                }}
+                style={{
+                  padding: '4px 8px',
+                  border: '1px solid var(--c-border)',
+                  borderRadius: 4,
+                  backgroundColor: 'var(--c-surface)',
+                  cursor: 'pointer',
+                  fontSize: 11,
+                  color: 'var(--c-text2)'
+                }}
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div style={{

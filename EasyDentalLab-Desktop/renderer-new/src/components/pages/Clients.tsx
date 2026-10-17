@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import type { AppData, Client, Payment } from '../../types';
-import { Button, Modal, ConfirmModal, PaymentModal } from '../ui';
+import { Button, Modal, ConfirmModal, PaymentModal, Input } from '../ui';
 import { ClientForm } from '../forms/ClientForm';
 import { genId, fmtDate } from '../../utils/helpers';
 import { getClientAging, getClientCredit, formatCurrency } from '../../utils/payments';
@@ -24,6 +24,7 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
   const [paymentClient, setPaymentClient] = useState<Client | null>(null);
   const [editingPayment, setEditingPayment] = useState<Payment | null>(null);
   const [expandedPayments, setExpandedPayments] = useState<Set<string>>(new Set());
+  const [searchText, setSearchText] = useState('');
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -156,6 +157,24 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
     setConfirmDelete(false);
   };
 
+  // Filter clients based on search text
+  const filteredClients = useMemo(() => {
+    if (!searchText.trim()) return data.clients;
+
+    const search = searchText.toLowerCase();
+    return data.clients.filter(client => {
+      const name = (client.name || '').toLowerCase();
+      const practice = (client.practice || '').toLowerCase();
+      const email = (client.email || '').toLowerCase();
+      const phone = (client.phone || '').toLowerCase();
+
+      return name.includes(search) ||
+             practice.includes(search) ||
+             email.includes(search) ||
+             phone.includes(search);
+    });
+  }, [data.clients, searchText]);
+
   return (
     <div style={{ padding: '32px' }}>
       <div
@@ -187,6 +206,43 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
         </Button>
       </div>
 
+      {/* Search Panel */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: 16,
+        marginBottom: 16
+      }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <Input
+            value={searchText}
+            onChange={setSearchText}
+            placeholder="Search by name, practice, email, or phone..."
+            style={{ flex: 1 }}
+          />
+          <span style={{ fontSize: 12, color: 'var(--c-text3)' }}>
+            Showing {filteredClients.length} of {data.clients.length} clients
+          </span>
+          {searchText && (
+            <button
+              onClick={() => setSearchText('')}
+              style={{
+                padding: '4px 8px',
+                border: '1px solid var(--c-border)',
+                borderRadius: 4,
+                backgroundColor: 'var(--c-surface)',
+                cursor: 'pointer',
+                fontSize: 11,
+                color: 'var(--c-text2)'
+              }}
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
       <div
         style={{
           background: 'var(--c-surface)',
@@ -205,9 +261,11 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
             >
               <th style={tableHeaderStyle}>Name</th>
               <th style={tableHeaderStyle}>Practice</th>
-              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Current</th>
-              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>30 Days</th>
-              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>60+</th>
+              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Current<br/>0-30</th>
+              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>30 Days<br/>31-60</th>
+              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>60 Days<br/>61-90</th>
+              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>90 Days<br/>91-120</th>
+              <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>120+ Days</th>
               <th style={{ ...tableHeaderStyle, textAlign: 'right' }}>Total</th>
               <th style={tableHeaderStyle}>Actions</th>
             </tr>
@@ -215,12 +273,12 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
           <tbody>
             {data.clients.length === 0 ? (
               <tr>
-                <td colSpan={7} style={{ padding: '48px', textAlign: 'center', color: 'var(--c-text3)' }}>
+                <td colSpan={9} style={{ padding: '48px', textAlign: 'center', color: 'var(--c-text3)' }}>
                   No clients yet. Click "New Client" to add one.
                 </td>
               </tr>
             ) : (
-              data.clients.map(client => {
+              filteredClients.map(client => {
                 const aging = getClientAging(client.id, data.invoices, data.payments || []);
                 const credit = getClientCredit(client.id, data.payments || []);
                 const payments = clientPayments(client.id);
@@ -255,8 +313,14 @@ export function Clients({ data, setData, openFormOnMount, onFormOpened }: Client
                       <td style={{ ...tableCellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
                         {formatCurrency(aging.thirtyDays)}
                       </td>
-                      <td style={{ ...tableCellStyle, textAlign: 'right', fontFamily: 'monospace' }}>
-                        {formatCurrency(aging.sixtyPlus)}
+                      <td style={{ ...tableCellStyle, textAlign: 'right', fontFamily: 'monospace', color: '#dc2626', fontWeight: 600 }}>
+                        {formatCurrency(aging.sixtyDays)}
+                      </td>
+                      <td style={{ ...tableCellStyle, textAlign: 'right', fontFamily: 'monospace', color: '#dc2626', fontWeight: 600 }}>
+                        {formatCurrency(aging.ninetyDays)}
+                      </td>
+                      <td style={{ ...tableCellStyle, textAlign: 'right', fontFamily: 'monospace', color: '#dc2626', fontWeight: 600 }}>
+                        {formatCurrency(aging.oneTwentyPlus)}
                       </td>
                       <td
                         style={{

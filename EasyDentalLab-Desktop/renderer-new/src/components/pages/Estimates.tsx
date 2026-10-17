@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import type { AppData, Estimate } from '../../types';
-import { Button, Modal, ConfirmModal, CopyModal } from '../ui';
+import { Button, Modal, ConfirmModal, CopyModal, Input, Select } from '../ui';
 import type { CopyMode } from '../ui/CopyModal';
 import { EstimateForm } from '../forms/EstimateForm';
 import { fmt, fmtDate, genId, today } from '../../utils/helpers';
@@ -28,6 +28,10 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   const [deletingEstimate, setDeletingEstimate] = useState<Estimate | null>(null);
   const [sortBy, setSortBy] = useState<SortColumn>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [searchText, setSearchText] = useState('');
+  const [filterClient, setFilterClient] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
   const pendingClose = useRef<(() => void) | null>(null);
 
   useEffect(() => {
@@ -332,9 +336,44 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   };
 
   const sortedEstimates = useMemo(() => {
-    if (!sortBy || !sortOrder) return data.estimates;
+    // Step 1: Filter estimates
+    let filtered = [...data.estimates];
 
-    const sorted = [...data.estimates].sort((a, b) => {
+    // Search filter (matches patient name, dentist, estimate number, lab slip, amount)
+    if (searchText.trim()) {
+      const search = searchText.toLowerCase();
+      filtered = filtered.filter(est => {
+        const patient = `${est.patientSurname} ${est.patientName}`.toLowerCase();
+        const client = (est.clientName || '').toLowerCase();
+        const estNum = est.number.toString();
+        const labSlip = (est.labSlipNumber || '').toLowerCase();
+        const total = (est.total || 0).toString();
+
+        return patient.includes(search) ||
+               client.includes(search) ||
+               estNum.includes(search) ||
+               labSlip.includes(search) ||
+               total.includes(search);
+      });
+    }
+
+    // Client filter
+    if (filterClient) {
+      filtered = filtered.filter(est => est.clientId === filterClient);
+    }
+
+    // Date range filter
+    if (filterDateFrom) {
+      filtered = filtered.filter(est => est.date >= filterDateFrom);
+    }
+    if (filterDateTo) {
+      filtered = filtered.filter(est => est.date <= filterDateTo);
+    }
+
+    // Step 2: Sort filtered results
+    if (!sortBy || !sortOrder) return filtered;
+
+    const sorted = [...filtered].sort((a, b) => {
       let aVal: any, bVal: any;
 
       switch (sortBy) {
@@ -370,7 +409,7 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
     });
 
     return sorted;
-  }, [data.estimates, sortBy, sortOrder]);
+  }, [data.estimates, sortBy, sortOrder, searchText, filterClient, filterDateFrom, filterDateTo]);
 
   const getSortIndicator = (column: SortColumn) => {
     if (sortBy !== column) return ' ↕';
@@ -402,6 +441,75 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
         >
           New Estimate
         </Button>
+      </div>
+
+      {/* Search and Filter Panel */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: 16,
+        marginBottom: 16
+      }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr', gap: 12, marginBottom: 12 }}>
+          <Input
+            value={searchText}
+            onChange={setSearchText}
+            placeholder="Search by patient, dentist, estimate #, lab slip, or amount..."
+            style={{ width: '100%' }}
+          />
+          <Select
+            value={filterClient}
+            onChange={setFilterClient}
+            options={[
+              { value: '', label: 'All Dentists' },
+              ...data.clients.filter(c => !c.archived).map(c => ({
+                value: c.id,
+                label: c.name
+              }))
+            ]}
+          />
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 12 }}>
+          <Input
+            type="date"
+            value={filterDateFrom}
+            onChange={setFilterDateFrom}
+            placeholder="From date"
+          />
+          <Input
+            type="date"
+            value={filterDateTo}
+            onChange={setFilterDateTo}
+            placeholder="To date"
+          />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 12, color: 'var(--c-text3)' }}>
+              Showing {sortedEstimates.length} of {data.estimates.length} estimates
+            </span>
+            {(searchText || filterClient || filterDateFrom || filterDateTo) && (
+              <button
+                onClick={() => {
+                  setSearchText('');
+                  setFilterClient('');
+                  setFilterDateFrom('');
+                  setFilterDateTo('');
+                }}
+                style={{
+                  padding: '4px 8px',
+                  border: '1px solid var(--c-border)',
+                  borderRadius: 4,
+                  backgroundColor: 'var(--c-surface)',
+                  cursor: 'pointer',
+                  fontSize: 11,
+                  color: 'var(--c-text2)'
+                }}
+              >
+                Clear Filters
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <div style={{

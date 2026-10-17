@@ -104,8 +104,10 @@ export function buildStatementHTML(clientId: string, data: AppData): string {
 
   <table style="margin-top: 15pt; width: 50%; margin-left: auto;">
     <tr><td><strong>Current (0-30 days):</strong></td><td class="right">${formatCurrency(aging.current)}</td></tr>
-    <tr><td><strong>30-60 days:</strong></td><td class="right">${formatCurrency(aging.thirtyDays)}</td></tr>
-    <tr><td><strong>Over 60 days:</strong></td><td class="right">${formatCurrency(aging.sixtyPlus)}</td></tr>
+    <tr><td><strong>30 Days (31-60 days):</strong></td><td class="right">${formatCurrency(aging.thirtyDays)}</td></tr>
+    <tr style="color: #dc2626;"><td><strong>60 Days (61-90 days):</strong></td><td class="right">${formatCurrency(aging.sixtyDays)}</td></tr>
+    <tr style="color: #dc2626;"><td><strong>90 Days (91-120 days):</strong></td><td class="right">${formatCurrency(aging.ninetyDays)}</td></tr>
+    <tr style="color: #dc2626;"><td><strong>120+ Days:</strong></td><td class="right">${formatCurrency(aging.oneTwentyPlus)}</td></tr>
     <tr class="total-row"><td><strong>Total Outstanding:</strong></td><td class="right">${formatCurrency(aging.total)}</td></tr>
   </table>
 </body>

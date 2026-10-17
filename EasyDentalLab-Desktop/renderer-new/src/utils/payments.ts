@@ -45,13 +45,13 @@ export function getClientCredit(clientId: string, payments: Payment[]): number {
 }
 
 /**
- * Get age analysis for a client (Current, 30 Days, 60+ Days)
+ * Get age analysis for a client (Current, 30 Days, 60 Days, 90 Days, 120+ Days)
  */
 export function getClientAging(
   clientId: string,
   invoices: Invoice[],
   payments: Payment[]
-): { current: number; thirtyDays: number; sixtyPlus: number; total: number } {
+): { current: number; thirtyDays: number; sixtyDays: number; ninetyDays: number; oneTwentyPlus: number; total: number } {
   const today = new Date();
   const clientInvoices = invoices.filter(
     inv => inv.clientId === clientId && !inv.claimed
@@ -59,7 +59,9 @@ export function getClientAging(
 
   let current = 0;
   let thirtyDays = 0;
-  let sixtyPlus = 0;
+  let sixtyDays = 0;
+  let ninetyDays = 0;
+  let oneTwentyPlus = 0;
 
   clientInvoices.forEach(inv => {
     const balance = getInvoiceBalance(inv, payments);
@@ -72,16 +74,22 @@ export function getClientAging(
       current += balance;
     } else if (daysOld <= 60) {
       thirtyDays += balance;
+    } else if (daysOld <= 90) {
+      sixtyDays += balance;
+    } else if (daysOld <= 120) {
+      ninetyDays += balance;
     } else {
-      sixtyPlus += balance;
+      oneTwentyPlus += balance;
     }
   });
 
   return {
     current,
     thirtyDays,
-    sixtyPlus,
-    total: current + thirtyDays + sixtyPlus
+    sixtyDays,
+    ninetyDays,
+    oneTwentyPlus,
+    total: current + thirtyDays + sixtyDays + ninetyDays + oneTwentyPlus
   };
 }
 
