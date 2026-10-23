@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import type { AppData } from '../../types';
 import { Button, Modal, Input, ConfirmModal } from '../ui';
 import { genId } from '../../utils/helpers';
+import {
+  downloadMedicalAidsCSV,
+  importMedicalAidsFromFile,
+  previewMedicalAidsUpdate,
+  applyMedicalAidsUpdate,
+  type MedicalAidsUpdatePreview,
+} from '../../utils/priceUpdates';
+import { MEDICAL_AIDS_VERSION } from '../../constants';
 
 interface MedicalAidsProps {
   data: AppData;
@@ -29,6 +37,13 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
   const [search, setSearch] = useState('');
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [migrated, setMigrated] = useState(false);
+
+  // Price update states
+  const [checking, setChecking] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [preview, setPreview] = useState<MedicalAidsUpdatePreview | null>(null);
+  const [pendingCSV, setPendingCSV] = useState<string | null>(null);
+  const [updateMessage, setUpdateMessage] = useState<string>('');
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
@@ -150,6 +165,61 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
     setConfirmDelete(false);
   };
 
+  // Price update handlers
+  const handleCheckForUpdates = async () => {
+    setChecking(true);
+    setUpdateMessage('');
+    try {
+      const csv = await downloadMedicalAidsCSV('MedicalAids-2027.csv');
+      const updatePreview = previewMedicalAidsUpdate(medicalAids, csv);
+
+      setPendingCSV(csv);
+      setPreview(updatePreview);
+      setShowPreview(true);
+    } catch (error) {
+      setUpdateMessage(`Failed to check for updates: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleImportFromFile = async () => {
+    setUpdateMessage('');
+    try {
+      const csv = await importMedicalAidsFromFile();
+      const updatePreview = previewMedicalAidsUpdate(medicalAids, csv);
+
+      setPendingCSV(csv);
+      setPreview(updatePreview);
+      setShowPreview(true);
+    } catch (error) {
+      if (error instanceof Error && error.message !== 'No file selected') {
+        setUpdateMessage(`Failed to import file: ${error.message}`);
+      }
+    }
+  };
+
+  const handleApplyUpdate = () => {
+    if (!pendingCSV || !setData) return;
+
+    try {
+      const updated = applyMedicalAidsUpdate(data, pendingCSV, true);
+      setData(updated);
+      setUpdateMessage('✓ Medical aids list updated successfully!');
+      setShowPreview(false);
+      setPendingCSV(null);
+      setPreview(null);
+    } catch (error) {
+      setUpdateMessage(`Failed to apply update: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  };
+
+  const handleCancelUpdate = () => {
+    setShowPreview(false);
+    setPendingCSV(null);
+    setPreview(null);
+  };
+
   const addPlan = () => {
     setFormPlans(prev => [...prev, { id: genId(), name: '' }]);
   };
@@ -187,6 +257,60 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
       }}>
         <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>💊 Medical Aids</h1>
         <Button onClick={handleAdd}>+ Add Medical Aid</Button>
+      </div>
+
+      {/* Price Updates Section */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: '20px',
+        marginBottom: '24px'
+      }}>
+        <h2 style={{
+          fontSize: 18,
+          fontWeight: 600,
+          color: 'var(--c-text1)',
+          marginTop: 0,
+          marginBottom: 16
+        }}>
+          Medical Aids Updates
+        </h2>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: updateMessage ? 16 : 0 }}>
+          <div style={{ flex: 1, fontSize: 14, color: 'var(--c-text2)' }}>
+            Current version: <strong>{MEDICAL_AIDS_VERSION}</strong> • {medicalAids.length} medical aids
+          </div>
+
+          <Button
+            icon="↓"
+            onClick={handleCheckForUpdates}
+            disabled={checking}
+          >
+            {checking ? 'Checking...' : 'Check for Updates'}
+          </Button>
+
+          <Button
+            variant="secondary"
+            icon="📁"
+            onClick={handleImportFromFile}
+          >
+            Import from File
+          </Button>
+        </div>
+
+        {updateMessage && (
+          <div style={{
+            padding: '12px 16px',
+            borderRadius: '8px',
+            fontSize: 14,
+            backgroundColor: updateMessage.startsWith('✓') ? '#d1fae5' : '#fee2e2',
+            color: updateMessage.startsWith('✓') ? '#065f46' : '#991b1b',
+            border: `1px solid ${updateMessage.startsWith('✓') ? '#a7f3d0' : '#fecaca'}`
+          }}>
+            {updateMessage}
+          </div>
+        )}
       </div>
 
       <div style={{ marginBottom: 16 }}>
@@ -412,6 +536,90 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
           onConfirm={handleConfirmDelete}
           onCancel={handleCancelDelete}
         />
+      )}
+
+      {/* Medical Aids Update Preview Modal */}
+      {showPreview && preview && (
+        <Modal
+          open={showPreview}
+          onClose={handleCancelUpdate}
+          title="Preview Medical Aids Update"
+        >
+          <div style={{ padding: '20px' }}>
+            <div style={{ marginBottom: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 600, color: 'var(--c-text1)', marginBottom: 12 }}>
+                Update Summary
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+                <div style={{ padding: 12, background: '#d1fae5', borderRadius: 8, border: '1px solid #a7f3d0' }}>
+                  <div style={{ fontSize: 13, color: '#065f46', marginBottom: 4 }}>Added</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: '#065f46' }}>{preview.added.length}</div>
+                </div>
+                <div style={{ padding: 12, background: '#fee2e2', borderRadius: 8, border: '1px solid #fecaca' }}>
+                  <div style={{ fontSize: 13, color: '#991b1b', marginBottom: 4 }}>Removed</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: '#991b1b' }}>{preview.removed.length}</div>
+                </div>
+                <div style={{ padding: 12, background: 'var(--c-surface2)', borderRadius: 8, border: '1px solid var(--c-border)' }}>
+                  <div style={{ fontSize: 13, color: 'var(--c-text2)', marginBottom: 4 }}>Unchanged</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--c-text1)' }}>{preview.unchanged}</div>
+                </div>
+              </div>
+            </div>
+
+            {preview.added.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <h4 style={{ fontSize: 14, fontWeight: 600, color: '#065f46', marginBottom: 8 }}>
+                  ✓ {preview.added.length} New Medical Aids/Plans
+                </h4>
+                <div style={{ maxHeight: 150, overflowY: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
+                  {preview.added.slice(0, 5).map(m => (
+                    <div key={m.id} style={{ padding: '4px 0' }}>
+                      {m.name} {m.plans.length > 0 && `(${m.plans.length} plans)`}
+                    </div>
+                  ))}
+                  {preview.added.length > 5 && (
+                    <div style={{ fontStyle: 'italic', paddingTop: 4 }}>
+                      ...and {preview.added.length - 5} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {preview.removed.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <h4 style={{ fontSize: 14, fontWeight: 600, color: '#991b1b', marginBottom: 8 }}>
+                  ✗ {preview.removed.length} Removed Medical Aids/Plans
+                </h4>
+                <div style={{ maxHeight: 150, overflowY: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
+                  {preview.removed.slice(0, 5).map(m => (
+                    <div key={m.id} style={{ padding: '4px 0' }}>
+                      {m.name} {m.plans.length > 0 && `(${m.plans.length} plans)`}
+                    </div>
+                  ))}
+                  {preview.removed.length > 5 && (
+                    <div style={{ fontStyle: 'italic', paddingTop: 4 }}>
+                      ...and {preview.removed.length - 5} more
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+              <div style={{ flex: 1 }}>
+                <Button onClick={handleApplyUpdate} fullWidth>
+                  Apply Update
+                </Button>
+              </div>
+              <div style={{ flex: 1 }}>
+                <Button variant="secondary" onClick={handleCancelUpdate} fullWidth>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

@@ -19,6 +19,10 @@ files:
 win:
   target: nsis
   icon: resources/icon.ico
+  publish:
+    provider: github
+    owner: sarelroeloffze
+    repo: EasyDentalLab
 
 mac:
   target: dmg
@@ -26,13 +30,19 @@ mac:
   category: public.app-category.business
   # Ad-hoc signing (no Apple Developer account)
   identity: null
+  publish:
+    provider: github
+    owner: sarelroeloffze
+    repo: EasyDentalLab
 
 linux:
-  target:
-    - AppImage
-    - deb
+  target: AppImage
   icon: resources/icon.png
   category: Office
+  publish:
+    provider: github
+    owner: sarelroeloffze
+    repo: EasyDentalLab
 
 nsis:
   oneClick: false

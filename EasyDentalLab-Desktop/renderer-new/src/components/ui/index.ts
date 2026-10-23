@@ -12,3 +12,4 @@ export { AutoBackupCard } from './AutoBackupCard';
 export { SupportCard } from './SupportCard';
 export { HelpSection } from './HelpSection';
 export { PaymentModal } from './PaymentModal';
+export { PriceUpdateBanner } from './PriceUpdateBanner';

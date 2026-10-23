@@ -6,7 +6,7 @@ Portable single-file dental laboratory invoicing application for South African d
 
 - **After every code change**: update the relevant Help topic(s) in `HelpSection` to reflect the change.
 - **After every code change**: update this CLAUDE.md file — add/update the feature in the appropriate section, fix any line numbers that shifted, and add a row to the Bug Fixes / Features table if applicable.
-- **After every code change to desktop app**: publish a new GitHub Release with updated installers so auto-updates work for existing users (see "Publishing a new release" in Common Tasks).
+- **After every code change to desktop app**: publish a new GitHub Release with updated installers (Windows/macOS/Linux) so auto-updates work for existing users (see "Publishing a new release" in Common Tasks). Use `./publish-release.sh` for automated multi-platform builds.
 - These three rules apply automatically — the user does not need to ask each time.
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
@@ -488,18 +488,25 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Edit, delete, and plans display now work correctly; stable IDs prevent render-cycle bugs
   - Desktop only
 
-### Available Installers (v3.0.58)
+### Available Installers (v3.0.58+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
-| Platform | File | Size | Architecture |
-|----------|------|------|--------------|
-| **Windows** | `EasyDentalLab.Setup.3.0.58.exe` | ~73 MB | x64 (Intel/AMD) |
+| Platform | File | Size | Architecture | Auto-Update |
+|----------|------|------|--------------|-------------|
+| **Windows** | `EasyDentalLab.Setup.3.0.XX.exe` | ~73 MB | x64 (Intel/AMD) | ✅ Fully automatic |
+| **macOS** | `EasyDentalLab-3.0.XX-arm64.dmg` | ~90 MB | ARM64 (Apple Silicon) | ⚠️ Manual download |
+| **Linux** | `EasyDentalLab-3.0.XX.AppImage` | ~100 MB | x64 (Intel/AMD) | ⚠️ Semi-automatic |
 
-**Notes:**
+**Auto-Update Behavior:**
+- **Windows:** Fully automatic — blue download banner → green "Restart Now" → silent install → auto-relaunch
+- **macOS:** Manual download required — yellow banner with GitHub link (unsigned app can't auto-install)
+- **Linux:** Semi-automatic — downloads new AppImage, user must manually replace old file
+
+**Platform Notes:**
 - **Windows:** oneClick installer (silent, no prompts), unsigned (SmartScreen warning on first install)
-- **macOS:** Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected
+- **macOS:** Ad-hoc signed (no Apple Developer cert) — "unidentified developer" warning expected; Right-click → Open to bypass
+- **Linux:** AppImage is self-contained, runs on all modern distros (Ubuntu 20.04+, Fedora, Debian); `chmod +x` first run
 - **Icons:** Electron defaults (placeholder — not dental-themed)
-- **Auto-update:** Users on v2.3.16+ will auto-update silently via GitHub Releases backend
 
 **See:** `EasyDentalLab-Desktop/INSTALLERS-README.md` for installation instructions & troubleshooting
 
@@ -551,6 +558,145 @@ Portable single-file dental laboratory invoicing application for South African d
 - [ ] Get Windows code signing certificate (~$200/year) for SmartScreen bypass
 - [ ] Build x64 versions for Intel Macs and older Windows PCs
 - [ ] Arm license gate (replace placeholder public key in `renderer/index.html`)
+
+---
+
+## Price Update System
+
+### Overview
+Cloud-based auto-update system for tariff codes and medical aid lists, implemented in v3.0.59+ (October 2026).
+
+### GitHub Price Lists Repository
+**Repository:** https://github.com/sarelroeloffze/EasyDentalLab-PriceLists
+
+**Files:**
+- `Tariffs-2027.csv` — Official tariff codes with prices (364 codes)
+- `MedicalAids-2027.csv` — Medical aid names and plans (14 aids)
+- `version.json` — Metadata for auto-update system
+
+### How It Works
+
+**Automatic Check (on startup):**
+1. App checks GitHub for `version.json` (2-second timeout, silent)
+2. If newer version exists → yellow notification banner appears
+3. User clicks "View Changes" → sees diff preview (added/updated/removed)
+4. User clicks "Update Now" → downloads CSV, creates backup, applies update
+5. User clicks "Remind Me Tomorrow" → dismisses banner for 24 hours
+
+**Manual Check:**
+- Tariffs page: "Check for Updates" button
+- Medical Aids page: "Check for Updates" button
+- Both pages: "Import from File" button (for offline users)
+
+**Fallback:**
+- Offline users: embedded defaults work immediately
+- No internet: app works normally with local data
+- Update fails: app continues with current data
+
+### Architecture
+
+**Constants:**
+```typescript
+// src/constants/index.ts
+export const PRICE_LISTS_REPO_URL = 'https://raw.githubusercontent.com/sarelroeloffze/EasyDentalLab-PriceLists/main';
+export const TARIFFS_VERSION = '2027.1';
+export const MEDICAL_AIDS_VERSION = '2027.1';
+export const UPDATE_CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+```
+
+**Utility Functions:**
+```typescript
+// src/utils/priceUpdates.ts
+checkForPriceUpdates()        // Fetch version.json from GitHub
+downloadTariffsCSV()          // Download Tariffs CSV
+downloadMedicalAidsCSV()      // Download MedicalAids CSV
+previewTariffUpdate()         // Generate diff preview
+previewMedicalAidsUpdate()    // Generate diff preview
+applyTariffUpdate()           // Apply with backup
+applyMedicalAidsUpdate()      // Apply with backup
+importTariffsFromFile()       // Manual import fallback
+importMedicalAidsFromFile()   // Manual import fallback
+```
+
+**UI Components:**
+```typescript
+// src/components/ui/PriceUpdateBanner.tsx
+<PriceUpdateBanner />         // Yellow notification banner
+
+// Tariffs page: Price Updates section + preview modal
+// Medical Aids page: Price Updates section + preview modal
+```
+
+### Publishing Price Updates
+
+**Annual workflow (January 1st when medical aids publish new rates):**
+
+1. **Update CSV files locally:**
+   ```bash
+   cd /path/to/EasyDentalLab-PriceLists
+   # Edit Tariffs-2027.csv with new prices
+   # Edit MedicalAids-2027.csv with new medical aids/plans
+   ```
+
+2. **Update version.json:**
+   ```json
+   {
+     "version": "2027.2",
+     "releaseDate": "2027-01-01",
+     "tariffs": {
+       "version": "2027.2",
+       "codeCount": 364,
+       "changes": "2027 annual price increase - Discovery/Bonitas/Momentum rates"
+     }
+   }
+   ```
+
+3. **Commit and push to GitHub:**
+   ```bash
+   git add -A
+   git commit -m "v2027.2: 2027 annual price update"
+   git push origin main
+   ```
+
+4. **That's it!** All users will see update notification on next app launch.
+
+### Update Preview
+
+When user clicks "View Changes", preview modal shows:
+- **Added:** New tariff codes (green)
+- **Updated:** Changed prices/descriptions (blue)
+- **Removed:** Deleted codes (red)
+- **Unchanged:** No changes (gray)
+
+User can review before clicking "Apply Update".
+
+### Backup & Safety
+
+**Automatic backup before every update:**
+- Creates localStorage backup: `edl_backup_TIMESTAMP`
+- Backup includes full app data (invoices, estimates, settings)
+- Retained indefinitely (user can manually delete old backups)
+
+**No destructive operations:**
+- Update replaces tariffs/medical aids entirely (clean slate)
+- Invoices/estimates unchanged (use stored prices)
+- User can always import old CSV to rollback
+
+### Future Enhancements (Phase 2)
+
+**Medical-aid-specific pricing:**
+- Per-medical-aid tariff tables (Discovery rates ≠ Bonitas rates)
+- Invoice auto-switches prices based on selected medical aid
+- Optional: global "single price" mode (current behavior)
+
+**Format:**
+```csv
+MedicalAid,Code,Price
+Discovery Health - Executive,9600,1650
+Bonitas - BonCap,9600,1450
+```
+
+**See:** "My Recommendation" section for full Phase 2 plan.
 
 ---
 
@@ -1206,67 +1352,137 @@ Main Process (Node.js)
 ### Publishing a new release (desktop app auto-updates)
 **CRITICAL:** Desktop apps check GitHub Releases for updates. Every code change to the desktop app MUST be published as a GitHub Release or users won't receive the update.
 
-**Steps:**
+#### Option A: Automated Multi-Platform Publishing (Recommended)
+
+**Quick Steps:**
 1. **Update version number** in `EasyDentalLab-Desktop/package.json`:
    ```bash
    cd EasyDentalLab-Desktop
-   npm version patch --no-git-tag-version  # Auto-increments version (e.g., 2.3.17 → 2.3.18)
+   npm version patch --no-git-tag-version  # Auto-increments version (e.g., 3.0.58 → 3.0.59)
    ```
 
 2. **Update APP_VERSION constants** in both:
-   - `renderer/index.html` (line ~288)
+   - `renderer-new/src/constants/index.ts` (line ~1: `export const APP_VERSION = "3.0.XX"`)
    - `../EasyDentalLab.html` (web version, line ~288)
-   
-3. **Build installer** (x64 Windows):
+
+3. **Run automated build and publish script:**
    ```bash
-   npm run dist:win-x64
+   ./publish-release.sh
+   ```
+   
+   This script automatically:
+   - Builds renderer (TypeScript → JavaScript)
+   - Builds Windows x64 installer
+   - Builds macOS ARM64 installer
+   - Builds Linux x64 AppImage
+   - Fixes latest.yml filename discrepancies
+   - Verifies all artifacts exist
+   - Commits and pushes to GitHub
+   - Publishes GitHub Release with all 3 platforms
+
+**That's it!** The script handles everything.
+
+#### Option B: Manual Multi-Platform Publishing
+
+If you prefer manual control or the script fails:
+
+1. **Update version number** (same as Option A)
+
+2. **Update APP_VERSION constants** (same as Option A)
+
+3. **Build all platforms:**
+   ```bash
+   # Build renderer first
+   cd renderer-new
+   npm run build
+   cd ..
+   
+   # Build all installers
+   npm run dist:win-x64      # Windows x64
+   npm run dist:mac-arm64    # macOS Apple Silicon
+   npm run dist:linux-x64    # Linux x64
    ```
 
-4. **Fix latest.yml** — electron-builder uses dashes, GitHub normalizes to dots:
-   - Edit `build/latest.yml`
-   - Change `EasyDentalLab-Setup-X.X.X.exe` → `EasyDentalLab.Setup.X.X.X.exe` (in both `url` and `path` fields)
-
-5. **Rename installer files** to match:
+4. **Fix Windows latest.yml** — electron-builder uses dashes, GitHub normalizes to dots:
    ```bash
    cd build
+   # Edit latest.yml: change EasyDentalLab-Setup-X.X.X.exe → EasyDentalLab.Setup.X.X.X.exe
+   sed -i.bak "s/EasyDentalLab-Setup-/EasyDentalLab.Setup./g" latest.yml
+   rm latest.yml.bak
+   
+   # Rename Windows files to match
    mv "EasyDentalLab Setup X.X.X.exe" "EasyDentalLab.Setup.X.X.X.exe"
    mv "EasyDentalLab Setup X.X.X.exe.blockmap" "EasyDentalLab.Setup.X.X.X.exe.blockmap"
+   cd ..
    ```
 
-6. **Commit and push**:
+5. **Commit and push:**
    ```bash
-   cd ..
    git add -A
-   git commit -m "vX.X.X: [description of changes]
+   git commit -m "vX.X.X: Multi-platform release
 
    Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
    git push origin main
    ```
 
-7. **Publish GitHub Release**:
+6. **Publish GitHub Release** with all platforms:
    ```bash
    cd build
    gh release create vX.X.X \
      "EasyDentalLab.Setup.X.X.X.exe#Windows Installer (x64)" \
      "EasyDentalLab.Setup.X.X.X.exe.blockmap#Windows Blockmap" \
-     "latest.yml#Auto-Update Metadata" \
-     --title "vX.X.X - [Short Description]" \
-     --notes "[Release notes - what changed]"
+     "latest.yml#Windows Auto-Update Metadata" \
+     "EasyDentalLab-X.X.X-arm64.dmg#macOS Installer (Apple Silicon)" \
+     "latest-mac.yml#macOS Auto-Update Metadata" \
+     "EasyDentalLab-X.X.X"-*.AppImage"#Linux AppImage (x64)" \
+     "latest-linux.yml#Linux Auto-Update Metadata" \
+     --title "vX.X.X - Multi-Platform Release" \
+     --notes "Auto-update enabled for Windows, macOS, and Linux.
+     
+**Windows (x64):** Auto-update fully functional
+**macOS (ARM64):** Manual download required (unsigned)
+**Linux (x64):** Auto-update functional (AppImage)
+
+See CLAUDE.md for detailed changelog."
    ```
 
 **CRITICAL FILES for auto-update:**
-- `EasyDentalLab.Setup.X.X.X.exe` — the installer
+
+**Windows:**
+- `EasyDentalLab.Setup.X.X.X.exe` — installer
 - `EasyDentalLab.Setup.X.X.X.exe.blockmap` — delta update file
 - `latest.yml` — metadata (version, sha512, size, filename)
 
+**macOS:**
+- `EasyDentalLab-X.X.X-arm64.dmg` — installer
+- `latest-mac.yml` — metadata (version, sha512, size, filename)
+- ⚠️ **Note:** macOS auto-update triggers manual download (unsigned app)
+
+**Linux:**
+- `EasyDentalLab-X.X.X.AppImage` — installer
+- `latest-linux.yml` — metadata (version, sha512, size, filename)
+
 **What happens next:**
-- Users on v2.3.16+ will auto-detect the update on next app launch (5-second delay)
-- **Blue banner** appears: "🔄 Downloading update to version X.X.X..."
+
+**Windows users:**
+- Auto-detect update on next app launch (5-second delay)
+- **Blue banner:** "🔄 Downloading update to version X.X.X..."
 - After download: **Green banner** with "Restart Now" button
-- Click "Restart Now" → app closes, installs silently (oneClick), relaunches automatically
+- Click "Restart Now" → app closes, installs silently, relaunches automatically
+
+**macOS users:**
+- Auto-detect update on next app launch
+- **Yellow banner:** "Update available — click to download" (opens GitHub Releases in browser)
+- Manual download required due to unsigned app (no Apple Developer certificate)
+
+**Linux users:**
+- Auto-detect update on next app launch
+- **Blue banner:** "🔄 Downloading update..."
+- Downloads new AppImage automatically
+- User must manually replace old AppImage with new one (AppImage limitation)
 
 **Testing auto-update:**
-- Keep old version running
-- Publish new version to GitHub Releases
-- Wait ~30 seconds — blue banner should appear
-- Click "Restart Now" — should install cleanly without errors
+1. Keep old version running
+2. Publish new version to GitHub Releases
+3. Wait ~30 seconds — update banner should appear
+4. Test update flow for your platform

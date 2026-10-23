@@ -1,6 +1,6 @@
 {
   "name": "easydentallab",
-  "version": "3.0.58",
+  "version": "3.0.59",
   "description": "Dental laboratory invoicing application for South Africa",
   "homepage": "https://github.com/sarelroeloffze/EasyDentalLab",
   "main": "main.js",
@@ -15,7 +15,11 @@
     "build:linux": "electron-builder --linux",
     "pack": "electron-builder --dir",
     "dist": "electron-builder --win --mac --linux",
-    "dist:win-x64": "electron-builder --win --x64"
+    "dist:win-x64": "electron-builder --win --x64",
+    "dist:mac-arm64": "electron-builder --mac --arm64",
+    "dist:mac-x64": "electron-builder --mac --x64",
+    "dist:linux-x64": "electron-builder --linux --x64",
+    "dist:all": "npm run dist:win-x64 && npm run dist:mac-arm64 && npm run dist:linux-x64"
   },
   "devDependencies": {
     "electron": "^28.0.0",
