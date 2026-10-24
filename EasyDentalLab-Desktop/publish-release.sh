@@ -136,7 +136,7 @@ gh release create "v${VERSION}" \
   "latest.yml#Windows Auto-Update Metadata" \
   "EasyDentalLab-${VERSION}-arm64.dmg#macOS Installer (Apple Silicon)" \
   "latest-mac.yml#macOS Auto-Update Metadata" \
-  "EasyDentalLab-${VERSION}"-*.AppImage"#Linux AppImage (x64)" \
+  "EasyDentalLab-${VERSION}.AppImage#Linux AppImage (x64)" \
   "latest-linux.yml#Linux Auto-Update Metadata" \
   --title "v${VERSION}" \
   --notes "Multi-platform release with auto-update support for Windows, macOS, and Linux.
