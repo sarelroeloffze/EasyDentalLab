@@ -7,7 +7,8 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After every code change**: update the relevant Help topic(s) in `HelpSection` to reflect the change.
 - **After every code change**: update this CLAUDE.md file — add/update the feature in the appropriate section, fix any line numbers that shifted, and add a row to the Bug Fixes / Features table if applicable.
 - **After every code change to desktop app**: publish a new GitHub Release with updated installers (Windows/macOS/Linux) so auto-updates work for existing users (see "Publishing a new release" in Common Tasks). Use `./publish-release.sh` for automated multi-platform builds.
-- These three rules apply automatically — the user does not need to ask each time.
+- **After changes to update/maintenance procedures**: update MAINTENANCE-GUIDE.md with new steps, changed file paths, or modified workflows — this keeps the guide current for price updates, app releases, CSV handling, and troubleshooting.
+- These four rules apply automatically — the user does not need to ask each time.
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
@@ -1373,6 +1374,8 @@ Main Process (Node.js)
 ---
 
 ## Common Tasks
+
+**📖 For maintenance procedures (updates, releases, CSV handling), see [MAINTENANCE-GUIDE.md](MAINTENANCE-GUIDE.md)**
 
 ### Adding a new field to invoices
 1. Add to the invoice object in `InvoiceForm` `onSave` call
