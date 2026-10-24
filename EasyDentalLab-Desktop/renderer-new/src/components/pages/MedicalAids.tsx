@@ -431,6 +431,7 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
 
       {showForm && (
         <Modal
+          open={true}
           title={editing ? 'Edit Medical Aid' : 'Add Medical Aid'}
           onClose={() => setShowForm(false)}
         >
