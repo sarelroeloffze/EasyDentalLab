@@ -64,7 +64,11 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
           if (item.id && item.name && Array.isArray(item.plans)) {
             return item;
           }
-          const name = typeof item === 'string' ? item : (item.name || item);
+          // Ensure name is always a string
+          let name = typeof item === 'string' ? item : (item.name || '');
+          if (typeof name !== 'string') {
+            name = String(name || 'Unnamed Medical Aid');
+          }
           const id = (typeof item === 'object' && item.id)
             ? item.id
             : `ma_${name.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${index}`;
@@ -80,12 +84,12 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
 
   const filteredAids = search
     ? medicalAids.filter(m =>
-        m.name.toLowerCase().includes(search.toLowerCase()) ||
-        m.plans.some(p => p.name.toLowerCase().includes(search.toLowerCase()))
+        (m.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (m.plans || []).some(p => (p.name ?? '').toLowerCase().includes(search.toLowerCase()))
       )
     : medicalAids;
 
-  const sortedAids = [...filteredAids].sort((a, b) => a.name.localeCompare(b.name));
+  const sortedAids = [...filteredAids].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
 
   const toggleExpand = (id: string) => {
     setExpandedIds(prev => {
@@ -108,8 +112,8 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
 
   const handleEdit = (aid: MedicalAid) => {
     setEditing(aid);
-    setFormName(aid.name);
-    setFormPlans([...aid.plans]);
+    setFormName(aid.name || '');
+    setFormPlans([...(aid.plans || [])]);
     setShowForm(true);
   };
 

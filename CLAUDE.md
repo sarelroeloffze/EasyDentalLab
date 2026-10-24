@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.60 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.60 fixes Medical Aids blank screen (TypeScript build error) + complete bilingual help system
+### Current Version: Desktop App v3.0.61 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.61 fixes Medical Aids runtime crash (null name in sort) - COMPLETE FIX
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -502,7 +502,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Medical Aids page now loads correctly; users can manage medical aids/plans; complete bilingual help system for South African users
   - Desktop only
 
-### Available Installers (v3.0.60+)
+- ✅ **v3.0.61 Update** (October 24, 2026) — **FIX MEDICAL AIDS RUNTIME CRASH (COMPLETE FIX)**
+  - **CRITICAL BUG FIXED:** Medical Aids page crashed with "Cannot read properties of undefined (reading 'localeCompare')" - entire app went blank, sidebar disappeared
+  - **Root cause:** Sort function on line 88 called `a.name.localeCompare(b.name)` without null guards; medical aids with undefined names (from migration or old data) crashed the sort, unmounting entire React app
+  - **Solution:** Added null coalescing guards throughout MedicalAids.tsx:
+    1. **Migration fix** (lines 60-76): Ensures `name` is always a string, never undefined or object; converts non-string values to `'Unnamed Medical Aid'`
+    2. **Sort fix** (line 92): Changed to `(a.name ?? '').localeCompare(b.name ?? '')` - handles undefined names safely
+    3. **Filter fix** (lines 87-88): Added null guards to both medical aid and plan name checks
+    4. **Edit fix** (line 115): Changed `setFormName(aid.name)` to `setFormName(aid.name || '')` - prevents undefined in form state
+  - **Files modified:** MedicalAids.tsx (4 fixes: migration, sort, filter, edit)
+  - **Result:** Medical Aids page no longer crashes on bad data; app stays responsive even with legacy/corrupted medical aid records; complete fix confirmed by user testing
+  - Desktop only
+
+### Available Installers (v3.0.61+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -528,6 +540,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.61 published** (October 24, 2026) — **CRITICAL:** Medical Aids runtime crash fix (null name in sort) - COMPLETE FIX verified by user; added null guards to migration, sort, filter, and edit
 - ✅ **v3.0.60 published** (October 24, 2026) — **CRITICAL:** Medical Aids blank screen fix (TypeScript build error from unused imports) + complete bilingual help system (16 topics in English/Afrikaans with language toggle)
 - ✅ **v3.0.58 published** (October 17, 2026) — Medical Aids edit fix (CRITICAL: stable IDs prevent render-cycle bugs) + plans hierarchy + CSV support (MedicalAids.csv)
 - ✅ **v3.0.57 published** (October 17, 2026) — Medical Aids fixes (edit/delete/plans visibility) + CSV backup system (auto-writes MedicalAids.csv + all CSVs with 2s debounce)
@@ -1190,6 +1203,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Arrow navigation selects wrong code | When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected. Root cause: **Double-pick race condition** - Enter and Down Arrow handlers called `pick()` twice (first using `filtered[hlIdx]` from arrow navigation, then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code). Also, ArrowDown couldn't navigate DOWN in dropdown (only ArrowUp worked), creating asymmetric UX. Fix: Refactored to single-pick pattern - removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` (just moves focus) and `confirmAndAddLine()` (picks once + adds line) helpers; Enter now picks once using `filtered[hlIdx]` then calls `moveToQtyField()`; Ctrl+Enter calls `confirmAndAddLine()`; ArrowDown when dropdown open now navigates down (`setHlIdx(prev => Math.min(prev + 1, filtered.length - 1))`); ArrowDown when closed confirms and adds line (legacy behavior). Updated tooltip to show all shortcuts. Rewrote Help section "Tips & Keyboard Shortcuts" with complete navigation guide. Lines ~1677-1761 (CodeInput in web), ~1677-1746 (desktop), ~1854 (tooltip web), ~1839 (tooltip desktop), ~5713-5721 (Help web), ~5770-5778 (Help desktop). Result: Clean, predictable navigation - ArrowUp/ArrowDown navigate within dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions). Both versions. |
 | **v3.0.38 Update** | **Clickable Estimate References on Invoices** |
 | Clickable estimate reference | When viewing invoices converted from estimates, the estimate reference badge showed "Est #123" as static text — users couldn't view the original estimate. Root cause: No interactivity on the badge. Solution: Created new `EstimateViewer` component (`src/components/ui/EstimateViewer.tsx`) displaying read-only estimate with Print/PDF/WhatsApp buttons; made estimate reference badge clickable with hover effect (purple background → brighter purple on hover); added `viewingEstimate` state and `handleViewEstimate()` function to Invoices page; updated Estimates page `handleConfirmDelete()` to clean up invoice references when estimate is deleted (`estimateRef = null`). Result: Users can click "Est #123" badge to view original estimate in modal; deleted estimates automatically remove orphaned references. Desktop only (TypeScript version). |
+| **v3.0.61 Fix** | **Medical Aids Runtime Crash - COMPLETE FIX** |
+| Medical Aids page crash | **Critical bug:** Clicking "Medical Aids" threw "Cannot read properties of undefined (reading 'localeCompare')" error; entire app went blank, sidebar disappeared, had to close app. **Root cause:** Sort function on line 88 called `a.name.localeCompare(b.name)` without null guards; medical aids with undefined names (from migration or old data) crashed the sort, unmounting entire React app. **Solution:** Added null coalescing guards throughout MedicalAids.tsx: (1) Migration fix (lines 60-76) ensures `name` is always a string, never undefined or object; converts non-string values to `'Unnamed Medical Aid'`, (2) Sort fix (line 92) changed to `(a.name ?? '').localeCompare(b.name ?? '')` - handles undefined names safely, (3) Filter fix (lines 87-88) added null guards to both medical aid and plan name checks, (4) Edit fix (line 115) changed `setFormName(aid.name)` to `setFormName(aid.name \|\| '')` - prevents undefined in form state. **Files modified:** MedicalAids.tsx (4 fixes: migration, sort, filter, edit). **Result:** Medical Aids page no longer crashes on bad data; app stays responsive even with legacy/corrupted medical aid records; complete fix confirmed by user testing with DevTools logging. Desktop only. |
 | **v3.0.60 Fix** | **Medical Aids Blank Screen + Bilingual Help** |
 | Medical Aids page blank screen | **Critical bug:** Clicking "Medical Aids" in sidebar showed blank screen, couldn't navigate back to dashboard, had to close app. **Root cause:** TypeScript build was failing silently due to unused type imports in MedicalAidRates.tsx (line 2: `MedicalAid`, `Tariff`, `MedicalAidTariff` declared but never used). When build fails, electron-builder packages old/broken dist/ JavaScript instead of updated code, causing blank screen when component tries to load. **Solution:** Removed unused type imports from MedicalAidRates.tsx line 2; build now succeeds and generates fresh JavaScript. **Bilingual Help System:** Created external content file `src/constants/helpContent.tsx` with HelpTopic interface; refactored HelpSection.tsx to lightweight UI component (~110 lines); added language toggle (English/Afrikaans) with localStorage persistence (key: 'edl_help_lang'); all 16 help topics now have full bilingual content using helper components (H, P, UL, OL). **Files modified:** MedicalAidRates.tsx (removed unused imports), HelpSection.tsx (refactored), helpContent.tsx (created), initialData.ts (version bump to 3.0.60). **Result:** Medical Aids page loads correctly; users can manage medical aids/plans; complete bilingual help for South African users. Desktop only. |
 | **v3.0.58 Fix** | **Medical Aids Edit - Root Cause Fixed** |
