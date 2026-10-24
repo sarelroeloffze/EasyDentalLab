@@ -61,18 +61,21 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
       setData(prev => ({
         ...prev,
         medicalAids: (prev.medicalAids || []).map((item: any, index: number) => {
-          if (item.id && item.name && Array.isArray(item.plans)) {
-            return item;
-          }
           // Ensure name is always a string
           let name = typeof item === 'string' ? item : (item.name || '');
           if (typeof name !== 'string') {
             name = String(name || 'Unnamed Medical Aid');
           }
+
+          // Ensure id exists
           const id = (typeof item === 'object' && item.id)
             ? item.id
             : `ma_${name.replace(/\s+/g, '_').toLowerCase()}_${Date.now()}_${index}`;
-          return { id, name, plans: [] };
+
+          // Ensure plans is an array
+          const plans = Array.isArray(item.plans) ? item.plans : [];
+
+          return { id, name, plans };
         })
       }));
       setMigrated(true);
@@ -345,7 +348,7 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
                 <tr>
                   <td style={tableCellStyle}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      {aid.plans.length > 0 && (
+                      {(aid.plans ?? []).length > 0 && (
                         <button
                           onClick={() => toggleExpand(aid.id)}
                           style={{
@@ -361,7 +364,7 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
                         </button>
                       )}
                       <span style={{ fontWeight: 600 }}>{aid.name}</span>
-                      {aid.plans.length > 0 && (
+                      {(aid.plans ?? []).length > 0 && (
                         <span style={{
                           fontSize: 11,
                           color: '#6b7280',
@@ -369,7 +372,7 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
                           padding: '2px 6px',
                           borderRadius: 4
                         }}>
-                          {aid.plans.length} plan{aid.plans.length !== 1 ? 's' : ''}
+                          {(aid.plans ?? []).length} plan{(aid.plans ?? []).length !== 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
@@ -405,7 +408,7 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
                     </button>
                   </td>
                 </tr>
-                {expandedIds.has(aid.id) && aid.plans.map(plan => (
+                {expandedIds.has(aid.id) && (aid.plans ?? []).map(plan => (
                   <tr key={plan.id}>
                     <td style={{ ...tableCellStyle, paddingLeft: 64, color: '#6b7280' }}>
                       └─ {plan.name}
@@ -557,53 +560,53 @@ export function MedicalAids({ data, setData }: MedicalAidsProps) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
                 <div style={{ padding: 12, background: '#d1fae5', borderRadius: 8, border: '1px solid #a7f3d0' }}>
                   <div style={{ fontSize: 13, color: '#065f46', marginBottom: 4 }}>Added</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: '#065f46' }}>{preview.added.length}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: '#065f46' }}>{(preview.added ?? []).length}</div>
                 </div>
                 <div style={{ padding: 12, background: '#fee2e2', borderRadius: 8, border: '1px solid #fecaca' }}>
                   <div style={{ fontSize: 13, color: '#991b1b', marginBottom: 4 }}>Removed</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: '#991b1b' }}>{preview.removed.length}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: '#991b1b' }}>{(preview.removed ?? []).length}</div>
                 </div>
                 <div style={{ padding: 12, background: 'var(--c-surface2)', borderRadius: 8, border: '1px solid var(--c-border)' }}>
                   <div style={{ fontSize: 13, color: 'var(--c-text2)', marginBottom: 4 }}>Unchanged</div>
-                  <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--c-text1)' }}>{preview.unchanged}</div>
+                  <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--c-text1)' }}>{preview.unchanged ?? 0}</div>
                 </div>
               </div>
             </div>
 
-            {preview.added.length > 0 && (
+            {(preview.added ?? []).length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <h4 style={{ fontSize: 14, fontWeight: 600, color: '#065f46', marginBottom: 8 }}>
-                  ✓ {preview.added.length} New Medical Aids/Plans
+                  ✓ {(preview.added ?? []).length} New Medical Aids/Plans
                 </h4>
                 <div style={{ maxHeight: 150, overflowY: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
-                  {preview.added.slice(0, 5).map(m => (
+                  {(preview.added ?? []).slice(0, 5).map(m => (
                     <div key={m.id} style={{ padding: '4px 0' }}>
-                      {m.name} {m.plans.length > 0 && `(${m.plans.length} plans)`}
+                      {m.name} {(m.plans ?? []).length > 0 && `(${(m.plans ?? []).length} plans)`}
                     </div>
                   ))}
-                  {preview.added.length > 5 && (
+                  {(preview.added ?? []).length > 5 && (
                     <div style={{ fontStyle: 'italic', paddingTop: 4 }}>
-                      ...and {preview.added.length - 5} more
+                      ...and {(preview.added ?? []).length - 5} more
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {preview.removed.length > 0 && (
+            {(preview.removed ?? []).length > 0 && (
               <div style={{ marginBottom: 20 }}>
                 <h4 style={{ fontSize: 14, fontWeight: 600, color: '#991b1b', marginBottom: 8 }}>
-                  ✗ {preview.removed.length} Removed Medical Aids/Plans
+                  ✗ {(preview.removed ?? []).length} Removed Medical Aids/Plans
                 </h4>
                 <div style={{ maxHeight: 150, overflowY: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
-                  {preview.removed.slice(0, 5).map(m => (
+                  {(preview.removed ?? []).slice(0, 5).map(m => (
                     <div key={m.id} style={{ padding: '4px 0' }}>
-                      {m.name} {m.plans.length > 0 && `(${m.plans.length} plans)`}
+                      {m.name} {(m.plans ?? []).length > 0 && `(${(m.plans ?? []).length} plans)`}
                     </div>
                   ))}
-                  {preview.removed.length > 5 && (
+                  {(preview.removed ?? []).length > 5 && (
                     <div style={{ fontStyle: 'italic', paddingTop: 4 }}>
-                      ...and {preview.removed.length - 5} more
+                      ...and {(preview.removed ?? []).length - 5} more
                     </div>
                   )}
                 </div>

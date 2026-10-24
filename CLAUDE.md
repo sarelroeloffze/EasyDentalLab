@@ -11,8 +11,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.61 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.61 fixes Medical Aids runtime crash (null name in sort) - COMPLETE FIX
+### Current Version: Desktop App v3.0.62 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.62 comprehensive Medical Aids null-safety (all .length accesses guarded)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -514,7 +514,19 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Medical Aids page no longer crashes on bad data; app stays responsive even with legacy/corrupted medical aid records; complete fix confirmed by user testing
   - Desktop only
 
-### Available Installers (v3.0.61+)
+- ✅ **v3.0.62 Update** (October 24, 2026) — **COMPREHENSIVE NULL-SAFETY FOR MEDICAL AIDS**
+  - **CRITICAL BUG FIXED:** Medical Aids page crashed with "Cannot read properties of undefined (reading 'length')" - second crash after v3.0.61 fix
+  - **Root cause:** Multiple `.length` accesses on undefined arrays throughout component: `aid.plans.length`, `preview.added.length`, `preview.removed.length` all crashed when arrays were undefined
+  - **Solution:** Comprehensive null guards added to ALL array accesses in MedicalAids.tsx:
+    1. **Table rendering** (lines 348, 364, 372, 408): All `aid.plans` accesses changed to `(aid.plans ?? [])`
+    2. **Preview modal** (lines 560, 564, 573-586, 593-606): All `preview.added` and `preview.removed` accesses guarded with `?? []`
+    3. **Migration enhancement** (lines 60-76): Now ALWAYS creates clean objects with `{ id, name, plans }` - no conditional return, ensures all fields exist
+    4. **Edit handler** (line 116): Added `(aid.plans || [])` guard when copying plans to form
+  - **Files modified:** MedicalAids.tsx (14 null guards added across rendering, preview, migration, and edit functions)
+  - **Result:** Medical Aids page bulletproof against undefined arrays; handles any corrupted/legacy data gracefully; no more cascading crashes from missing fields
+  - Desktop only
+
+### Available Installers (v3.0.62+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -540,6 +552,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.62 published** (October 24, 2026) — **CRITICAL:** Comprehensive null-safety for Medical Aids (all .length accesses guarded) - fixes second crash after v3.0.61; 14 guards added
 - ✅ **v3.0.61 published** (October 24, 2026) — **CRITICAL:** Medical Aids runtime crash fix (null name in sort) - COMPLETE FIX verified by user; added null guards to migration, sort, filter, and edit
 - ✅ **v3.0.60 published** (October 24, 2026) — **CRITICAL:** Medical Aids blank screen fix (TypeScript build error from unused imports) + complete bilingual help system (16 topics in English/Afrikaans with language toggle)
 - ✅ **v3.0.58 published** (October 17, 2026) — Medical Aids edit fix (CRITICAL: stable IDs prevent render-cycle bugs) + plans hierarchy + CSV support (MedicalAids.csv)
