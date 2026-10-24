@@ -1,8 +1,9 @@
 import { useState, useMemo, useRef } from 'react';
-import type { LineItem, Tariff, Macro } from '../../types';
+import type { LineItem, Tariff, Macro, AppData } from '../../types';
 import { CodeInput, Modal } from '../ui';
 import { SvgIcon, ICO } from '../../utils/icons';
 import { genId, fmt, descForLang } from '../../utils/helpers';
+import { getTariffPrice } from '../../utils/pricing';
 
 interface LineItemEditorProps {
   items: LineItem[];
@@ -10,9 +11,11 @@ interface LineItemEditorProps {
   tariffs: Tariff[];
   macros?: Macro[];
   lang: 'en' | 'af';
+  medicalAid?: string;
+  data: AppData;
 }
 
-export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineItemEditorProps) {
+export function LineItemEditor({ items, setItems, tariffs, macros, lang, medicalAid, data }: LineItemEditorProps) {
   const [showPicker, setShowPicker] = useState(false);
   const [showMacroPicker, setShowMacroPicker] = useState(false);
   const [tSearch, setTSearch] = useState("");
@@ -55,7 +58,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
       tariffCode: t.tariffCode || t.code,
       description: descForLang(t, lang),
       qty: 1,
-      price: t.price
+      price: getTariffPrice(t.code, medicalAid, data)
     };
     setItems(prev => consolidateItems(prev, [newItem]));
     setShowPicker(false);
@@ -71,7 +74,7 @@ export function LineItemEditor({ items, setItems, tariffs, macros, lang }: LineI
         tariffCode: t?.tariffCode || c.code,
         description: t ? descForLang(t, lang) : c.code,
         qty: c.qty || 1,
-        price: t?.price || 0
+        price: getTariffPrice(c.code, medicalAid, data)
       };
     });
     // Filter out empty lines before consolidating, then add blank line at end

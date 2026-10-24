@@ -2,7 +2,7 @@
 // CSV Parsing and Generation
 // ============================================================
 
-import type { Client, Tariff, Macro, Payment, MedicalAid, Invoice } from '../types';
+import type { Client, Tariff, Macro, Payment, MedicalAid, MedicalAidTariff, Invoice } from '../types';
 
 /**
  * Parse Client CSV
@@ -227,5 +227,38 @@ export function buildMedicalAidsCSV(medicalAids: any[]): string {
     }
   });
 
+  return [header, ...rows].join('\n');
+}
+
+/**
+ * Parse MedicalAidTariffs CSV
+ * Format: ID,MedicalAid,Code,Price
+ */
+export function parseMedicalAidTariffsCSV(csv: string): MedicalAidTariff[] {
+  const lines = csv.split('\n').filter(l => l.trim());
+  if (lines.length < 2) return [];
+
+  const rows = lines.slice(1); // skip header
+  return rows.map(row => {
+    const parts = row.split(',').map(s => s.trim());
+    const [id, medicalAid, code, price] = parts;
+    return {
+      id,
+      medicalAid,
+      code,
+      price: parseFloat(price) || 0
+    };
+  });
+}
+
+/**
+ * Build MedicalAidTariffs CSV
+ * Format: ID,MedicalAid,Code,Price
+ */
+export function buildMedicalAidTariffsCSV(medicalAidTariffs: MedicalAidTariff[]): string {
+  const header = 'ID,MedicalAid,Code,Price';
+  const rows = medicalAidTariffs.map(mat =>
+    `${mat.id},${mat.medicalAid},${mat.code},${mat.price}`
+  );
   return [header, ...rows].join('\n');
 }

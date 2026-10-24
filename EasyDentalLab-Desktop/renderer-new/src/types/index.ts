@@ -123,6 +123,13 @@ export interface MedicalAid {
   plans: MedicalAidPlan[];
 }
 
+export interface MedicalAidTariff {
+  id: string;
+  medicalAid: string;  // e.g., "Discovery Health - Executive"
+  code: string;         // Tariff code (matches Tariff.code)
+  price: number;        // Medical-aid-specific price
+}
+
 export interface LayoutSettings {
   logoPosition: 'left' | 'right' | 'center';
   logoMaxHeight: number;
@@ -161,6 +168,7 @@ export interface Profile {
   backupPassword?: string;
   claudeApiKey?: string;       // AI Assistant API key
   claudeServerUrl?: string;    // AI server URL
+  pricingMode?: 'single' | 'per-aid';  // Pricing mode: single price list or per-medical-aid pricing
 }
 
 export interface AppData {
@@ -173,6 +181,7 @@ export interface AppData {
   payments: Payment[];
   categories: Category[];
   medicalAids: MedicalAid[];
+  medicalAidTariffs: MedicalAidTariff[];
   nextInvoiceNo: number;
   nextEstimateNo: number;
 }

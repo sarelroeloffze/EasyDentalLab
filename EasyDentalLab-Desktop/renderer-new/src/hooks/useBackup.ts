@@ -4,7 +4,7 @@
 
 import { useEffect, useRef } from 'react';
 import type { AppData } from '../types';
-import { buildClientsCSV, buildTariffsCSV, buildMacrosCSV, buildPaymentsCSV, buildMedicalAidsCSV } from '../utils/csv';
+import { buildClientsCSV, buildTariffsCSV, buildMacrosCSV, buildPaymentsCSV, buildMedicalAidsCSV, buildMedicalAidTariffsCSV } from '../utils/csv';
 
 /**
  * Custom hook for auto-backing up CSV files
@@ -64,6 +64,7 @@ async function performBackup(data: AppData) {
     const macrosCSV = buildMacrosCSV(data.macros);
     const paymentsCSV = buildPaymentsCSV(data.payments || [], data.invoices);
     const medicalAidsCSV = buildMedicalAidsCSV(data.medicalAids || []);
+    const medicalAidTariffsCSV = buildMedicalAidTariffsCSV(data.medicalAidTariffs || []);
 
     // Write all CSV files
     const writes = [
@@ -72,6 +73,7 @@ async function performBackup(data: AppData) {
       window.electronAPI.writeBackupFile('Macros.csv', macrosCSV),
       window.electronAPI.writeBackupFile('Payments.csv', paymentsCSV),
       window.electronAPI.writeBackupFile('MedicalAids.csv', medicalAidsCSV),
+      window.electronAPI.writeBackupFile('MedicalAidTariffs.csv', medicalAidTariffsCSV),
     ];
 
     const results = await Promise.all(writes);

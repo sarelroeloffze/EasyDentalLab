@@ -242,6 +242,8 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
           tariffs={data.tariffs}
           macros={data.macros}
           lang={lang}
+          medicalAid={f.medicalAidName}
+          data={data}
         />
       </div>
 

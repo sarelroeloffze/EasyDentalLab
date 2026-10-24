@@ -242,6 +242,8 @@ export function InvoiceForm({ invoice, data, onSave, onCancel, onDirtyChange, on
           tariffs={data.tariffs}
           macros={data.macros}
           lang={lang}
+          medicalAid={f.medicalAidName}
+          data={data}
         />
       </div>
 

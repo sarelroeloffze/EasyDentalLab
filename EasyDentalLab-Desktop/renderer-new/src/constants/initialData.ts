@@ -4,7 +4,7 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.59';
+export const APP_VERSION = '3.0.60';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
@@ -44,7 +44,8 @@ export const INITIAL_DATA: AppData = {
     },
     backupPassword: '',
     claudeApiKey: '',
-    claudeServerUrl: 'http://localhost:5765'
+    claudeServerUrl: 'http://localhost:5765',
+    pricingMode: 'single'
   },
   clients: [],
   tariffs: [],
@@ -54,6 +55,7 @@ export const INITIAL_DATA: AppData = {
   payments: [],
   categories: [],
   medicalAids: [],
+  medicalAidTariffs: [],
   nextInvoiceNo: 1,
   nextEstimateNo: 1
 };
@@ -66,6 +68,7 @@ export const NAV = [
   { id: 'clients', label: 'Dentist/Practice', icon: '👨‍⚕️' },
   { id: 'tariffs', label: 'Tariffs', icon: '💰' },
   { id: 'medicalAids', label: 'Medical Aids', icon: '💊' },
+  { id: 'medicalAidRates', label: 'Medical Aid Rates', icon: '💵', requiresPerAidPricing: true },
   { id: 'macros', label: 'Macros', icon: '⚡' },
   { id: 'settings', label: 'Settings', icon: '⚙️' }
 ];

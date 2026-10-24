@@ -11,6 +11,7 @@ import {
   Clients,
   Tariffs,
   MedicalAids,
+  MedicalAidRates,
   Macros,
   Settings,
   Help
@@ -73,6 +74,8 @@ function App() {
         return <Tariffs data={data} setData={setData} />;
       case 'medicalAids':
         return <MedicalAids data={data} setData={setData} />;
+      case 'medicalAidRates':
+        return <MedicalAidRates data={data} setData={setData} />;
       case 'macros':
         return <Macros data={data} setData={setData} />;
       case 'settings':
@@ -125,7 +128,13 @@ function App() {
 
         {/* Navigation */}
         <nav style={{ flex: 1, padding: '12px 0', overflowY: 'auto' }}>
-          {NAV.map(item => (
+          {NAV.filter(item => {
+            // Hide Medical Aid Rates page when using single pricing mode
+            if (item.id === 'medicalAidRates' && data.profile.pricingMode !== 'per-aid') {
+              return false;
+            }
+            return true;
+          }).map(item => (
             <button
               key={item.id}
               onClick={() => setCurrentPage(item.id)}

@@ -168,6 +168,39 @@ export function Settings({ data, setData }: SettingsProps) {
           <Input label="Laboratory PCNS" value={profile.pcns} onChange={v => s('pcns', v)} />
         </div>
 
+        {/* Pricing Mode */}
+        <div style={{ marginTop: 16, padding: 16, backgroundColor: 'var(--c-surface2)', borderRadius: 8 }}>
+          <label style={{ fontSize: 13, fontWeight: 600, display: 'block', marginBottom: 8, color: 'var(--c-text1)' }}>
+            Pricing Mode
+          </label>
+          <div style={{ display: 'flex', gap: 20 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+              <input
+                type="radio"
+                name="pricingMode"
+                value="single"
+                checked={(profile.pricingMode || 'single') === 'single'}
+                onChange={() => s('pricingMode', 'single')}
+                style={{ cursor: 'pointer' }}
+              />
+              <span style={{ color: 'var(--c-text1)' }}>Single Price List</span>
+              <span style={{ fontSize: 12, color: 'var(--c-text3)' }}>(Same prices for all medical aids)</span>
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 14 }}>
+              <input
+                type="radio"
+                name="pricingMode"
+                value="per-aid"
+                checked={(profile.pricingMode || 'single') === 'per-aid'}
+                onChange={() => s('pricingMode', 'per-aid')}
+                style={{ cursor: 'pointer' }}
+              />
+              <span style={{ color: 'var(--c-text1)' }}>Per-Medical-Aid Pricing</span>
+              <span style={{ fontSize: 12, color: 'var(--c-text3)' }}>(Different prices per medical aid)</span>
+            </label>
+          </div>
+        </div>
+
         <div style={{ marginTop: 16 }}>
           <Button onClick={saveProfile}>✓ Save Settings</Button>
         </div>
