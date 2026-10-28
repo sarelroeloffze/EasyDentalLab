@@ -10,10 +10,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After changes to update/maintenance procedures**: update MAINTENANCE-GUIDE.md with new steps, changed file paths, or modified workflows — this keeps the guide current for price updates, app releases, CSV handling, and troubleshooting.
 - These four rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-10-28)
+## 🎯 PROJECT STATUS (Updated 2026-10-28 - v3.0.67 Release)
 
-### Current Version: Desktop App v3.0.66 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.66 adds bulk CSV import/export for Medical Aid Rates (practical for updating 5,000+ price entries)
+### Current Version: Desktop App v3.0.67 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.67 adds cloud auto-update for Medical Aid Rates (perfect for annual January 1st price updates)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -567,7 +567,38 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Users can now manage thousands of medical aid prices efficiently via CSV; practical for annual January price updates across all medical aids
   - Desktop only
 
-### Available Installers (v3.0.66+)
+- ✅ **v3.0.67 Update** (October 28, 2026) — **CLOUD AUTO-UPDATE FOR MEDICAL AID RATES**
+  - **NEW FEATURE:** GitHub-based cloud update system for medical aid pricing (mirrors existing Tariffs and Medical Aids cloud update system); perfect for annual January 1st price updates
+  - **Four new capabilities:**
+    - **Auto-check on startup** - app automatically checks GitHub for medical aid tariff updates on launch
+    - **"Check for Updates" button** - manual check anytime from Medical Aid Rates page
+    - **Preview modal** - shows exactly what will change (added/updated/removed rates with details) before applying
+    - **"Apply Update" button** - downloads CSV from GitHub, creates automatic backup, applies changes
+  - **User workflow (starting January 2027):**
+    1. Admin uploads `MedicalAidTariffs-2027.csv` to GitHub PriceLists repository
+    2. Updates `version.json` with new medicalAidTariffs version
+    3. Pushes to GitHub
+    4. Users open app → see "✓ New medical aid rates available (2027.2)"
+    5. Click "View Changes" → preview modal shows added/updated/removed rates
+    6. Click "Apply Update" → done, all prices updated automatically
+  - **Technical implementation:**
+    - Added `MEDICAL_AID_TARIFFS_VERSION` constant to constants/index.ts
+    - Extended `PriceListVersion` interface with optional `medicalAidTariffs` section
+    - Extended `UpdateCheckResult` interface to include `medicalAidTariffsUpdateAvailable` boolean
+    - Added `MedicalAidTariffsUpdatePreview` interface (added/updated/removed/unchanged)
+    - Added `downloadMedicalAidTariffsCSV(filename)` - downloads from GitHub
+    - Added `previewMedicalAidTariffsUpdate(current, newCSV)` - generates diff using Map with medicalAid+code keys
+    - Added `applyMedicalAidTariffsUpdate(data, newCSV, createBackup)` - applies with automatic localStorage backup
+    - Updated `checkForPriceUpdates()` to check medical aid tariffs version against `MEDICAL_AID_TARIFFS_VERSION`
+    - Updated MedicalAidRates.tsx with cloud update state, handlers, UI section, and preview modal
+    - Added `useEffect` for auto-check on component mount
+  - **PriceLists repository setup:** Requires adding `medicalAidTariffs` section to `version.json` with filename, version, rateCount, lastUpdated, and changes fields
+  - **CSV format:** Same as bulk import - `MedicalAid,Code,Price` (one row per medical-aid-code combination)
+  - **Files modified:** constants/index.ts (added MEDICAL_AID_TARIFFS_VERSION), priceUpdates.ts (added download/preview/apply functions + updated types), MedicalAidRates.tsx (added cloud update UI + handlers + preview modal + auto-check), initialData.ts (version bump), package.json (version bump)
+  - **Result:** Complete cloud-based auto-update system for medical aid pricing; no manual CSV distribution needed; seamless annual price updates for all customers
+  - Desktop only
+
+### Available Installers (v3.0.67+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
