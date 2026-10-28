@@ -10,10 +10,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After changes to update/maintenance procedures**: update MAINTENANCE-GUIDE.md with new steps, changed file paths, or modified workflows — this keeps the guide current for price updates, app releases, CSV handling, and troubleshooting.
 - These four rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-10-17)
+## 🎯 PROJECT STATUS (Updated 2026-10-28)
 
-### Current Version: Desktop App v3.0.64 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.64 fixes Save as Macro feature (now uses modal dialog instead of prompt())
+### Current Version: Desktop App v3.0.66 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.66 adds bulk CSV import/export for Medical Aid Rates (practical for updating 5,000+ price entries)
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -549,7 +549,25 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Save as Macro now fully functional - click sparkles button → modal opens with suggested name (e.g., "Invoice #123 Macro") → user can edit name → press Enter or click Create Macro → macro created with success alert; works on both Invoices and Estimates pages
   - Desktop only
 
-### Available Installers (v3.0.64+)
+- ✅ **v3.0.66 Update** (October 28, 2026) — **BULK CSV IMPORT FOR MEDICAL AID RATES**
+  - **NEW FEATURE:** Bulk import/export functionality for Medical Aid Rates page makes updating 5,000+ medical aid price entries practical
+  - **Three new buttons added:**
+    - **Import from CSV File** - bulk import all medical aid prices at once; replaces ALL existing custom rates
+    - **Export Current Rates** - download current custom rates as CSV for backup or editing in Excel
+    - **Download Template** - get example CSV showing correct format (first 3 medical aids × first 5 codes)
+  - **CSV format:** Simple three-column format: `MedicalAid,Code,Price` (one row per medical-aid-code combination)
+  - **Workflow:** Download template → edit all prices in Excel → import CSV → done; one-by-one editing remains available for quick corrections only
+  - **Implementation:**
+    - Added `importMedicalAidTariffsFromFile()` to priceUpdates.ts (file picker + CSV text reader)
+    - Updated MedicalAidRates.tsx with import/export UI, handlers, and success/error messaging
+    - Used existing `parseMedicalAidTariffsCSV()` and `buildMedicalAidTariffsCSV()` from csv.ts
+    - Import shows confirmation dialog with stats (number of rates, medical aids, unique codes) before replacing data
+    - Export includes all custom rates currently in system (not just selected medical aid)
+  - **Files modified:** MedicalAidRates.tsx (added Bulk Import section with 3 buttons + handlers), priceUpdates.ts (added importMedicalAidTariffsFromFile function), initialData.ts (version bump)
+  - **Result:** Users can now manage thousands of medical aid prices efficiently via CSV; practical for annual January price updates across all medical aids
+  - Desktop only
+
+### Available Installers (v3.0.66+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
