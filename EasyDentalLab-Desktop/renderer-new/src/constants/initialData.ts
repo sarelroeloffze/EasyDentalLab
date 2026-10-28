@@ -4,7 +4,7 @@
 
 import type { AppData } from '../types';
 
-export const APP_VERSION = '3.0.64';
+export const APP_VERSION = '3.0.65';
 export const STORAGE_KEY = 'easydentallab_data';
 export const DARK_MODE_KEY = 'edl_dark';
 
@@ -45,7 +45,7 @@ export const INITIAL_DATA: AppData = {
     backupPassword: '',
     claudeApiKey: '',
     claudeServerUrl: 'http://localhost:5765',
-    pricingMode: 'single'
+    pricingMode: 'per-aid'  // Enable medical-aid-specific pricing with fallback to base tariffs
   },
   clients: [],
   tariffs: [],
