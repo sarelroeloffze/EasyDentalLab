@@ -21,6 +21,12 @@ export const TARIFFS_VERSION = '2027.1';
 export const MEDICAL_AIDS_VERSION = '2027.1';
 
 /**
+ * Current medical aid tariffs version
+ * Tracks the version of per-medical-aid pricing data
+ */
+export const MEDICAL_AID_TARIFFS_VERSION = '2027.1';
+
+/**
  * Local storage keys for tracking last update check
  */
 export const LAST_UPDATE_CHECK_KEY = 'edl_last_update_check';

@@ -6,11 +6,12 @@ import {
   PRICE_LISTS_REPO_URL,
   TARIFFS_VERSION,
   MEDICAL_AIDS_VERSION,
+  MEDICAL_AID_TARIFFS_VERSION,
   LAST_UPDATE_CHECK_KEY,
   UPDATE_CHECK_INTERVAL,
 } from '../constants';
-import { parseTariffCSV, parseMedicalAidsCSV } from './csv';
-import type { Tariff, MedicalAid } from '../types';
+import { parseTariffCSV, parseMedicalAidsCSV, parseMedicalAidTariffsCSV } from './csv';
+import type { Tariff, MedicalAid, MedicalAidTariff } from '../types';
 
 // ============================================================
 // Types
@@ -33,12 +34,20 @@ export interface PriceListVersion {
     lastUpdated: string;
     changes: string;
   };
+  medicalAidTariffs?: {
+    filename: string;
+    version: string;
+    rateCount: number;
+    lastUpdated: string;
+    changes: string;
+  };
   notes: string;
 }
 
 export interface UpdateCheckResult {
   tariffsUpdateAvailable: boolean;
   medicalAidsUpdateAvailable: boolean;
+  medicalAidTariffsUpdateAvailable: boolean;
   latestVersion: PriceListVersion | null;
   error?: string;
 }
@@ -53,6 +62,13 @@ export interface PriceUpdatePreview {
 export interface MedicalAidsUpdatePreview {
   added: MedicalAid[];
   removed: MedicalAid[];
+  unchanged: number;
+}
+
+export interface MedicalAidTariffsUpdatePreview {
+  added: MedicalAidTariff[];
+  updated: MedicalAidTariff[];
+  removed: MedicalAidTariff[];
   unchanged: number;
 }
 
@@ -93,6 +109,9 @@ export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
     // Compare versions
     const tariffsUpdateAvailable = latestVersion.tariffs.version !== TARIFFS_VERSION;
     const medicalAidsUpdateAvailable = latestVersion.medicalAids.version !== MEDICAL_AIDS_VERSION;
+    const medicalAidTariffsUpdateAvailable = latestVersion.medicalAidTariffs
+      ? latestVersion.medicalAidTariffs.version !== MEDICAL_AID_TARIFFS_VERSION
+      : false;
 
     // Update last check timestamp
     localStorage.setItem(LAST_UPDATE_CHECK_KEY, Date.now().toString());
@@ -100,6 +119,7 @@ export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
     return {
       tariffsUpdateAvailable,
       medicalAidsUpdateAvailable,
+      medicalAidTariffsUpdateAvailable,
       latestVersion,
     };
   } catch (error) {
@@ -107,6 +127,7 @@ export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
     return {
       tariffsUpdateAvailable: false,
       medicalAidsUpdateAvailable: false,
+      medicalAidTariffsUpdateAvailable: false,
       latestVersion: null,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
@@ -134,6 +155,23 @@ export async function downloadTariffsCSV(filename: string): Promise<string> {
  * Download medical aids CSV from GitHub
  */
 export async function downloadMedicalAidsCSV(filename: string): Promise<string> {
+  const url = `${PRICE_LISTS_REPO_URL}/${filename}`;
+  const response = await fetch(url, {
+    cache: 'no-cache',
+    headers: { 'Accept': 'text/csv' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to download ${filename}: ${response.status}`);
+  }
+
+  return await response.text();
+}
+
+/**
+ * Download medical aid tariffs CSV from GitHub
+ */
+export async function downloadMedicalAidTariffsCSV(filename: string): Promise<string> {
   const url = `${PRICE_LISTS_REPO_URL}/${filename}`;
   const response = await fetch(url, {
     cache: 'no-cache',
@@ -261,6 +299,56 @@ export function previewMedicalAidsUpdate(
   return { added, removed, unchanged };
 }
 
+/**
+ * Generate preview of medical aid tariffs changes
+ */
+export function previewMedicalAidTariffsUpdate(
+  currentMedicalAidTariffs: MedicalAidTariff[],
+  newMedicalAidTariffsCSV: string
+): MedicalAidTariffsUpdatePreview {
+  const newMedicalAidTariffs = parseMedicalAidTariffsCSV(newMedicalAidTariffsCSV);
+
+  // Create map using medicalAid+code as key
+  const currentMap = new Map(
+    currentMedicalAidTariffs.map(mat => [`${mat.medicalAid}|${mat.code}`, mat])
+  );
+  const newMap = new Map(
+    newMedicalAidTariffs.map(mat => [`${mat.medicalAid}|${mat.code}`, mat])
+  );
+
+  const added: MedicalAidTariff[] = [];
+  const updated: MedicalAidTariff[] = [];
+  const removed: MedicalAidTariff[] = [];
+  let unchanged = 0;
+
+  // Find added and updated
+  for (const newRate of newMedicalAidTariffs) {
+    const key = `${newRate.medicalAid}|${newRate.code}`;
+    const current = currentMap.get(key);
+
+    if (!current) {
+      added.push(newRate);
+    } else {
+      // Check if price changed
+      if (current.price !== newRate.price) {
+        updated.push(newRate);
+      } else {
+        unchanged++;
+      }
+    }
+  }
+
+  // Find removed
+  for (const current of currentMedicalAidTariffs) {
+    const key = `${current.medicalAid}|${current.code}`;
+    if (!newMap.has(key)) {
+      removed.push(current);
+    }
+  }
+
+  return { added, updated, removed, unchanged };
+}
+
 // ============================================================
 // Apply Update Functions
 // ============================================================
@@ -318,6 +406,26 @@ export function applyMedicalAidsUpdate(
   return {
     ...currentData,
     medicalAids: newMedicalAids,
+  };
+}
+
+/**
+ * Apply medical aid tariffs update (replaces all medical aid tariffs)
+ */
+export function applyMedicalAidTariffsUpdate(
+  currentData: any,
+  newMedicalAidTariffsCSV: string,
+  createBackupFirst: boolean = true
+): any {
+  if (createBackupFirst) {
+    createBackup(currentData);
+  }
+
+  const newMedicalAidTariffs = parseMedicalAidTariffsCSV(newMedicalAidTariffsCSV);
+
+  return {
+    ...currentData,
+    medicalAidTariffs: newMedicalAidTariffs,
   };
 }
 

@@ -1,8 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { AppData } from '../../types';
 import { Button, Input } from '../ui';
 import { fmt, genId } from '../../utils/helpers';
-import { importMedicalAidTariffsFromFile } from '../../utils/priceUpdates';
+import {
+  importMedicalAidTariffsFromFile,
+  checkForPriceUpdates,
+  downloadMedicalAidTariffsCSV,
+  previewMedicalAidTariffsUpdate,
+  applyMedicalAidTariffsUpdate,
+  type MedicalAidTariffsUpdatePreview
+} from '../../utils/priceUpdates';
 import { parseMedicalAidTariffsCSV, buildMedicalAidTariffsCSV } from '../../utils/csv';
 
 interface MedicalAidRatesProps {
@@ -16,6 +23,14 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState('');
   const [importMessage, setImportMessage] = useState('');
+
+  // Cloud update state
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [updateVersion, setUpdateVersion] = useState<string>('');
+  const [checking, setChecking] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
+  const [preview, setPreview] = useState<MedicalAidTariffsUpdatePreview | null>(null);
+  const [applying, setApplying] = useState(false);
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
@@ -170,6 +185,87 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
     setTimeout(() => setImportMessage(''), 3000);
   };
 
+  // Cloud update handlers
+  const handleCheckForUpdates = async () => {
+    setChecking(true);
+    setImportMessage('');
+    try {
+      const result = await checkForPriceUpdates();
+
+      if (result.error) {
+        setImportMessage(`❌ Update check failed: ${result.error}`);
+        return;
+      }
+
+      if (result.medicalAidTariffsUpdateAvailable && result.latestVersion?.medicalAidTariffs) {
+        setUpdateAvailable(true);
+        setUpdateVersion(result.latestVersion.medicalAidTariffs.version);
+        setImportMessage(`✓ New medical aid rates available (${result.latestVersion.medicalAidTariffs.version}) - Click "View Changes" to preview`);
+      } else {
+        setUpdateAvailable(false);
+        setImportMessage('✓ No updates available - You have the latest medical aid rates');
+      }
+
+      setTimeout(() => setImportMessage(''), 5000);
+    } catch (error) {
+      setImportMessage(`❌ Update check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleViewChanges = async () => {
+    if (!updateVersion) return;
+
+    setChecking(true);
+    try {
+      const result = await checkForPriceUpdates();
+      if (!result.latestVersion?.medicalAidTariffs) {
+        throw new Error('Update version not found');
+      }
+
+      const csv = await downloadMedicalAidTariffsCSV(result.latestVersion.medicalAidTariffs.filename);
+      const preview = previewMedicalAidTariffsUpdate(data.medicalAidTariffs, csv);
+
+      setPreview(preview);
+      setShowPreview(true);
+    } catch (error) {
+      setImportMessage(`❌ Failed to load preview: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  const handleApplyUpdate = async () => {
+    if (!updateVersion) return;
+
+    setApplying(true);
+    try {
+      const result = await checkForPriceUpdates();
+      if (!result.latestVersion?.medicalAidTariffs) {
+        throw new Error('Update version not found');
+      }
+
+      const csv = await downloadMedicalAidTariffsCSV(result.latestVersion.medicalAidTariffs.filename);
+      const updatedData = applyMedicalAidTariffsUpdate(data, csv);
+
+      setData(updatedData);
+      setShowPreview(false);
+      setUpdateAvailable(false);
+      setImportMessage(`✓ Successfully updated to medical aid rates version ${updateVersion}`);
+      setTimeout(() => setImportMessage(''), 5000);
+    } catch (error) {
+      setImportMessage(`❌ Update failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  // Auto-check for updates on mount
+  useEffect(() => {
+    handleCheckForUpdates();
+  }, []);
+
   const handleStartEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
     setEditPrice(currentPrice.toString());
@@ -239,6 +335,46 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
         }}>
           Medical Aid Rates
         </h1>
+      </div>
+
+      {/* Cloud Updates Section */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: '20px',
+        marginBottom: '24px'
+      }}>
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 8px 0', color: 'var(--c-text1)' }}>
+            📡 Cloud Updates
+          </h3>
+          <p style={{ fontSize: 13, color: 'var(--c-text2)', margin: '0 0 12px 0' }}>
+            Check for updated medical aid rates from the cloud (perfect for annual January 1st price updates)
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button
+            onClick={handleCheckForUpdates}
+            variant="secondary"
+            icon="🔄"
+            disabled={checking}
+          >
+            {checking ? 'Checking...' : 'Check for Updates'}
+          </Button>
+
+          {updateAvailable && (
+            <Button
+              onClick={handleViewChanges}
+              variant="primary"
+              icon="👁️"
+              disabled={checking}
+            >
+              View Changes
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Import Section */}
@@ -478,6 +614,125 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
             </table>
           </div>
         </>
+      )}
+
+      {/* Preview Modal */}
+      {showPreview && preview && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }}>
+          <div style={{
+            backgroundColor: 'var(--c-surface)',
+            borderRadius: 12,
+            border: '1px solid var(--c-border)',
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            width: '90%',
+            overflow: 'auto',
+            padding: '24px'
+          }}>
+            <h2 style={{ fontSize: 24, fontWeight: 700, marginBottom: 16, color: 'var(--c-text1)' }}>
+              Medical Aid Rates Update Preview
+            </h2>
+
+            <div style={{ marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: 'var(--c-text2)', marginBottom: 16 }}>
+                Review the changes before applying:
+              </p>
+
+              {preview.added.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, color: '#10b981', marginBottom: 8 }}>
+                    ✅ Added ({preview.added.length} rates)
+                  </h3>
+                  <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
+                    {preview.added.slice(0, 10).map((rate, i) => (
+                      <div key={i} style={{ padding: '4px 0' }}>
+                        {rate.medicalAid} - Code {rate.code}: {fmt(rate.price)}
+                      </div>
+                    ))}
+                    {preview.added.length > 10 && (
+                      <div style={{ padding: '4px 0', fontStyle: 'italic' }}>
+                        ...and {preview.added.length - 10} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {preview.updated.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, color: '#3b82f6', marginBottom: 8 }}>
+                    🔄 Updated ({preview.updated.length} rates)
+                  </h3>
+                  <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
+                    {preview.updated.slice(0, 10).map((rate, i) => (
+                      <div key={i} style={{ padding: '4px 0' }}>
+                        {rate.medicalAid} - Code {rate.code}: {fmt(rate.price)}
+                      </div>
+                    ))}
+                    {preview.updated.length > 10 && (
+                      <div style={{ padding: '4px 0', fontStyle: 'italic' }}>
+                        ...and {preview.updated.length - 10} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {preview.removed.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <h3 style={{ fontSize: 16, fontWeight: 600, color: '#ef4444', marginBottom: 8 }}>
+                    ❌ Removed ({preview.removed.length} rates)
+                  </h3>
+                  <div style={{ maxHeight: '150px', overflow: 'auto', fontSize: 13, color: 'var(--c-text2)' }}>
+                    {preview.removed.slice(0, 10).map((rate, i) => (
+                      <div key={i} style={{ padding: '4px 0' }}>
+                        {rate.medicalAid} - Code {rate.code}: {fmt(rate.price)}
+                      </div>
+                    ))}
+                    {preview.removed.length > 10 && (
+                      <div style={{ padding: '4px 0', fontStyle: 'italic' }}>
+                        ...and {preview.removed.length - 10} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {preview.unchanged > 0 && (
+                <div style={{ fontSize: 13, color: 'var(--c-text3)' }}>
+                  ✓ {preview.unchanged} rates unchanged
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+              <Button
+                onClick={() => setShowPreview(false)}
+                variant="secondary"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleApplyUpdate}
+                variant="primary"
+                disabled={applying}
+              >
+                {applying ? 'Applying...' : 'Apply Update'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
