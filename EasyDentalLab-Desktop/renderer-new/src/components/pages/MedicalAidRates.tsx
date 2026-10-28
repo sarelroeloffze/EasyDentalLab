@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import type { AppData } from '../../types';
 import { Button, Input } from '../ui';
 import { fmt, genId } from '../../utils/helpers';
+import { importMedicalAidTariffsFromFile } from '../../utils/priceUpdates';
+import { parseMedicalAidTariffsCSV, buildMedicalAidTariffsCSV } from '../../utils/csv';
 
 interface MedicalAidRatesProps {
   data: AppData;
@@ -13,6 +15,7 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editPrice, setEditPrice] = useState('');
+  const [importMessage, setImportMessage] = useState('');
 
   if (!setData) {
     return <div style={{ padding: 32 }}>Error: setData not provided</div>;
@@ -101,6 +104,72 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
     }));
   };
 
+  const handleImportFromFile = async () => {
+    setImportMessage('');
+    try {
+      const csv = await importMedicalAidTariffsFromFile();
+      const imported = parseMedicalAidTariffsCSV(csv);
+
+      if (imported.length === 0) {
+        setImportMessage('❌ No valid rates found in CSV file');
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Import ${imported.length} medical aid rates from CSV?\n\n` +
+        `This will REPLACE all existing custom rates.\n\n` +
+        `Medical aids: ${[...new Set(imported.map(m => m.medicalAid))].length}\n` +
+        `Unique codes: ${[...new Set(imported.map(m => m.code))].length}\n\n` +
+        `Continue?`
+      );
+
+      if (!confirmed) return;
+
+      setData(prev => ({
+        ...prev,
+        medicalAidTariffs: imported
+      }));
+
+      setImportMessage(`✓ Successfully imported ${imported.length} medical aid rates!`);
+      setTimeout(() => setImportMessage(''), 5000);
+    } catch (error) {
+      if (error instanceof Error && error.message !== 'No file selected') {
+        setImportMessage(`❌ Import failed: ${error.message}`);
+      }
+    }
+  };
+
+  const handleExportToCSV = () => {
+    const csv = buildMedicalAidTariffsCSV(data.medicalAidTariffs);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `MedicalAidRates-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    setImportMessage(`✓ Exported ${data.medicalAidTariffs.length} rates to CSV`);
+    setTimeout(() => setImportMessage(''), 3000);
+  };
+
+  const handleDownloadTemplate = () => {
+    // Create template with first 5 codes for each medical aid as examples
+    const templateRows: string[] = ['MedicalAid,Code,Price'];
+
+    medicalAidOptions.slice(0, 3).forEach(aid => {
+      data.tariffs.slice(0, 5).forEach(tariff => {
+        templateRows.push(`${aid.value},${tariff.code},${tariff.price}`);
+      });
+    });
+
+    const csv = templateRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'MedicalAidRates-Template.csv';
+    link.click();
+    setImportMessage(`✓ Template downloaded - Edit in Excel and re-import`);
+    setTimeout(() => setImportMessage(''), 3000);
+  };
+
   const handleStartEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
     setEditPrice(currentPrice.toString());
@@ -170,6 +239,64 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
         }}>
           Medical Aid Rates
         </h1>
+      </div>
+
+      {/* Import Section */}
+      <div style={{
+        background: 'var(--c-surface)',
+        borderRadius: 12,
+        border: '1px solid var(--c-border)',
+        padding: '20px',
+        marginBottom: '24px'
+      }}>
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 16, fontWeight: 600, margin: '0 0 8px 0', color: 'var(--c-text1)' }}>
+            Bulk Import All Medical Aid Rates
+          </h3>
+          <p style={{ fontSize: 13, color: 'var(--c-text2)', margin: '0 0 12px 0' }}>
+            Import a CSV file with all medical aid prices at once. Format: MedicalAid, Code, Price
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Button
+            onClick={handleImportFromFile}
+            variant="secondary"
+            icon="📁"
+          >
+            Import from CSV File
+          </Button>
+
+          <Button
+            onClick={handleExportToCSV}
+            variant="secondary"
+            icon="💾"
+            disabled={data.medicalAidTariffs.length === 0}
+          >
+            Export Current Rates
+          </Button>
+
+          <Button
+            onClick={handleDownloadTemplate}
+            variant="secondary"
+            icon="📄"
+          >
+            Download Template
+          </Button>
+
+          {importMessage && (
+            <div style={{
+              padding: '8px 12px',
+              borderRadius: '6px',
+              fontSize: 13,
+              backgroundColor: importMessage.startsWith('✓') ? '#d1fae5' : '#fee2e2',
+              color: importMessage.startsWith('✓') ? '#065f46' : '#991b1b',
+              border: `1px solid ${importMessage.startsWith('✓') ? '#a7f3d0' : '#fecaca'}`
+            }}>
+              {importMessage}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Medical Aid Selection */}
