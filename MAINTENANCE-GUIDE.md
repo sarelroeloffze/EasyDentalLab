@@ -1,7 +1,7 @@
 # EasyDentalLab Maintenance Guide
 
 **Last Updated:** October 28, 2026  
-**Current Version:** v3.0.64
+**Current Version:** v3.0.67
 
 This guide explains how to update prices, medical aids, and publish new app versions.
 
@@ -12,8 +12,9 @@ This guide explains how to update prices, medical aids, and publish new app vers
 1. [Publishing App Updates (Code Changes)](#1-publishing-app-updates-code-changes)
 2. [Updating Tariff Prices (Annual Price Increases)](#2-updating-tariff-prices-annual-price-increases)
 3. [Updating Medical Aids List](#3-updating-medical-aids-list)
-4. [Handling Received CSV Files](#4-handling-received-csv-files)
-5. [Emergency Rollback](#5-emergency-rollback)
+4. [Updating Medical Aid Rates (Per-Medical-Aid Pricing)](#4-updating-medical-aid-rates-per-medical-aid-pricing)
+5. [Handling Received CSV Files](#5-handling-received-csv-files)
+6. [Emergency Rollback](#6-emergency-rollback)
 
 ---
 
@@ -230,7 +231,130 @@ Users can add medical aids directly:
 
 ---
 
-## 4. Handling Received CSV Files
+## 4. Updating Medical Aid Rates (Per-Medical-Aid Pricing)
+
+**When:** January 1st (annual medical aid price updates)  
+**Frequency:** Once per year + ad-hoc corrections
+
+**Added in:** v3.0.67 (October 28, 2026)
+
+### How Cloud Auto-Update Works
+
+The Medical Aid Rates cloud update system works identically to Tariffs and Medical Aids updates:
+
+1. **Auto-check on startup:**
+   - App checks GitHub `version.json` on every launch
+   - Compares cloud version vs. local `MEDICAL_AID_TARIFFS_VERSION`
+   - Shows yellow notification if update available
+
+2. **Manual check:**
+   - Medical Aid Rates page → "Check for Updates" button
+   - Same flow as auto-check, user-triggered
+
+3. **Update flow:**
+   - User clicks "View Changes" → sees preview modal
+   - Preview shows added/updated/removed rates with details
+   - User clicks "Apply Update" → downloads CSV, creates backup, applies
+   - Updates applied instantly (no restart needed)
+
+**Technical Details:**
+
+```
+GitHub URL: https://raw.githubusercontent.com/sarelroeloffze/EasyDentalLab-PriceLists/main/MedicalAidTariffs-2027.csv
+Repository: https://github.com/sarelroeloffze/EasyDentalLab-PriceLists
+Version metadata: version.json (medicalAidTariffs section)
+```
+
+**Code Location:**
+- Update logic: `renderer-new/src/utils/priceUpdates.ts`
+- Medical Aid Rates page: `renderer-new/src/components/pages/MedicalAidRates.tsx`
+- Constants: `renderer-new/src/constants/index.ts` (defines `MEDICAL_AID_TARIFFS_VERSION`)
+
+### Method A: Cloud Auto-Update (Recommended)
+
+**Users get updates automatically.**
+
+```bash
+# 1. Navigate to PriceLists repo
+cd /Users/sarelroeloffze/Library/CloudStorage/Dropbox/AAA\ Claud/EasyDentalLab-PriceLists
+
+# 2. Create/edit MedicalAidTariffs-2027.csv in Excel
+# Format: Three columns (MedicalAid, Code, Price)
+# Example content:
+#   MedicalAid,Code,Price
+#   Discovery Health - Executive,9600,1650
+#   Discovery Health - KeyCare Plus,9600,1450
+#   Bonitas - BonCap,9600,1400
+#   Bonitas - BonEssential,9600,1350
+#   ...all 5,000+ medical aid × code combinations
+
+# 3. Update version.json - add medicalAidTariffs section
+nano version.json
+# Add/update:
+# {
+#   "version": "2027.2",
+#   "releaseDate": "2027-01-01",
+#   "tariffs": { ... },
+#   "medicalAids": { ... },
+#   "medicalAidTariffs": {
+#     "filename": "MedicalAidTariffs-2027.csv",
+#     "version": "2027.2",
+#     "rateCount": 5247,
+#     "lastUpdated": "2027-01-01",
+#     "changes": "2027 annual medical aid rate updates - Discovery/Bonitas/Momentum"
+#   },
+#   "notes": ""
+# }
+
+# 4. Commit and push
+git add -A
+git commit -m "v2027.2: Medical aid rates - 2027 annual update"
+git push origin main
+```
+
+**What happens next:**
+- Users open app → see "✓ New medical aid rates available (2027.2)"
+- Click "View Changes" → preview shows added/updated/removed rates
+- Click "Apply Update" → prices updated automatically
+- App creates backup before applying
+- **No app reinstall needed!**
+
+**CSV Format Details:**
+
+```csv
+MedicalAid,Code,Price
+Discovery Health - Executive,9600,1650
+Discovery Health - Executive,9604,2200
+Discovery Health - KeyCare Plus,9600,1450
+Discovery Health - KeyCare Plus,9604,1950
+Bonitas - BonCap,9600,1400
+Bonitas - BonCap,9604,1850
+```
+
+- **One row per medical-aid-code combination**
+- Medical aid names must match exactly (including plan names like "Discovery Health - Executive")
+- Codes must match existing tariff codes in Tariffs-2027.csv
+- Prices override base tariff prices for that specific medical aid
+
+### Method B: Bulk CSV Import (Manual Distribution)
+
+**For offline users or testing before cloud release.**
+
+Users can import via the app:
+1. Open app → Medical Aid Rates page
+2. Click "Import from CSV File"
+3. Select CSV file with format: `MedicalAid,Code,Price`
+4. Confirm import (shows stats: rates, medical aids, unique codes)
+5. Done - replaces ALL existing custom rates
+
+**Distribute CSV via:**
+- Email attachment
+- Dropbox/Google Drive link
+- WhatsApp file share
+
+---
+
+## 5. Handling Received CSV Files
 
 **Scenario:** Client sends you updated Tariffs.csv or MedicalAids.csv
 
@@ -279,7 +403,7 @@ npm version patch --no-git-tag-version
 
 ---
 
-## 5. Emergency Rollback
+## 6. Emergency Rollback
 
 **Scenario:** Bad update pushed, users reporting issues
 
