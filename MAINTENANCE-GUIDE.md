@@ -1,7 +1,7 @@
 # EasyDentalLab Maintenance Guide
 
-**Last Updated:** October 24, 2026  
-**Current Version:** v3.0.63
+**Last Updated:** October 28, 2026  
+**Current Version:** v3.0.64
 
 This guide explains how to update prices, medical aids, and publish new app versions.
 
@@ -63,6 +63,35 @@ See CLAUDE.md → "Publishing a new release" → Option B
 **When:** January 1st (when medical aids publish new rates)  
 **Frequency:** Once per year + ad-hoc corrections
 
+### How Tariff Updates Work
+
+**Technical Details:**
+
+The app automatically checks for tariff updates on startup:
+
+1. **Downloads from GitHub:**
+   ```
+   URL: https://raw.githubusercontent.com/sarelroeloffze/EasyDentalLab-PriceLists/main/Tariffs-2027.csv
+   Repository: https://github.com/sarelroeloffze/EasyDentalLab-PriceLists
+   Version metadata: version.json
+   ```
+
+2. **Auto-check on startup:**
+   - App checks `version.json` on every launch
+   - Compares cloud version vs. local version
+   - Shows yellow notification banner if update available
+
+3. **Update flow:**
+   - User clicks "View Changes" → sees diff preview
+   - Shows Added/Updated/Removed codes with details
+   - User clicks "Apply Update" → downloads Tariffs-2027.csv
+   - App creates backup before applying
+   - Updates applied instantly (no restart needed)
+
+**Manual check:**
+- Tariffs page → "Check for Updates" button
+- Same flow as auto-check, but user-triggered
+
 ### Method A: Update Cloud Price Lists (Recommended)
 
 **Users get updates automatically without new app release.**
@@ -123,6 +152,38 @@ npm version patch --no-git-tag-version
 **When:** New medical aid launches, plan names change  
 **Frequency:** As needed
 
+### How "Check for Updates" Works
+
+**Technical Details:**
+
+When users click **"Check for Updates"** on the Medical Aids page, the app:
+
+1. **Downloads from GitHub:**
+   ```
+   URL: https://raw.githubusercontent.com/sarelroeloffze/EasyDentalLab-PriceLists/main/MedicalAids-2027.csv
+   Repository: https://github.com/sarelroeloffze/EasyDentalLab-PriceLists
+   ```
+
+2. **Compares with current list:**
+   - ✅ **Added:** New medical aids/plans (green)
+   - 🔄 **Updated:** Modified medical aids (blue)
+   - ❌ **Removed:** Deleted medical aids (red)
+
+3. **User approves update:**
+   - Shows preview modal with all changes
+   - User clicks "Apply Update" or "Cancel"
+   - App creates backup before applying
+
+4. **Same system for Tariffs:**
+   - Both use cloud-based GitHub repository
+   - Both show diff previews before applying
+   - Both work offline with fallback "Import from File"
+
+**Code Location:**
+- Update logic: `renderer-new/src/utils/priceUpdates.ts`
+- Medical Aids page: `renderer-new/src/components/pages/MedicalAids.tsx`
+- Constants: `renderer-new/src/constants/index.ts` (defines `PRICE_LISTS_REPO_URL`)
+
 ### Method A: Update Cloud Medical Aids (Recommended)
 
 ```bash
@@ -147,7 +208,12 @@ git commit -m "v2027.2: Added new medical aid - XYZ Healthcare"
 git push origin main
 ```
 
-**Users get update notification same as tariffs.**
+**What happens next:**
+- Users click "Check for Updates" on Medical Aids page
+- App downloads MedicalAids-2027.csv from GitHub
+- Shows diff preview of changes
+- User approves → list updated instantly
+- **No app reinstall needed!**
 
 ### Method B: Users Add via App UI
 
