@@ -12,8 +12,8 @@ Portable single-file dental laboratory invoicing application for South African d
 
 ## 🎯 PROJECT STATUS (Updated 2026-10-17)
 
-### Current Version: Desktop App v3.0.63 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.63 fixes Medical Aids Edit button (modal now displays)
+### Current Version: Desktop App v3.0.64 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.64 fixes Save as Macro feature (now uses modal dialog instead of prompt())
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -536,7 +536,20 @@ Portable single-file dental laboratory invoicing application for South African d
   - **User testing confirmed:** Page loads, Edit opens modal, Search filters list, all features functional in v3.0.63
   - Desktop only
 
-### Available Installers (v3.0.63+)
+- ✅ **v3.0.64 Update** (October 28, 2026) — **FIX SAVE AS MACRO FEATURE**
+  - **BUG FIXED:** "Save as Macro" button (sparkles ✨) on Invoices and Estimates pages did nothing when clicked
+  - **Root cause:** Browser's `prompt()` function doesn't work reliably in Electron environment; function was never invoked, no modal appeared, macro was never created
+  - **Solution:** Replaced `prompt()` with proper modal dialog system
+    - Created new modal state (`showMacroModal`, `macroInvoice`/`macroEstimate`, `macroName`) in both pages
+    - Refactored `saveAsMacro()` into `openMacroModal()` (opens modal with default name) and `handleSaveMacro()` (creates macro)
+    - Added dedicated modal with Input field, Enter key support, and Create/Cancel buttons
+    - Added `onKeyDown` prop support to Input component for Enter key handling
+    - Added `style` prop support to Button component for flex layout
+  - **Files modified:** Estimates.tsx (modal state + handlers + JSX), Invoices.tsx (modal state + handlers + JSX), Input.tsx (added onKeyDown prop), Button.tsx (added style prop)
+  - **Result:** Save as Macro now fully functional - click sparkles button → modal opens with suggested name (e.g., "Invoice #123 Macro") → user can edit name → press Enter or click Create Macro → macro created with success alert; works on both Invoices and Estimates pages
+  - Desktop only
+
+### Available Installers (v3.0.64+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -562,6 +575,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.64 published** (October 28, 2026) — Fix Save as Macro feature - replaced prompt() with modal dialog; now works reliably in Electron
 - ✅ **v3.0.63 published** (October 24, 2026) — Fix Medical Aids Edit modal (added open={true} prop) - Edit button now functional; user testing confirmed all features working
 - ✅ **v3.0.62 published** (October 24, 2026) — **CRITICAL:** Comprehensive null-safety for Medical Aids (all .length accesses guarded) - fixes second crash after v3.0.61; 14 guards added
 - ✅ **v3.0.61 published** (October 24, 2026) — **CRITICAL:** Medical Aids runtime crash fix (null name in sort) - COMPLETE FIX verified by user; added null guards to migration, sort, filter, and edit
@@ -1227,6 +1241,8 @@ const decryptBackup = async (base64String, password) => { /* Returns JSON */ }
 | Arrow navigation selects wrong code | When navigating with arrow keys and pressing Enter (or Down Arrow), wrong code was selected. Root cause: **Double-pick race condition** - Enter and Down Arrow handlers called `pick()` twice (first using `filtered[hlIdx]` from arrow navigation, then inside `confirmAndMoveToQty()` which recalculated `filtered` array after first pick updated parent state, causing `filtered[hlIdx]` in second pick to be a different code). Also, ArrowDown couldn't navigate DOWN in dropdown (only ArrowUp worked), creating asymmetric UX. Fix: Refactored to single-pick pattern - removed `confirmAndMoveToQty()` redundant picking; split into `moveToQtyField()` (just moves focus) and `confirmAndAddLine()` (picks once + adds line) helpers; Enter now picks once using `filtered[hlIdx]` then calls `moveToQtyField()`; Ctrl+Enter calls `confirmAndAddLine()`; ArrowDown when dropdown open now navigates down (`setHlIdx(prev => Math.min(prev + 1, filtered.length - 1))`); ArrowDown when closed confirms and adds line (legacy behavior). Updated tooltip to show all shortcuts. Rewrote Help section "Tips & Keyboard Shortcuts" with complete navigation guide. Lines ~1677-1761 (CodeInput in web), ~1677-1746 (desktop), ~1854 (tooltip web), ~1839 (tooltip desktop), ~5713-5721 (Help web), ~5770-5778 (Help desktop). Result: Clean, predictable navigation - ArrowUp/ArrowDown navigate within dropdown, Enter confirms selection, Ctrl+Enter adds new line, each key picks exactly once (no race conditions). Both versions. |
 | **v3.0.38 Update** | **Clickable Estimate References on Invoices** |
 | Clickable estimate reference | When viewing invoices converted from estimates, the estimate reference badge showed "Est #123" as static text — users couldn't view the original estimate. Root cause: No interactivity on the badge. Solution: Created new `EstimateViewer` component (`src/components/ui/EstimateViewer.tsx`) displaying read-only estimate with Print/PDF/WhatsApp buttons; made estimate reference badge clickable with hover effect (purple background → brighter purple on hover); added `viewingEstimate` state and `handleViewEstimate()` function to Invoices page; updated Estimates page `handleConfirmDelete()` to clean up invoice references when estimate is deleted (`estimateRef = null`). Result: Users can click "Est #123" badge to view original estimate in modal; deleted estimates automatically remove orphaned references. Desktop only (TypeScript version). |
+| **v3.0.64 Fix** | **Save as Macro Feature Not Working** |
+| Sparkles button does nothing | **Bug:** Clicking "Save as Macro" (sparkles ✨) button on Invoices and Estimates pages did nothing - no dialog appeared, no macro was created. **Root cause:** Browser's `prompt()` function doesn't work reliably in Electron environment; the function call failed silently, preventing modal from appearing and macro from being created. **Solution:** Replaced `prompt()` with proper modal dialog system: (1) Created new modal state (`showMacroModal`, `macroInvoice`/`macroEstimate`, `macroName`) in both pages, (2) Refactored `saveAsMacro()` into `openMacroModal()` (opens modal with default name like "Invoice #123 Macro") and `handleSaveMacro()` (creates macro from modal), (3) Added dedicated modal component with Input field for macro name, Enter key support for quick creation, and Create/Cancel buttons, (4) Enhanced Input component with `onKeyDown` prop support for keyboard handling, (5) Enhanced Button component with `style` prop support for flex layout. **Files modified:** Estimates.tsx (added modal state, handlers, and JSX), Invoices.tsx (added modal state, handlers, and JSX), Input.tsx (added onKeyDown prop to interface and both input/textarea elements), Button.tsx (added style prop to interface and merged into component styles). **Result:** Save as Macro now fully functional - user clicks sparkles button → modal opens with suggested name → user can edit name or press Enter → macro created with success alert; works identically on both Invoices and Estimates pages. Desktop only. |
 | **v3.0.63 Fix** | **Medical Aids Edit Modal Not Displaying** |
 | Edit button does nothing | **Bug:** Clicking Edit button on Medical Aids page showed nothing - no modal, no form, no way to edit medical aid names or plans. **Root cause:** Modal component requires `open={true}` or `isOpen={true}` prop to display (Modal.tsx line 18: `const modalOpen = open ?? isOpen ?? false`); form modal at line 433 was missing this prop, so even though `showForm` state was true (component was created), the modal's internal `modalOpen` defaulted to `false` and didn't render. **Solution:** Added `open={true}` prop to Modal component. **Files modified:** MedicalAids.tsx (1 line). **Result:** Edit button now opens modal with medical aid name and plans editor; Cancel/Escape close modal; Update saves changes; complete Medical Aids CRUD functionality working. User testing confirmed: page loads, Edit opens modal, Search filters list, all features functional in v3.0.63. Desktop only. |
 | **v3.0.62 Fix** | **Medical Aids Comprehensive Null-Safety** |

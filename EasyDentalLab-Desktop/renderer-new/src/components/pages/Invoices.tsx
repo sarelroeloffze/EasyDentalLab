@@ -30,6 +30,9 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   const [sortBy, setSortBy] = useState<SortColumn>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [viewingEstimate, setViewingEstimate] = useState<Estimate | null>(null);
+  const [showMacroModal, setShowMacroModal] = useState(false);
+  const [macroInvoice, setMacroInvoice] = useState<Invoice | null>(null);
+  const [macroName, setMacroName] = useState('');
   const [searchText, setSearchText] = useState('');
   const [filterClient, setFilterClient] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'paid' | 'unpaid' | 'partial'>('all');
@@ -257,21 +260,25 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
   };
 
   // Save invoice as macro
-  const saveAsMacro = (inv: Invoice) => {
-    const macroName = prompt(`Enter a name for this macro:`, `Invoice #${inv.number} Macro`);
-    if (!macroName || !macroName.trim()) return;
+  const openMacroModal = (inv: Invoice) => {
+    if (inv.items.filter(item => item.code && item.code.trim()).length === 0) {
+      alert('This invoice has no line items to save as a macro.');
+      return;
+    }
+    setMacroInvoice(inv);
+    setMacroName(`Invoice #${inv.number} Macro`);
+    setShowMacroModal(true);
+  };
 
-    const macroCodes = inv.items
+  const handleSaveMacro = () => {
+    if (!macroInvoice || !macroName.trim()) return;
+
+    const macroCodes = macroInvoice.items
       .filter(item => item.code && item.code.trim())
       .map(item => ({
         code: item.code,
         qty: item.qty || 1
       }));
-
-    if (macroCodes.length === 0) {
-      alert('This invoice has no line items to save as a macro.');
-      return;
-    }
 
     setData(prev => ({
       ...prev,
@@ -286,6 +293,9 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
     }));
 
     alert(`Macro "${macroName.trim()}" created with ${macroCodes.length} codes!`);
+    setShowMacroModal(false);
+    setMacroInvoice(null);
+    setMacroName('');
   };
 
   // View original estimate
@@ -687,7 +697,7 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
                       <button className="icon-btn" title="Copy as new invoice — choose what to copy" onClick={() => openCopyModal(inv)}>
                         <SvgIcon path={ICO.copy} size={15} color="#6b7280" />
                       </button>
-                      <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={() => saveAsMacro(inv)}>
+                      <button className="icon-btn" title="Save this invoice as a reusable macro (uses current tariff prices)" onClick={() => openMacroModal(inv)}>
                         <SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6" />
                       </button>
                       <button className="icon-btn" title="Edit this invoice" onClick={() => { setEditing(inv); setShowForm(true); }}>
@@ -778,6 +788,55 @@ export function Invoices({ data, setData, openFormOnMount, onFormOpened }: Invoi
           />
         </Modal>
       )}
+
+      <Modal
+        open={showMacroModal}
+        onClose={() => {
+          setShowMacroModal(false);
+          setMacroInvoice(null);
+          setMacroName('');
+        }}
+        title="Save as Macro"
+      >
+        <div style={{ padding: '20px 0' }}>
+          <p style={{ marginBottom: 16, color: 'var(--c-text2)' }}>
+            Enter a name for this macro. The line items from this invoice will be saved
+            as a reusable macro (using current tariff prices).
+          </p>
+          <Input
+            label="Macro Name"
+            value={macroName}
+            onChange={setMacroName}
+            placeholder="e.g. Full Upper Denture"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && macroName.trim()) {
+                handleSaveMacro();
+              }
+            }}
+          />
+          <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+            <Button
+              onClick={handleSaveMacro}
+              disabled={!macroName.trim()}
+              style={{ flex: 1 }}
+            >
+              Create Macro
+            </Button>
+            <Button
+              onClick={() => {
+                setShowMacroModal(false);
+                setMacroInvoice(null);
+                setMacroName('');
+              }}
+              variant="secondary"
+              style={{ flex: 1 }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

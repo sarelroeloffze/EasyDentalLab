@@ -26,6 +26,9 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   const [copyingEstimate, setCopyingEstimate] = useState<Estimate | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deletingEstimate, setDeletingEstimate] = useState<Estimate | null>(null);
+  const [showMacroModal, setShowMacroModal] = useState(false);
+  const [macroEstimate, setMacroEstimate] = useState<Estimate | null>(null);
+  const [macroName, setMacroName] = useState('');
   const [sortBy, setSortBy] = useState<SortColumn>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [searchText, setSearchText] = useState('');
@@ -265,21 +268,25 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
   };
 
   // Save estimate as macro
-  const saveAsMacro = (est: Estimate) => {
-    const macroName = prompt(`Enter a name for this macro:`, `Estimate #${est.number} Macro`);
-    if (!macroName || !macroName.trim()) return;
+  const openMacroModal = (est: Estimate) => {
+    if (est.items.filter(item => item.code && item.code.trim()).length === 0) {
+      alert('This estimate has no line items to save as a macro.');
+      return;
+    }
+    setMacroEstimate(est);
+    setMacroName(`Estimate #${est.number} Macro`);
+    setShowMacroModal(true);
+  };
 
-    const macroCodes = est.items
+  const handleSaveMacro = () => {
+    if (!macroEstimate || !macroName.trim()) return;
+
+    const macroCodes = macroEstimate.items
       .filter(item => item.code && item.code.trim())
       .map(item => ({
         code: item.code,
         qty: item.qty || 1
       }));
-
-    if (macroCodes.length === 0) {
-      alert('This estimate has no line items to save as a macro.');
-      return;
-    }
 
     setData(prev => ({
       ...prev,
@@ -294,6 +301,9 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
     }));
 
     alert(`Macro "${macroName.trim()}" created with ${macroCodes.length} codes!`);
+    setShowMacroModal(false);
+    setMacroEstimate(null);
+    setMacroName('');
   };
 
   // Delete estimate
@@ -578,7 +588,7 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
                       <button className="icon-btn" title="Copy as new estimate — choose what to copy" onClick={() => openCopyModal(est)}>
                         <SvgIcon path={ICO.copy} size={15} color="#6b7280" />
                       </button>
-                      <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={() => saveAsMacro(est)}>
+                      <button className="icon-btn" title="Save this estimate as a reusable macro (uses current tariff prices)" onClick={() => openMacroModal(est)}>
                         <SvgIcon path={ICO.sparkles} size={15} color="#8b5cf6" />
                       </button>
                       <button className="icon-btn" title="Edit this estimate" onClick={() => { setEditing(est); setShowForm(true); }}>
@@ -654,6 +664,55 @@ export function Estimates({ data, setData, openFormOnMount, onFormOpened }: Esti
         onCancel={handleCancelDelete}
         danger={true}
       />
+
+      <Modal
+        open={showMacroModal}
+        onClose={() => {
+          setShowMacroModal(false);
+          setMacroEstimate(null);
+          setMacroName('');
+        }}
+        title="Save as Macro"
+      >
+        <div style={{ padding: '20px 0' }}>
+          <p style={{ marginBottom: 16, color: 'var(--c-text2)' }}>
+            Enter a name for this macro. The line items from this estimate will be saved
+            as a reusable macro (using current tariff prices).
+          </p>
+          <Input
+            label="Macro Name"
+            value={macroName}
+            onChange={setMacroName}
+            placeholder="e.g. Full Upper Denture"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && macroName.trim()) {
+                handleSaveMacro();
+              }
+            }}
+          />
+          <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+            <Button
+              onClick={handleSaveMacro}
+              disabled={!macroName.trim()}
+              style={{ flex: 1 }}
+            >
+              Create Macro
+            </Button>
+            <Button
+              onClick={() => {
+                setShowMacroModal(false);
+                setMacroEstimate(null);
+                setMacroName('');
+              }}
+              variant="secondary"
+              style={{ flex: 1 }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

@@ -18,6 +18,7 @@ interface InputProps {
   max?: string | number;
   step?: string | number;
   autoFocus?: boolean;
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
 export function Input({
@@ -37,7 +38,8 @@ export function Input({
   min,
   max,
   step,
-  autoFocus
+  autoFocus,
+  onKeyDown
 }: InputProps) {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     onChange(e.target.value);
@@ -82,6 +84,7 @@ export function Input({
           rows={rows}
           style={inputStyle}
           autoFocus={autoFocus}
+          onKeyDown={onKeyDown}
         />
       ) : (
         <input
@@ -98,6 +101,7 @@ export function Input({
           step={step}
           style={inputStyle}
           autoFocus={autoFocus}
+          onKeyDown={onKeyDown}
         />
       )}
       {error && (

@@ -4,14 +4,16 @@ interface ButtonProps extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>
   variant?: 'primary' | 'secondary' | 'danger';
   fullWidth?: boolean;
   icon?: string;
+  style?: React.CSSProperties;
 }
 
-export function Button({ 
-  variant = 'primary', 
-  fullWidth = false, 
+export function Button({
+  variant = 'primary',
+  fullWidth = false,
   icon,
-  children, 
-  ...props 
+  children,
+  style,
+  ...props
 }: ButtonProps) {
   const getVariantStyles = () => {
     switch (variant) {
@@ -55,7 +57,8 @@ export function Button({
         ...(props.disabled ? {
           opacity: 0.5,
           cursor: 'not-allowed'
-        } : {})
+        } : {}),
+        ...style
       }}
     >
       {icon && <span>{icon}</span>}
