@@ -34,9 +34,8 @@ export function CodeInput({
   const { items: filtered, matchIdx } = useMemo(() => {
     const q = (query || value || '').toLowerCase().trim();
 
-    // Filter out deleted codes (price = 0 or description contains "deleted")
+    // Filter out deleted codes (description contains "deleted")
     const activeTariffs = tariffs.filter(t =>
-      t.price > 0 &&
       !t.description.toLowerCase().includes('deleted') &&
       !t.descriptionAFR?.toLowerCase().includes('deleted')
     );
