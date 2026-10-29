@@ -132,6 +132,7 @@ export const buildDocumentHTML = (doc: Document, data: AppData, type: DocumentTy
         <tr><th class="ch" colspan="2">Patient/member details</th></tr>
         <tr><td class="c">Medical fund</td><td class="c">${escHtml(doc.medicalAidName)}</td></tr>
         <tr><td class="c">Membership</td><td class="c">${escHtml(doc.medicalAidNumber)}</td></tr>
+        ${doc.authorizationCode ? `<tr><td class="c">Authorization code</td><td class="c">${escHtml(doc.authorizationCode)}</td></tr>` : ''}
         <tr><td class="c">Main member</td><td class="c">${escHtml(memberFull)}</td></tr>
         <tr><td class="c">Patient</td><td class="c">${escHtml(patientFull)}</td></tr>
       </table>
@@ -323,6 +324,7 @@ export const buildPDFBlob = async (doc: Document, data: AppData, type: DocumentT
       [{ content: 'Patient/member details', colSpan: 2, styles: { fontStyle: 'bold' } }],
       ['Medical fund', doc.medicalAidName || ''],
       ['Membership', doc.medicalAidNumber || ''],
+      ...(doc.authorizationCode ? [['Authorization code', doc.authorizationCode]] : []),
       ['Main member', memberFull],
       ['Patient', patientFull],
     ],

@@ -34,7 +34,14 @@ export function CodeInput({
   const { items: filtered, matchIdx } = useMemo(() => {
     const q = (query || value || '').toLowerCase().trim();
 
-    const sortedTariffs = [...tariffs].sort((a, b) =>
+    // Filter out deleted codes (price = 0 or description contains "deleted")
+    const activeTariffs = tariffs.filter(t =>
+      t.price > 0 &&
+      !t.description.toLowerCase().includes('deleted') &&
+      !t.descriptionAFR?.toLowerCase().includes('deleted')
+    );
+
+    const sortedTariffs = [...activeTariffs].sort((a, b) =>
       (a.code || '').localeCompare(b.code || '', undefined, { numeric: true })
     );
 
@@ -241,10 +248,7 @@ export function CodeInput({
         }}
         onFocus={() => {
           setQuery(value || '');
-          // Only open dropdown if field has value (don't show on blank lines)
-          if (value && value.trim()) {
-            setOpen(true);
-          }
+          setOpen(true);  // Always open dropdown on focus (like Synergy)
         }}
         onBlur={handleBlur}
         onKeyDown={handleKeyDown}
