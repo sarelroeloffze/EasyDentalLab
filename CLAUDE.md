@@ -614,7 +614,21 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Faster code entry with full visibility of all tariff codes; better medical aid authorization tracking for claims processing
   - Desktop only
 
-### Available Installers (v3.0.68+)
+- ✅ **v3.0.69 Update** (October 29, 2026) — **AUTHORIZATION CODE IN PDF + CODE DROPDOWN UX**
+  - **Authorization Code in PDF Output:** Complete integration into all printed and PDF outputs
+    - **Printed invoices/estimates** — Authorization code now appears in patient/member details table (conditional display)
+    - **PDF generation** — Included in all PDF outputs (WhatsApp sharing + Direct Claiming submissions)
+    - **Conditional display** — Only shows row when authorization code field is populated (not blank)
+    - **XSS safety** — Properly escaped with `escHtml()` function in HTML output
+  - **Code Dropdown UX Improvements:** Two usability enhancements based on Synergy comparison
+    - **Auto-open on click** — Dropdown now opens immediately when clicking into empty Code field (matches Synergy behavior; no need to type and delete)
+    - **Hide deleted codes** — Filtered out inactive codes with R0.00 price or "deleted" in description (cleaner, shorter list)
+    - **Result** — Faster code entry workflow; only active codes visible
+  - **Files modified:** document.ts (added authorization code to buildDocumentHTML + buildPDFBlob), CodeInput.tsx (filter deleted codes + auto-open onFocus), initialData.ts (version bump to 3.0.69), package.json (version bump)
+  - **Result:** Complete authorization code support in all outputs (form + PDF + print); cleaner code dropdown with faster navigation
+  - Desktop only
+
+### Available Installers (v3.0.69+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -640,6 +654,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.69 published** (October 29, 2026) — Authorization code in PDF output (HTML print + PDF generation) + code dropdown UX (auto-open on click + hide deleted codes with R0.00 or "deleted" description)
 - ✅ **v3.0.68 published** (October 29, 2026) — Code dropdown fixes (removed 100-item cap, 15-row height, smart upward positioning, z-index 99999) + authorization code field on invoices/estimates (50/50 grid with medical aid number)
 - ✅ **v3.0.67 published** (October 28, 2026) — Cloud auto-update for Medical Aid Rates (GitHub-based update system with preview modal, auto-check on startup, bulk CSV import/export) - complete third price list system
 - ✅ **v3.0.64 published** (October 28, 2026) — Fix Save as Macro feature - replaced prompt() with modal dialog; now works reliably in Electron
