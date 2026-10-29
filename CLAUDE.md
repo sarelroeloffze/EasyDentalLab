@@ -630,7 +630,7 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete authorization code support in all outputs (form + PDF + print); cleaner code dropdown with faster navigation; correct version numbering for auto-update
   - Desktop only
 
-### Available Installers (v3.0.89+)
+### Available Installers (v3.0.90+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -656,6 +656,7 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.90 published** (October 29, 2026) — UI polish: Changed "Authorization code" → "Authorization" in PDF/print for better spacing
 - ✅ **v3.0.89 published** (October 29, 2026) — **FIXED VERSION:** Authorization code in PDF output (HTML print + PDF generation) + code dropdown UX (auto-open on click + hide deleted codes by description only, removed R0.00 filter) — version corrected from 3.0.69 to 3.0.89 for auto-update compatibility
 - ✅ **v3.0.68 published** (October 29, 2026) — Code dropdown fixes (removed 100-item cap, 15-row height, smart upward positioning, z-index 99999) + authorization code field on invoices/estimates (50/50 grid with medical aid number)
 - ✅ **v3.0.67 published** (October 28, 2026) — Cloud auto-update for Medical Aid Rates (GitHub-based update system with preview modal, auto-check on startup, bulk CSV import/export) - complete third price list system
