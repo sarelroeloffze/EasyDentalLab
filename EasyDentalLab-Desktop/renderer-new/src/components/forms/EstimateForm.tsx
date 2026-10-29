@@ -31,6 +31,7 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
         memberName: "",
         medicalAidName: "",
         medicalAidNumber: "",
+        authorizationCode: "",
         date: today(),
         notes: "",
         items: getInitialItems(),
@@ -198,13 +199,20 @@ export function EstimateForm({ estimate, data, onSave, onCancel, onDirtyChange, 
         />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12, marginBottom: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
         <Input
           label="Medical Aid Number"
           value={f.medicalAidNumber}
           onChange={v => s("medicalAidNumber", v)}
           placeholder="e.g. 123456789"
           title="Medical aid member number — optional"
+        />
+        <Input
+          label="Authorization Code"
+          value={f.authorizationCode || ""}
+          onChange={v => s("authorizationCode", v)}
+          placeholder="e.g. AUTH12345"
+          title="Medical aid pre-authorization/authorization code — optional"
         />
       </div>
 

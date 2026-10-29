@@ -24,6 +24,7 @@ export interface Invoice {
   memberName: string;
   medicalAidName: string;
   medicalAidNumber: string;
+  authorizationCode?: string;  // Medical aid authorization/pre-auth code
   lang: 'en' | 'af';
   items: LineItem[];
   notes: string;
@@ -51,6 +52,7 @@ export interface Estimate {
   memberName: string;
   medicalAidName: string;
   medicalAidNumber: string;
+  authorizationCode?: string;  // Medical aid authorization/pre-auth code
   lang: 'en' | 'af';
   items: LineItem[];
   notes: string;

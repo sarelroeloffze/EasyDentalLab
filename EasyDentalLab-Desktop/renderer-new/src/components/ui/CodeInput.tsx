@@ -38,7 +38,8 @@ export function CodeInput({
       (a.code || '').localeCompare(b.code || '', undefined, { numeric: true })
     );
 
-    if (!q) return { items: sortedTariffs.slice(0, 100), matchIdx: 0 };
+    // Show ALL codes when no query (removed 100-item limit)
+    if (!q) return { items: sortedTariffs, matchIdx: 0 };
 
     // TRUE FILTER: only show codes that start with typed query
     const matches = sortedTariffs.filter(t =>
@@ -257,21 +258,28 @@ export function CodeInput({
         const rect = inputRef.current?.getBoundingClientRect();
         if (!rect) return null;
 
+        // Smart positioning: open upwards if not enough space below
+        const spaceBelow = window.innerHeight - rect.bottom;
+        const spaceAbove = rect.top;
+        const dropdownHeight = 450; // Height for ~15 rows at 30px each
+        const openUpwards = spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+
         return (
           <div
             ref={dropdownRef}
             className="code-dropdown"
             style={{
               position: 'fixed',
-              top: (rect.bottom || 0) + 2,
+              top: openUpwards ? undefined : (rect.bottom || 0) + 2,
+              bottom: openUpwards ? (window.innerHeight - rect.top + 2) : undefined,
               left: rect.left || 0,
               zIndex: 99999,
               background: 'var(--c-surface)',
               border: '1px solid var(--c-border)',
               borderRadius: 8,
               boxShadow: '0 12px 32px rgba(0,0,0,0.18)',
-              maxHeight: 600,
-              minHeight: 400,
+              maxHeight: dropdownHeight,
+              minHeight: Math.min(dropdownHeight, filtered.length * 30),
               overflowY: 'auto',
               minWidth: 500,
               scrollbarWidth: 'none',
