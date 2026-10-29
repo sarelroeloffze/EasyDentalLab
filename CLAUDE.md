@@ -598,7 +598,23 @@ Portable single-file dental laboratory invoicing application for South African d
   - **Result:** Complete cloud-based auto-update system for medical aid pricing; no manual CSV distribution needed; seamless annual price updates for all customers
   - Desktop only
 
-### Available Installers (v3.0.67+)
+- ✅ **v3.0.68 Update** (October 29, 2026) — **CODE DROPDOWN FIXES + AUTHORIZATION CODE FIELD**
+  - **Code Dropdown Improvements:** Enhanced tariff code autocomplete for better usability
+    - **Removed 100-item display limit** — All matching codes now show (previously capped at 100 when field empty)
+    - **Increased dropdown height** — Now shows ~15 visible rows (450px) instead of small scrollable area
+    - **Smart positioning** — Opens upwards when insufficient space below, prevents clipping by modal boundaries
+    - **Fixed z-index** — Set to 99999 to escape modal clipping issues
+    - **Show all codes when empty** — Typing nothing shows all codes in sequential order, making browsing easier
+  - **Authorization Code Field:** New optional field for medical aid pre-authorization tracking
+    - **Added to invoices and estimates** — Appears next to Medical Aid Number in 50/50 grid layout
+    - **Preserved on copy/convert** — Included when copying invoices/estimates or converting estimate→invoice
+    - **Type-safe** — Added `authorizationCode?: string` to Invoice and Estimate TypeScript interfaces
+    - **Optional field** — Not required for save, allows blank entries
+  - **Files modified:** CodeInput.tsx (removed cap + smart positioning + z-index fix), types/index.ts (added authorizationCode to Invoice and Estimate), InvoiceForm.tsx (added field + 50/50 grid), EstimateForm.tsx (added field + 50/50 grid), initialData.ts (version bump to 3.0.68)
+  - **Result:** Faster code entry with full visibility of all tariff codes; better medical aid authorization tracking for claims processing
+  - Desktop only
+
+### Available Installers (v3.0.68+)
 **Location:** `EasyDentalLab-Desktop/build/`
 
 | Platform | File | Size | Architecture | Auto-Update |
@@ -624,6 +640,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.68 published** (October 29, 2026) — Code dropdown fixes (removed 100-item cap, 15-row height, smart upward positioning, z-index 99999) + authorization code field on invoices/estimates (50/50 grid with medical aid number)
+- ✅ **v3.0.67 published** (October 28, 2026) — Cloud auto-update for Medical Aid Rates (GitHub-based update system with preview modal, auto-check on startup, bulk CSV import/export) - complete third price list system
 - ✅ **v3.0.64 published** (October 28, 2026) — Fix Save as Macro feature - replaced prompt() with modal dialog; now works reliably in Electron
 - ✅ **v3.0.63 published** (October 24, 2026) — Fix Medical Aids Edit modal (added open={true} prop) - Edit button now functional; user testing confirmed all features working
 - ✅ **v3.0.62 published** (October 24, 2026) — **CRITICAL:** Comprehensive null-safety for Medical Aids (all .length accesses guarded) - fixes second crash after v3.0.61; 14 guards added
