@@ -187,27 +187,37 @@ export function MedicalAidRates({ data, setData }: MedicalAidRatesProps) {
 
   // Cloud update handlers
   const handleCheckForUpdates = async () => {
+    console.log('🎯 [UI] User clicked "Check for Updates"');
     setChecking(true);
     setImportMessage('');
     try {
+      console.log('🎯 [UI] Calling checkForPriceUpdates()...');
       const result = await checkForPriceUpdates();
+      console.log('🎯 [UI] Received result:', result);
 
       if (result.error) {
+        console.log('🎯 [UI] Error in result:', result.error);
         setImportMessage(`❌ Update check failed: ${result.error}`);
         return;
       }
 
+      console.log('🎯 [UI] Checking medicalAidTariffsUpdateAvailable:', result.medicalAidTariffsUpdateAvailable);
+      console.log('🎯 [UI] Latest version object:', result.latestVersion?.medicalAidTariffs);
+
       if (result.medicalAidTariffsUpdateAvailable && result.latestVersion?.medicalAidTariffs) {
+        console.log('🎯 [UI] UPDATE AVAILABLE! Setting state...');
         setUpdateAvailable(true);
         setUpdateVersion(result.latestVersion.medicalAidTariffs.version);
         setImportMessage(`✓ New medical aid rates available (${result.latestVersion.medicalAidTariffs.version}) - Click "View Changes" to preview`);
       } else {
+        console.log('🎯 [UI] No update available');
         setUpdateAvailable(false);
         setImportMessage('✓ No updates available - You have the latest medical aid rates');
       }
 
       setTimeout(() => setImportMessage(''), 5000);
     } catch (error) {
+      console.error('🎯 [UI] Caught error:', error);
       setImportMessage(`❌ Update check failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setChecking(false);

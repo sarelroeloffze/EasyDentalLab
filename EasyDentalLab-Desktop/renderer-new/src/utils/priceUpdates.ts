@@ -95,6 +95,8 @@ export function shouldCheckForUpdates(): boolean {
 export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
   try {
     const versionUrl = `${PRICE_LISTS_REPO_URL}/version.json`;
+    console.log('🔍 [UPDATE CHECK] Fetching version from:', versionUrl);
+
     const response = await fetch(versionUrl, {
       cache: 'no-cache',
       headers: { 'Accept': 'application/json' },
@@ -105,6 +107,7 @@ export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
     }
 
     const latestVersion: PriceListVersion = await response.json();
+    console.log('📦 [UPDATE CHECK] Received version data:', JSON.stringify(latestVersion, null, 2));
 
     // Compare versions
     const tariffsUpdateAvailable = latestVersion.tariffs.version !== TARIFFS_VERSION;
@@ -113,17 +116,25 @@ export async function checkForPriceUpdates(): Promise<UpdateCheckResult> {
       ? latestVersion.medicalAidTariffs.version !== MEDICAL_AID_TARIFFS_VERSION
       : false;
 
+    console.log('🔎 [UPDATE CHECK] Version comparisons:');
+    console.log(`  Tariffs: "${latestVersion.tariffs.version}" !== "${TARIFFS_VERSION}" = ${tariffsUpdateAvailable}`);
+    console.log(`  Medical Aids: "${latestVersion.medicalAids.version}" !== "${MEDICAL_AIDS_VERSION}" = ${medicalAidsUpdateAvailable}`);
+    console.log(`  Medical Aid Tariffs: "${latestVersion.medicalAidTariffs?.version}" !== "${MEDICAL_AID_TARIFFS_VERSION}" = ${medicalAidTariffsUpdateAvailable}`);
+
     // Update last check timestamp
     localStorage.setItem(LAST_UPDATE_CHECK_KEY, Date.now().toString());
 
-    return {
+    const result = {
       tariffsUpdateAvailable,
       medicalAidsUpdateAvailable,
       medicalAidTariffsUpdateAvailable,
       latestVersion,
     };
+
+    console.log('✅ [UPDATE CHECK] Final result:', result);
+    return result;
   } catch (error) {
-    console.warn('Failed to check for price updates:', error);
+    console.error('❌ [UPDATE CHECK] Failed:', error);
     return {
       tariffsUpdateAvailable: false,
       medicalAidsUpdateAvailable: false,
