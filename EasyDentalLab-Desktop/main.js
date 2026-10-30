@@ -1,10 +1,39 @@
 const { app, BrowserWindow, ipcMain, dialog, shell, Menu } = require('electron');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const path = require('path');
 const { autoUpdater } = require('electron-updater');
 
 let mainWindow;
 let backupFolderPath = null; // Stores selected folder path
+
+// File logger for debugging
+const logFilePath = path.join(app.getPath('userData'), 'debug.log');
+const originalConsoleLog = console.log;
+const originalConsoleError = console.error;
+const originalConsoleWarn = console.warn;
+
+// Override console methods to write to log file
+console.log = function(...args) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  const timestamp = new Date().toISOString();
+  fsSync.appendFileSync(logFilePath, `[${timestamp}] LOG: ${message}\n`);
+  originalConsoleLog.apply(console, args);
+};
+
+console.error = function(...args) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  const timestamp = new Date().toISOString();
+  fsSync.appendFileSync(logFilePath, `[${timestamp}] ERROR: ${message}\n`);
+  originalConsoleError.apply(console, args);
+};
+
+console.warn = function(...args) {
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : String(arg)).join(' ');
+  const timestamp = new Date().toISOString();
+  fsSync.appendFileSync(logFilePath, `[${timestamp}] WARN: ${message}\n`);
+  originalConsoleWarn.apply(console, args);
+};
 
 // IPC: Select backup folder
 ipcMain.handle('select-backup-folder', async () => {
@@ -369,8 +398,13 @@ function createWindow() {
     setupAutoUpdater();
   });
 
-  // Open DevTools in development (disabled for production)
-  // mainWindow.webContents.openDevTools();
+  // DevTools enabled for debugging
+  // F12 or Cmd+Option+I to toggle DevTools
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.key === 'F12' || (input.key === 'I' && input.meta && input.alt)) {
+      mainWindow.webContents.toggleDevTools();
+    }
+  });
 
   // Set up application menu
   const menuTemplate = [
@@ -398,6 +432,12 @@ function createWindow() {
         { role: 'reload' },
         { role: 'forceReload' },
         { type: 'separator' },
+        {
+          label: 'Toggle Developer Tools',
+          accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'F12',
+          click: () => mainWindow.webContents.toggleDevTools()
+        },
+        { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
         { role: 'zoomOut' },
@@ -421,6 +461,24 @@ function createWindow() {
             if (mainWindow && !mainWindow.isDestroyed()) {
               mainWindow.webContents.send('open-help');
             }
+          }
+        },
+        { type: 'separator' },
+        {
+          label: 'View Debug Log',
+          click: () => {
+            shell.openPath(logFilePath).catch(err => {
+              dialog.showMessageBox({
+                type: 'info',
+                title: 'Debug Log Location',
+                message: `Debug log is located at:\n${logFilePath}`,
+                buttons: ['OK', 'Copy Path'],
+              }).then(result => {
+                if (result.response === 1) {
+                  require('electron').clipboard.writeText(logFilePath);
+                }
+              });
+            });
           }
         }
       ]
