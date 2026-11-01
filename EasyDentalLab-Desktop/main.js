@@ -345,6 +345,43 @@ ipcMain.handle('open-external', async (event, url) => {
   return { success: false, error: 'Blocked: invalid URL scheme' };
 });
 
+// IPC: Uninstall application (called when trial expires)
+ipcMain.handle('uninstall-app', async () => {
+  const { spawn } = require('child_process');
+  const os = require('os');
+
+  // Platform-specific uninstall
+  if (process.platform === 'win32') {
+    // Windows: Run the uninstaller
+    const uninstallerPath = path.join(
+      path.dirname(app.getPath('exe')),
+      'Uninstall EasyDentalLab.exe'
+    );
+
+    // Launch uninstaller and quit app
+    try {
+      spawn(uninstallerPath, [], { detached: true, stdio: 'ignore' });
+      app.quit();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  } else if (process.platform === 'darwin') {
+    // macOS: Move app to Trash
+    try {
+      await shell.trashItem(app.getPath('exe'));
+      app.quit();
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  } else {
+    // Linux: Just quit (user must manually delete AppImage)
+    app.quit();
+    return { success: true };
+  }
+});
+
 // On app start: restore saved backup folder path
 app.on('ready', async () => {
   const configPath = path.join(app.getPath('userData'), 'backup-config.json');

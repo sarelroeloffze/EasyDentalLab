@@ -29,5 +29,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   openExternal: (url) => ipcRenderer.invoke('open-external', url),
   platform: process.platform, // 'win32', 'darwin', 'linux'
   // Menu actions
-  onOpenHelp: (callback) => ipcRenderer.on('open-help', () => callback())
+  onOpenHelp: (callback) => ipcRenderer.on('open-help', () => callback()),
+  // License system
+  uninstallApp: () => ipcRenderer.invoke('uninstall-app')
 });

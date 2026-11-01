@@ -203,6 +203,7 @@ export interface ElectronAPI {
   onUpdateDownloaded: (callback: () => void) => void;
   installUpdate: () => Promise<void>;
   onOpenHelp: (callback: () => void) => void;
+  uninstallApp?: () => Promise<void>;
 }
 
 declare global {
@@ -212,4 +213,7 @@ declare global {
   }
 }
 
-export {};
+// ============================================================
+// License System Types
+// ============================================================
+export type { LicensePayload, LicenseKey, LicenseStatus } from './license';

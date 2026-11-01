@@ -16,6 +16,10 @@ import {
   Settings,
   Help
 } from './components/pages';
+import { LicenseEntryScreen, LicenseExpiredScreen, TrialStatusBanner } from './components/license';
+import { validateLicenseKey, getLicenseKey } from './utils/license';
+import { LICENSE_PUBLIC_KEY_B64, TRIAL_WARNING_DAYS } from './constants/license';
+import type { LicenseStatus } from './types/license';
 import './App.css';
 
 function App() {
@@ -26,9 +30,69 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [openFormOnMount, setOpenFormOnMount] = useState(false);
 
+  // License state
+  const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null);
+  const [licenseChecked, setLicenseChecked] = useState(false);
+  const [showTrialBanner, setShowTrialBanner] = useState(false);
+
   const navigateAndOpenForm = (page: string) => {
     setCurrentPage(page);
     setOpenFormOnMount(true);
+  };
+
+  // Check license on startup
+  useEffect(() => {
+    const checkLicense = async () => {
+      const storedKey = getLicenseKey();
+
+      if (!storedKey) {
+        // No license key stored
+        setLicenseStatus({ valid: false, expired: false, error: 'No license key found' });
+        setLicenseChecked(true);
+        return;
+      }
+
+      // Validate stored license
+      const status = await validateLicenseKey(storedKey, LICENSE_PUBLIC_KEY_B64);
+      setLicenseStatus(status);
+      setLicenseChecked(true);
+
+      // Show trial banner if trial with <= 30 days remaining
+      if (status.valid && !status.expired && status.payload?.type === 'trial' && status.daysRemaining && status.daysRemaining <= TRIAL_WARNING_DAYS) {
+        setShowTrialBanner(true);
+      }
+    };
+
+    if (loaded) {
+      checkLicense();
+    }
+  }, [loaded]);
+
+  // Handle successful license activation
+  const handleLicenseActivation = async () => {
+    // Re-check license after activation
+    const storedKey = getLicenseKey();
+    if (storedKey) {
+      const status = await validateLicenseKey(storedKey, LICENSE_PUBLIC_KEY_B64);
+      setLicenseStatus(status);
+
+      // Show trial banner if needed
+      if (status.valid && !status.expired && status.payload?.type === 'trial' && status.daysRemaining && status.daysRemaining <= TRIAL_WARNING_DAYS) {
+        setShowTrialBanner(true);
+      }
+    }
+  };
+
+  // Handle data export
+  const handleExportData = () => {
+    const dataJson = JSON.stringify(data, null, 2);
+    const blob = new Blob([dataJson], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `EasyDentalLab-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   // Listen for Help menu click from Electron menu
@@ -40,7 +104,8 @@ function App() {
     }
   }, []);
 
-  if (!loaded) {
+  // Show loading screen while data or license is being checked
+  if (!loaded || !licenseChecked) {
     return (
       <div style={{
         display: 'flex',
@@ -55,6 +120,23 @@ function App() {
           <div>Loading...</div>
         </div>
       </div>
+    );
+  }
+
+  // Show license entry screen if no valid license
+  if (!licenseStatus?.valid) {
+    return <LicenseEntryScreen onActivate={handleLicenseActivation} />;
+  }
+
+  // Show license expired screen if trial expired
+  if (licenseStatus.expired && licenseStatus.payload) {
+    return (
+      <LicenseExpiredScreen
+        expiredLicenseEmail={licenseStatus.payload.email}
+        expiredLicenseDate={licenseStatus.payload.expires || ''}
+        onActivate={handleLicenseActivation}
+        onExportData={handleExportData}
+      />
     );
   }
 
@@ -91,7 +173,17 @@ function App() {
   };
 
   return (
-    <div className="app" style={{ display: 'flex', height: '100vh', background: 'var(--c-bg)' }}>
+    <>
+      {/* Trial Status Banner */}
+      {showTrialBanner && licenseStatus?.daysRemaining && licenseStatus.payload?.expires && (
+        <TrialStatusBanner
+          daysRemaining={licenseStatus.daysRemaining}
+          expiryDate={licenseStatus.payload.expires}
+          onDismiss={() => setShowTrialBanner(false)}
+        />
+      )}
+
+      <div className="app" style={{ display: 'flex', height: '100vh', background: 'var(--c-bg)', paddingTop: showTrialBanner ? 75 : 0, transition: 'padding-top 0.3s' }}>
       {/* Sidebar */}
       <div style={{
         width: sidebarCollapsed ? 60 : 240,
@@ -234,6 +326,7 @@ function App() {
         </div>
       </div>
     </div>
+    </>
   );
 }
 
