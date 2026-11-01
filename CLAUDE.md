@@ -656,6 +656,8 @@ Portable single-file dental laboratory invoicing application for South African d
 **Status:** ✅ **DEPLOYED** — App is live with fully working auto-updates
 
 **Auto-updates status:**
+- ✅ **v3.0.92 published** (October 30, 2026) — **DEBUG BUILD:** DevTools enabled (View → Toggle Developer Tools, F12 in local sessions) + file logging (debug.log in userData folder, Help → View Debug Log) - for diagnosing Medical Aid Rates update detection
+- ✅ **v3.0.91 published** (October 30, 2026) — Debug logging added to update detection (console logs for fetch, version comparison, result) - identified Medical Aid Rates page visibility issue (only shows in Per-Medical-Aid Pricing mode)
 - ✅ **v3.0.90 published** (October 29, 2026) — UI polish: Changed "Authorization code" → "Authorization" in PDF/print for better spacing
 - ✅ **v3.0.89 published** (October 29, 2026) — **FIXED VERSION:** Authorization code in PDF output (HTML print + PDF generation) + code dropdown UX (auto-open on click + hide deleted codes by description only, removed R0.00 filter) — version corrected from 3.0.69 to 3.0.89 for auto-update compatibility
 - ✅ **v3.0.68 published** (October 29, 2026) — Code dropdown fixes (removed 100-item cap, 15-row height, smart upward positioning, z-index 99999) + authorization code field on invoices/estimates (50/50 grid with medical aid number)
