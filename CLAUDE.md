@@ -10,10 +10,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After changes to update/maintenance procedures**: update MAINTENANCE-GUIDE.md with new steps, changed file paths, or modified workflows — this keeps the guide current for price updates, app releases, CSV handling, and troubleshooting.
 - These four rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-10-28 - v3.0.67 Release)
+## 🎯 PROJECT STATUS (Updated 2026-11-05 - v3.0.94 Release)
 
-### Current Version: Desktop App v3.0.67 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.67 adds cloud auto-update for Medical Aid Rates (perfect for annual January 1st price updates)
+### Current Version: Desktop App v3.0.94 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.94 fixes critical CSV parsing bug causing language selection to fail
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -628,6 +628,22 @@ Portable single-file dental laboratory invoicing application for South African d
     - **Result** — Faster code entry workflow; only active codes visible
   - **Files modified:** document.ts (added authorization code to buildDocumentHTML + buildPDFBlob), CodeInput.tsx (filter deleted codes + auto-open onFocus, removed R0.00 filter), initialData.ts (version bump to 3.0.89), package.json (version bump to 3.0.89)
   - **Result:** Complete authorization code support in all outputs (form + PDF + print); cleaner code dropdown with faster navigation; correct version numbering for auto-update
+  - Desktop only
+
+- ✅ **v3.0.94 Update** (November 5, 2026) — **CRITICAL: FIX CSV PARSING BUG (LANGUAGE SELECTION)**
+  - **Critical Bug Fixed:** Afrikaans descriptions showing when English language selected in invoice/estimate forms
+  - **Root Cause:** CSV parser using naive `split(',')` which breaks when fields contain commas inside quotes
+    - Example: `"Soft base material, per denture"` was split into TWO fields instead of one
+    - This caused all subsequent columns to shift, making `description` and `descriptionAFR` swap positions
+    - Result: `descForLang(tariff, 'en')` returned Afrikaans text because columns were misaligned
+  - **Solution:** Implemented proper quote-aware CSV parsing for all parser functions
+    - **parseTariffCSV()** — Now uses state machine to track when inside quotes (same logic as parseClientCSV)
+    - **parseMacroCSV()** — Fixed (macro names can contain commas)
+    - **parseMedicalAidsCSV()** — Fixed (medical aid/plan names can contain commas)
+    - **buildTariffsCSV()** — Now properly quotes fields that contain commas when writing CSV
+    - **Correct column mapping** — Fixed UserCode→code, TariffCode→tariffCode mapping (was backwards)
+  - **Files Modified:** `csv.ts` (4 functions rewritten with proper CSV parsing + quoting)
+  - **Result:** Language selection now works correctly — English descriptions show when English selected, Afrikaans when Afrikaans selected; all CSV files with quoted fields now parse correctly
   - Desktop only
 
 ### Available Installers (v3.0.90+)

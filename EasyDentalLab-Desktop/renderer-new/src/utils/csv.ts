@@ -46,26 +46,41 @@ export function parseClientCSV(csv: string): Client[] {
 
 /**
  * Parse Tariff CSV
+ * Format: UserCode,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure
  */
 export function parseTariffCSV(csv: string): Tariff[] {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
-  
-  const rows = lines.slice(1); // skip header
-  return rows.map(row => {
-    const parts = row.split(',').map(s => s.trim());
-    const [id, code, tariffCode, description, descriptionAFR, price, category, measure] = parts;
-    return {
-      id,
-      code,
-      tariffCode: tariffCode || code,
-      description,
-      descriptionAFR,
-      price: parseFloat(price) || 0,
-      category,
-      measure
-    };
-  });
+
+  const tariffs: Tariff[] = [];
+  for (let i = 1; i < lines.length; i++) {
+    const row: string[] = [];
+    let field = '', inQuote = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { row.push(field.trim()); field = ''; }
+      else { field += ch; }
+    }
+    row.push(field.trim());
+
+    // CSV columns: UserCode,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure
+    const [userCode, tariffCode, description, descriptionAFR, price, prevYearPrice, category, measure] = row;
+    if (userCode) {
+      tariffs.push({
+        id: userCode,  // Use UserCode as React key
+        code: userCode,  // UserCode is what user types in app
+        tariffCode: tariffCode || userCode,  // TariffCode defaults to UserCode if empty
+        description,
+        descriptionAFR,
+        price: parseFloat(price) || 0,
+        prevYearPrice: parseFloat(prevYearPrice) || undefined,
+        category,
+        measure
+      });
+    }
+  }
+  return tariffs;
 }
 
 /**
@@ -74,20 +89,28 @@ export function parseTariffCSV(csv: string): Tariff[] {
 export function parseMacroCSV(csv: string): Macro[] {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
-  
+
   const macros: Macro[] = [];
-  const rows = lines.slice(1); // skip header
-  
-  rows.forEach(row => {
-    const [id, name, codesJSON] = row.split(',').map(s => s.trim());
+  for (let i = 1; i < lines.length; i++) {
+    const row: string[] = [];
+    let field = '', inQuote = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { row.push(field.trim()); field = ''; }
+      else { field += ch; }
+    }
+    row.push(field.trim());
+
+    const [id, name, codesJSON] = row;
     try {
       const codes = JSON.parse(codesJSON);
       macros.push({ id, name, codes });
     } catch (e) {
       console.warn('Failed to parse macro codes:', codesJSON);
     }
-  });
-  
+  }
+
   return macros;
 }
 
@@ -100,16 +123,25 @@ export function parseMedicalAidsCSV(csv: string): MedicalAid[] {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
 
-  const rows = lines.slice(1); // skip header
   const aidMap = new Map<string, { id: string; name: string; plans: { id: string; name: string }[] }>();
 
-  rows.forEach((row, idx) => {
-    const [medicalAidName, planName] = row.split(',').map(s => s.trim());
-    if (!medicalAidName) return;
+  for (let i = 1; i < lines.length; i++) {
+    const row: string[] = [];
+    let field = '', inQuote = false;
+    for (let c = 0; c < lines[i].length; c++) {
+      const ch = lines[i][c];
+      if (ch === '"') { inQuote = !inQuote; }
+      else if (ch === ',' && !inQuote) { row.push(field.trim()); field = ''; }
+      else { field += ch; }
+    }
+    row.push(field.trim());
+
+    const [medicalAidName, planName] = row;
+    if (!medicalAidName) continue;
 
     if (!aidMap.has(medicalAidName)) {
       aidMap.set(medicalAidName, {
-        id: 'csv_ma_' + Date.now() + '_' + idx,
+        id: 'csv_ma_' + Date.now() + '_' + i,
         name: medicalAidName,
         plans: []
       });
@@ -118,11 +150,11 @@ export function parseMedicalAidsCSV(csv: string): MedicalAid[] {
     if (planName) {
       const aid = aidMap.get(medicalAidName)!;
       aid.plans.push({
-        id: 'csv_plan_' + Date.now() + '_' + idx,
+        id: 'csv_plan_' + Date.now() + '_' + i,
         name: planName
       });
     }
-  });
+  }
 
   return Array.from(aidMap.values());
 }
@@ -154,10 +186,28 @@ export function buildClientsCSV(clients: Client[]): string {
  * Build Tariffs CSV
  */
 export function buildTariffsCSV(tariffs: Tariff[]): string {
-  const header = 'ID,UserCode,TariffCode,Description,DescriptionAFR,Price,Category,Measure';
-  const rows = tariffs.map(t => 
-    `${t.id},${t.code},${t.tariffCode || t.code},${t.description},${t.descriptionAFR},${t.price},${t.category},${t.measure}`
-  );
+  const esc = (s: string | number | undefined) => {
+    if (s === undefined || s === null) return '';
+    const str = String(s);
+    // Quote if contains comma, newline, or quote
+    if (str.includes(',') || str.includes('\n') || str.includes('"')) {
+      return '"' + str.replace(/"/g, '""') + '"';
+    }
+    return str;
+  };
+
+  const header = 'UserCode,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure';
+  const rows = tariffs.map(t => [
+    esc(t.code),
+    esc(t.tariffCode || t.code),
+    esc(t.description),
+    esc(t.descriptionAFR),
+    esc(t.price),
+    esc(t.price), // PrevYearPrice = same as current price for now
+    esc(t.category),
+    esc(t.measure)
+  ].join(','));
+
   return [header, ...rows].join('\n');
 }
 
