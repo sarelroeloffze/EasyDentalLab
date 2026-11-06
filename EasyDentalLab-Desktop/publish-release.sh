@@ -48,7 +48,8 @@ npm run dist:linux-x64
 
 # Step 5: Fix Windows latest.yml (electron-builder uses dashes, GitHub normalizes to dots)
 echo -e "\n${YELLOW}[5/8] Fixing Windows latest.yml...${NC}"
-cd build
+BUILD_DIR="/tmp/easydentallab-builds"
+cd "$BUILD_DIR"
 if [ -f "latest.yml" ]; then
     # Replace dashes with dots in filenames
     sed -i.bak "s/EasyDentalLab-Setup-${VERSION}/EasyDentalLab.Setup.${VERSION}/g" latest.yml
@@ -73,35 +74,35 @@ echo -e "\n${YELLOW}[6/8] Verifying build artifacts...${NC}"
 MISSING_FILES=0
 
 # Windows files
-if [ ! -f "build/EasyDentalLab.Setup.${VERSION}.exe" ]; then
+if [ ! -f "$BUILD_DIR/EasyDentalLab.Setup.${VERSION}.exe" ]; then
     echo -e "${RED}✗ Missing: Windows installer${NC}"
     MISSING_FILES=1
 fi
-if [ ! -f "build/EasyDentalLab.Setup.${VERSION}.exe.blockmap" ]; then
+if [ ! -f "$BUILD_DIR/EasyDentalLab.Setup.${VERSION}.exe.blockmap" ]; then
     echo -e "${RED}✗ Missing: Windows blockmap${NC}"
     MISSING_FILES=1
 fi
-if [ ! -f "build/latest.yml" ]; then
+if [ ! -f "$BUILD_DIR/latest.yml" ]; then
     echo -e "${RED}✗ Missing: Windows metadata${NC}"
     MISSING_FILES=1
 fi
 
 # macOS files
-if [ ! -f "build/EasyDentalLab-${VERSION}-arm64.dmg" ]; then
+if [ ! -f "$BUILD_DIR/EasyDentalLab-${VERSION}-arm64.dmg" ]; then
     echo -e "${RED}✗ Missing: macOS installer${NC}"
     MISSING_FILES=1
 fi
-if [ ! -f "build/latest-mac.yml" ]; then
+if [ ! -f "$BUILD_DIR/latest-mac.yml" ]; then
     echo -e "${RED}✗ Missing: macOS metadata${NC}"
     MISSING_FILES=1
 fi
 
 # Linux files
-if [ ! -f "build/EasyDentalLab-${VERSION}-x86_64.AppImage" ] && [ ! -f "build/EasyDentalLab-${VERSION}.AppImage" ]; then
+if [ ! -f "$BUILD_DIR/EasyDentalLab-${VERSION}-x86_64.AppImage" ] && [ ! -f "$BUILD_DIR/EasyDentalLab-${VERSION}.AppImage" ]; then
     echo -e "${RED}✗ Missing: Linux AppImage${NC}"
     MISSING_FILES=1
 fi
-if [ ! -f "build/latest-linux.yml" ]; then
+if [ ! -f "$BUILD_DIR/latest-linux.yml" ]; then
     echo -e "${RED}✗ Missing: Linux metadata${NC}"
     MISSING_FILES=1
 fi
@@ -115,7 +116,7 @@ echo -e "${GREEN}✓ All build artifacts present${NC}"
 
 # Step 7: Show file sizes
 echo -e "\n${YELLOW}[7/8] Build artifact sizes:${NC}"
-ls -lh build/*.exe build/*.dmg build/*.AppImage 2>/dev/null | awk '{print "  " $9 " — " $5}'
+ls -lh $BUILD_DIR/*.exe $BUILD_DIR/*.dmg $BUILD_DIR/*.AppImage 2>/dev/null | awk '{print "  " $9 " — " $5}'
 
 # Step 8: Commit and push
 echo -e "\n${YELLOW}[8/8] Committing and pushing to GitHub...${NC}"
@@ -128,7 +129,7 @@ git push origin main
 
 # Step 9: Publish GitHub Release
 echo -e "\n${YELLOW}Publishing GitHub Release v${VERSION}...${NC}"
-cd EasyDentalLab-Desktop/build
+cd "$BUILD_DIR"
 
 gh release create "v${VERSION}" \
   "EasyDentalLab.Setup.${VERSION}.exe#Windows Installer (x64)" \
@@ -153,4 +154,10 @@ echo -e "${GREEN}  ✓ Release v${VERSION} published successfully!${NC}"
 echo -e "${GREEN}═══════════════════════════════════════════════════════${NC}"
 echo ""
 echo -e "View release: ${YELLOW}https://github.com/sarelroeloffze/EasyDentalLab/releases/tag/v${VERSION}${NC}"
+echo ""
+
+# Step 10: Cleanup build files from /tmp
+echo -e "${YELLOW}Cleaning up build files from /tmp...${NC}"
+rm -rf "$BUILD_DIR"
+echo -e "${GREEN}✓ Build files cleaned up${NC}"
 echo ""
