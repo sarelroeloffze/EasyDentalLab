@@ -10,10 +10,10 @@ Portable single-file dental laboratory invoicing application for South African d
 - **After changes to update/maintenance procedures**: update MAINTENANCE-GUIDE.md with new steps, changed file paths, or modified workflows — this keeps the guide current for price updates, app releases, CSV handling, and troubleshooting.
 - These four rules apply automatically — the user does not need to ask each time.
 
-## 🎯 PROJECT STATUS (Updated 2026-11-05 - v3.0.94 Release)
+## 🎯 PROJECT STATUS (Updated 2026-11-12 - v3.0.95 Release)
 
-### Current Version: Desktop App v3.0.94 (Production-Ready)
-**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.94 fixes critical CSV parsing bug causing language selection to fail
+### Current Version: Desktop App v3.0.95 (Production-Ready)
+**Status:** ✅ **LIVE - AUTO-UPDATE FULLY WORKING** — v3.0.95 fixes license gate that was blocking app startup
 
 ### Completed Work
 - ✅ **Phase 1: Critical Data Safety Fixes** (May 14-15, 2026)
@@ -644,6 +644,18 @@ Portable single-file dental laboratory invoicing application for South African d
     - **Correct column mapping** — Fixed UserCode→code, TariffCode→tariffCode mapping (was backwards)
   - **Files Modified:** `csv.ts` (4 functions rewritten with proper CSV parsing + quoting)
   - **Result:** Language selection now works correctly — English descriptions show when English selected, Afrikaans when Afrikaans selected; all CSV files with quoted fields now parse correctly
+  - Desktop only
+
+- ✅ **v3.0.95 Update** (November 12, 2026) — **CRITICAL: FIX LICENSE GATE BLOCKING APP**
+  - **Critical Bug Fixed:** App asked for license key on startup, blocking all users from accessing the app
+  - **Root Cause:** Desktop TypeScript version didn't have developer bypass that web version had; when `LICENSE_PUBLIC_KEY_B64` is placeholder, app should run without license
+  - **Solution:** Added developer bypass to desktop version
+    - **license.ts** — Returns valid full license when public key is placeholder (line ~107-118)
+    - **App.tsx** — Skips license check entirely in developer mode (line ~47-59)
+    - **LicensePayload type** — Added optional `issued` field for license metadata
+  - **Files Modified:** `renderer-new/src/utils/license.ts` (added bypass check), `renderer-new/src/App.tsx` (added bypass before license check), `renderer-new/src/types/license.ts` (added issued field)
+  - **Build Fix:** First release had blank screen (missing compiled renderer); rebuilt with proper `npm run build` in renderer-new before packaging
+  - **Result:** App now runs without license key when public key is placeholder; license system ready to activate when real public key configured; full desktop app functionality restored
   - Desktop only
 
 ### Available Installers (v3.0.90+)
