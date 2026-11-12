@@ -102,6 +102,20 @@ export async function validateLicenseKey(
   publicKeyB64: string
 ): Promise<LicenseStatus> {
   try {
+    // DEVELOPER MODE: Bypass license check if public key not configured
+    if (publicKeyB64 === 'REPLACE_WITH_PUBLIC_KEY_FROM_KEY_GENERATOR') {
+      return {
+        valid: true,
+        expired: false,
+        payload: {
+          email: 'developer@localhost',
+          app: 'EasyDentalLab',
+          type: 'full',
+          issued: new Date().toISOString().slice(0, 10)
+        }
+      };
+    }
+
     // Parse key format: PAYLOAD_B64URL.SIGNATURE_B64URL
     const parts = key.trim().split('.');
     if (parts.length !== 2) {

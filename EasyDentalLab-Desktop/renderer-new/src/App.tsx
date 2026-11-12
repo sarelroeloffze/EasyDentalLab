@@ -43,6 +43,22 @@ function App() {
   // Check license on startup
   useEffect(() => {
     const checkLicense = async () => {
+      // DEVELOPER MODE: Bypass if public key not configured
+      if (LICENSE_PUBLIC_KEY_B64 === 'REPLACE_WITH_PUBLIC_KEY_FROM_KEY_GENERATOR') {
+        setLicenseStatus({
+          valid: true,
+          expired: false,
+          payload: {
+            email: 'developer@localhost',
+            app: 'EasyDentalLab',
+            type: 'full',
+            issued: new Date().toISOString().slice(0, 10)
+          }
+        });
+        setLicenseChecked(true);
+        return;
+      }
+
       const storedKey = getLicenseKey();
 
       if (!storedKey) {

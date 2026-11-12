@@ -7,6 +7,7 @@
 export interface LicensePayload {
   email: string;           // Tester/customer email
   type: 'trial' | 'full';  // License type
+  issued?: string;         // ISO date when license was issued (optional)
   expires?: string;        // ISO date (optional, only for trials)
   app: string;            // "EasyDentalLab"
   version?: string;       // App version (optional)
