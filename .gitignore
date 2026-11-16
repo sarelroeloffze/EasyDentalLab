@@ -10,6 +10,11 @@ MedicalAids.csv
 Payments.csv
 EasyDentalLab-backup.json
 EasyDentalLab-backup.encrypted
+data/
+
+# License keys (contain private key — NEVER commit)
+license/SAREL-PERMANENT-LICENSE.txt
+license/generate-permanent-license.js
 
 # Direct Claiming PDF output
 Send to Direct Claiming/
