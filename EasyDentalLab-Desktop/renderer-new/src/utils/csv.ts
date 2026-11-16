@@ -52,6 +52,10 @@ export function parseTariffCSV(csv: string): Tariff[] {
   const lines = csv.split('\n').filter(l => l.trim());
   if (lines.length < 2) return [];
 
+  // Check if header has ID column (legacy format from web version)
+  const header = lines[0].toLowerCase();
+  const hasIDColumn = header.startsWith('id,');
+
   const tariffs: Tariff[] = [];
   for (let i = 1; i < lines.length; i++) {
     const row: string[] = [];
@@ -64,8 +68,25 @@ export function parseTariffCSV(csv: string): Tariff[] {
     }
     row.push(field.trim());
 
-    // CSV columns: UserCode,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure
-    const [userCode, tariffCode, description, descriptionAFR, price, prevYearPrice, category, measure] = row;
+    // Skip ID column if present (legacy format: ID,UserCode,TariffCode,...)
+    // Current format: UserCode,TariffCode,Description,DescriptionAFR,Price,PrevYearPrice,Category,Measure
+    const offset = hasIDColumn ? 1 : 0;
+    const expectedColumns = hasIDColumn ? 9 : 8;
+
+    // Validate row length to catch column shift bugs
+    if (row.length < expectedColumns) {
+      console.warn(`Row ${i} has ${row.length} columns, expected ${expectedColumns}. Possible CSV corruption.`);
+    }
+
+    const userCode = row[0 + offset];
+    const tariffCode = row[1 + offset];
+    const description = row[2 + offset];
+    const descriptionAFR = row[3 + offset];
+    const price = row[4 + offset];
+    const prevYearPrice = row[5 + offset];
+    const category = row[6 + offset];
+    const measure = row[7 + offset];
+
     if (userCode) {
       tariffs.push({
         id: userCode,  // Use UserCode as React key
